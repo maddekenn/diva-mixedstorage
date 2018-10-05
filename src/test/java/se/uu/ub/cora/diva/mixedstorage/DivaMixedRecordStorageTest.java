@@ -112,7 +112,7 @@ public class DivaMixedRecordStorageTest {
 		expectedData.type = "someType";
 		expectedData.filter = DataGroup.withNameInData("filter");
 		expectedData.answer = divaMixedRecordStorage.readList(expectedData.type,
-				expectedData.filter);
+				expectedData.filter).listOfDataGroups;
 
 		expectedData.calledMethod = "readList";
 		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);
@@ -128,7 +128,7 @@ public class DivaMixedRecordStorageTest {
 		expectedData.type = "divaPerson";
 		expectedData.filter = DataGroup.withNameInData("filter");
 		expectedData.answer = divaMixedRecordStorage.readList(expectedData.type,
-				expectedData.filter);
+				expectedData.filter).listOfDataGroups;
 
 		expectedData.calledMethod = "readList";
 		assertNoInteractionWithStorage(basicStorage);
@@ -215,7 +215,7 @@ public class DivaMixedRecordStorageTest {
 		expectedData.type = "someType";
 		expectedData.filter = DataGroup.withNameInData("filter");
 		expectedData.answer = divaMixedRecordStorage.readAbstractList(expectedData.type,
-				expectedData.filter);
+				expectedData.filter).listOfDataGroups;
 
 		expectedData.calledMethod = "readAbstractList";
 		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);

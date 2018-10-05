@@ -21,6 +21,7 @@ package se.uu.ub.cora.diva.mixedstorage;
 import java.util.Collection;
 
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.spider.data.SpiderReadResult;
 import se.uu.ub.cora.spider.record.storage.RecordStorage;
 
 public final class DivaMixedRecordStorage implements RecordStorage {
@@ -70,7 +71,7 @@ public final class DivaMixedRecordStorage implements RecordStorage {
 	}
 
 	@Override
-	public Collection<DataGroup> readList(String type, DataGroup filter) {
+	public SpiderReadResult readList(String type, DataGroup filter) {
 		if (PERSON.equals(type)) {
 			return divaToCoraStorage.readList(type, filter);
 		}
@@ -78,7 +79,7 @@ public final class DivaMixedRecordStorage implements RecordStorage {
 	}
 
 	@Override
-	public Collection<DataGroup> readAbstractList(String type, DataGroup filter) {
+	public SpiderReadResult readAbstractList(String type, DataGroup filter) {
 		return basicStorage.readAbstractList(type, filter);
 	}
 
