@@ -26,7 +26,7 @@ import se.uu.ub.cora.spider.record.storage.RecordStorage;
 
 public final class DivaMixedRecordStorage implements RecordStorage {
 
-	private static final String PERSON = "divaPerson";
+	private static final String PERSON = "person";
 	private RecordStorage basicStorage;
 	private RecordStorage divaToCoraStorage;
 
