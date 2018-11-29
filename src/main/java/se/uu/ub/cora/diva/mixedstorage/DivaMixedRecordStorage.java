@@ -27,17 +27,18 @@ import se.uu.ub.cora.spider.record.storage.RecordStorage;
 public final class DivaMixedRecordStorage implements RecordStorage {
 
 	private static final String PERSON = "person";
-	private static final String ORGANISATION = "organisation";
+	private static final String ORGANISATION = "divaOrganisation";
 	private RecordStorage basicStorage;
 	private RecordStorage divaFedoraToCoraStorage;
 	private RecordStorage divaDbToCoraStorage;
 
 	public static RecordStorage usingBasicAndDivaToCoraStorage(RecordStorage basicStorage,
-															   RecordStorage divaToCoraStorage, RecordStorage divaDbToCoraStorage) {
+			RecordStorage divaToCoraStorage, RecordStorage divaDbToCoraStorage) {
 		return new DivaMixedRecordStorage(basicStorage, divaToCoraStorage, divaDbToCoraStorage);
 	}
 
-	private DivaMixedRecordStorage(RecordStorage basicStorage, RecordStorage divaFedoraToCoraStorage, RecordStorage divaDbToCoraStorage) {
+	private DivaMixedRecordStorage(RecordStorage basicStorage,
+			RecordStorage divaFedoraToCoraStorage, RecordStorage divaDbToCoraStorage) {
 		this.basicStorage = basicStorage;
 		this.divaFedoraToCoraStorage = divaFedoraToCoraStorage;
 		this.divaDbToCoraStorage = divaDbToCoraStorage;
@@ -48,8 +49,8 @@ public final class DivaMixedRecordStorage implements RecordStorage {
 		if (PERSON.equals(type)) {
 			return divaFedoraToCoraStorage.read(type, id);
 		}
-		if(ORGANISATION.equals(type)){
-			return divaDbToCoraStorage.read(type,id);
+		if (ORGANISATION.equals(type)) {
+			return divaDbToCoraStorage.read(type, id);
 		}
 		return basicStorage.read(type, id);
 	}
@@ -81,7 +82,7 @@ public final class DivaMixedRecordStorage implements RecordStorage {
 		if (PERSON.equals(type)) {
 			return divaFedoraToCoraStorage.readList(type, filter);
 		}
-		if(ORGANISATION.equals(type)){
+		if (ORGANISATION.equals(type)) {
 			return divaDbToCoraStorage.readList(type, filter);
 		}
 		return basicStorage.readList(type, filter);

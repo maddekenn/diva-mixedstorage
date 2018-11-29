@@ -111,9 +111,8 @@ public class DivaMixedRecordStorageTest {
 		assertNoInteractionWithStorage(divaFedoraToCoraStorage);
 		assertNoInteractionWithStorage(divaDbToCoraStorage);
 
-
 		RecordStorageSpyData data = new RecordStorageSpyData();
-		data.type = "organisation";
+		data.type = "divaOrganisation";
 		data.id = "someOrgId";
 		data.answer = divaMixedRecordStorage.read(data.type, data.id);
 
@@ -163,10 +162,9 @@ public class DivaMixedRecordStorageTest {
 		assertNoInteractionWithStorage(divaDbToCoraStorage);
 
 		RecordStorageSpyData data = new RecordStorageSpyData();
-		data.type = "organisation";
+		data.type = "divaOrganisation";
 		data.filter = DataGroup.withNameInData("filter");
-		data.answer = divaMixedRecordStorage.readList(data.type,
-				data.filter).listOfDataGroups;
+		data.answer = divaMixedRecordStorage.readList(data.type, data.filter).listOfDataGroups;
 
 		data.calledMethod = "readList";
 		assertNoInteractionWithStorage(basicStorage);
