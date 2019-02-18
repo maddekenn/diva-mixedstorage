@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Uppsala University Library
+ * Copyright 2018, 2019 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -32,7 +32,7 @@ public final class DivaMixedRecordStorage implements RecordStorage {
 	private RecordStorage divaFedoraToCoraStorage;
 	private RecordStorage divaDbToCoraStorage;
 
-	public static RecordStorage usingBasicAndDivaToCoraStorage(RecordStorage basicStorage,
+	public static RecordStorage usingBasicAndFedoraAndDbStorage(RecordStorage basicStorage,
 			RecordStorage divaToCoraStorage, RecordStorage divaDbToCoraStorage) {
 		return new DivaMixedRecordStorage(basicStorage, divaToCoraStorage, divaDbToCoraStorage);
 	}
@@ -74,7 +74,11 @@ public final class DivaMixedRecordStorage implements RecordStorage {
 	@Override
 	public void update(String type, String id, DataGroup record, DataGroup collectedTerms,
 			DataGroup linkList, String dataDivider) {
-		basicStorage.update(type, id, record, collectedTerms, linkList, dataDivider);
+		if (PERSON.equals(type)) {
+			divaFedoraToCoraStorage.update(type, id, record, collectedTerms, linkList, dataDivider);
+		} else {
+			basicStorage.update(type, id, record, collectedTerms, linkList, dataDivider);
+		}
 	}
 
 	@Override

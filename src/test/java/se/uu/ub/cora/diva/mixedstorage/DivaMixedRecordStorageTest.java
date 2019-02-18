@@ -40,8 +40,8 @@ public class DivaMixedRecordStorageTest {
 		basicStorage = new RecordStorageSpy();
 		divaFedoraToCoraStorage = new RecordStorageSpy();
 		divaDbToCoraStorage = new RecordStorageSpy();
-		divaMixedRecordStorage = DivaMixedRecordStorage.usingBasicAndDivaToCoraStorage(basicStorage,
-				divaFedoraToCoraStorage, divaDbToCoraStorage);
+		divaMixedRecordStorage = DivaMixedRecordStorage.usingBasicAndFedoraAndDbStorage(
+				basicStorage, divaFedoraToCoraStorage, divaDbToCoraStorage);
 	}
 
 	@Test
@@ -241,6 +241,28 @@ public class DivaMixedRecordStorageTest {
 		expectedData.calledMethod = "update";
 		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);
 		assertNoInteractionWithStorage(divaFedoraToCoraStorage);
+	}
+
+	@Test
+	public void updatePersonGoesToFedoraStorage() throws Exception {
+		assertNoInteractionWithStorage(basicStorage);
+		assertNoInteractionWithStorage(divaFedoraToCoraStorage);
+		assertNoInteractionWithStorage(divaDbToCoraStorage);
+
+		RecordStorageSpyData expectedData = new RecordStorageSpyData();
+		expectedData.type = "person";
+		expectedData.id = "someId";
+		expectedData.record = DataGroup.withNameInData("dummyRecord");
+		expectedData.collectedTerms = DataGroup.withNameInData("collectedTerms");
+		expectedData.linkList = DataGroup.withNameInData("linkList");
+		expectedData.dataDivider = "someDataDivider";
+		divaMixedRecordStorage.update(expectedData.type, expectedData.id, expectedData.record,
+				expectedData.collectedTerms, expectedData.linkList, expectedData.dataDivider);
+
+		expectedData.calledMethod = "update";
+		assertExpectedDataSameAsInStorageSpy(divaFedoraToCoraStorage, expectedData);
+		assertNoInteractionWithStorage(basicStorage);
+		assertNoInteractionWithStorage(divaDbToCoraStorage);
 	}
 
 	@Test
