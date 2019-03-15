@@ -33,6 +33,8 @@
 
 	<properties>
 		<spider.version>0.17.0</spider.version>
+		<sqldatabase.version>0.4.0</sqldatabase.version>
+		<httphandler.version>0.5.1</httphandler.version>
 	</properties>
 
 	<scm>
@@ -47,6 +49,17 @@
 			<groupId>se.uu.ub.cora</groupId>
 			<artifactId>spider</artifactId>
 			<version>${spider.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>se.uu.ub.cora</groupId>
+			<artifactId>sqldatabase</artifactId>
+			<version>${sqldatabase.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>se.uu.ub.cora</groupId>
+			<artifactId>httphandler</artifactId>
+			<version>${httphandler.version}</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testng</groupId>
