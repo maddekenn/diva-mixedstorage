@@ -18,10 +18,17 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
+public class CoraToDbConverterFactorySpy implements CoraToDbConverterFactory {
 
-public interface DivaDbToCora {
+	public String type;
+	public CoraToDbConverterSpy factored;
 
-	DataGroup readAndConvertOneRow(String type, String id);
+	@Override
+	public CoraToDbConverter factor(String type) {
+		this.type = type;
+		factored = new CoraToDbConverterSpy();
+
+		return factored;
+	}
 
 }

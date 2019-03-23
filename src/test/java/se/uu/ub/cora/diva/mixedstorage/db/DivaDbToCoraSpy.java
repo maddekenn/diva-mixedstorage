@@ -9,7 +9,7 @@ public class DivaDbToCoraSpy implements DivaDbToCora {
 	public DataGroup dataGroup;
 
 	@Override
-	public DataGroup convertOneRowData(String type, String id) {
+	public DataGroup readAndConvertOneRow(String type, String id) {
 		this.type = type;
 		this.id = id;
 		dataGroup = DataGroup.withNameInData("DataGroupFromSpy");

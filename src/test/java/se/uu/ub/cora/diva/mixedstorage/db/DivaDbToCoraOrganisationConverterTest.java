@@ -142,7 +142,7 @@ public class DivaDbToCoraOrganisationConverterTest {
 
 	private void assertCorrectCreatedAndUpdatedInfo(DataGroup recordInfo) {
 		assertEquals(recordInfo.getFirstAtomicValueWithNameInData("tsCreated"),
-				"2015-01-01 00:00:00");
+				"2015-01-01 00:00:00.00");
 
 		DataGroup createdBy = recordInfo.getFirstGroupWithNameInData("createdBy");
 		assertEquals(createdBy.getFirstAtomicValueWithNameInData("linkedRecordType"), "coraUser");
@@ -151,13 +151,14 @@ public class DivaDbToCoraOrganisationConverterTest {
 
 		assertEquals(recordInfo.getAllGroupsWithNameInData("updated").size(), 1);
 		DataGroup updated = recordInfo.getFirstGroupWithNameInData("updated");
-		assertEquals(updated.getFirstAtomicValueWithNameInData("tsUpdated"), "2015-01-01 00:00:00");
+		assertEquals(updated.getRepeatId(), "0");
+		assertEquals(updated.getFirstAtomicValueWithNameInData("tsUpdated"),
+				"2015-01-01 00:00:00.00");
 
 		DataGroup updatedBy = updated.getFirstGroupWithNameInData("updatedBy");
 		assertEquals(updatedBy.getFirstAtomicValueWithNameInData("linkedRecordType"), "coraUser");
 		assertEquals(updatedBy.getFirstAtomicValueWithNameInData("linkedRecordId"),
 				"coraUser:4412982402853626");
-		assertEquals(updatedBy.getRepeatId(), "0");
 
 	}
 

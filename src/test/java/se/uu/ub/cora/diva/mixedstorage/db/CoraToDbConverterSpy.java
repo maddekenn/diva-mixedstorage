@@ -18,10 +18,26 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 
-public interface DivaDbToCora {
+public class CoraToDbConverterSpy implements CoraToDbConverter {
 
-	DataGroup readAndConvertOneRow(String type, String id);
+	public DataGroup dataGroup;
+	public PreparedStatementInfo psInfo;
+
+	@Override
+	public PreparedStatementInfo convert(DataGroup dataGroup) {
+		this.dataGroup = dataGroup;
+		Map<String, Object> values = new HashMap<>();
+		values.put("valueKey", "valueString");
+		Map<String, Object> conditions = new HashMap<>();
+		conditions.put("conditionKey", "conditionString");
+		psInfo = PreparedStatementInfo.withTableNameValuesAndConditions("tableNameFromSpy", values,
+				conditions);
+		return psInfo;
+	}
 
 }

@@ -29,33 +29,42 @@ import se.uu.ub.cora.spider.data.SpiderReadResult;
 import se.uu.ub.cora.spider.record.storage.RecordStorage;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
+import se.uu.ub.cora.sqldatabase.RecordUpdater;
+import se.uu.ub.cora.sqldatabase.RecordUpdaterFactory;
 
-public class DivaDbToCoraRecordStorage implements RecordStorage {
+public class DivaDbRecordStorage implements RecordStorage {
 
+	private static final String DIVA_ORGANISATION = "divaOrganisation";
 	private RecordReaderFactory recordReaderFactory;
 	private DivaDbToCoraConverterFactory converterFactory;
 	private DivaDbToCoraFactory divaDbToCoraFactory;
+	private RecordUpdaterFactory recordUpdaterFactory;
+	private CoraToDbConverterFactory toDbConverterFactory;
 
-	private DivaDbToCoraRecordStorage(RecordReaderFactory recordReaderFactory,
-			DivaDbToCoraConverterFactory converterFactory,
-			DivaDbToCoraFactory divaDbToCoraFactory) {
+	private DivaDbRecordStorage(RecordReaderFactory recordReaderFactory,
+			RecordUpdaterFactory recordUpdaterFactory,
+			DivaDbToCoraConverterFactory converterFactory, DivaDbToCoraFactory divaDbToCoraFactory,
+			CoraToDbConverterFactory toDbConverterFactory) {
 		this.recordReaderFactory = recordReaderFactory;
+		this.recordUpdaterFactory = recordUpdaterFactory;
 		this.converterFactory = converterFactory;
 		this.divaDbToCoraFactory = divaDbToCoraFactory;
+		this.toDbConverterFactory = toDbConverterFactory;
 	}
 
-	public static DivaDbToCoraRecordStorage usingRecordReaderFactoryConverterFactoryAndDbToCoraFactory(
-			RecordReaderFactory recordReaderFactory, DivaDbToCoraConverterFactory converterFactory,
-			DivaDbToCoraFactory divaDbToCoraFactory) {
-		return new DivaDbToCoraRecordStorage(recordReaderFactory, converterFactory,
-				divaDbToCoraFactory);
+	public static DivaDbRecordStorage usingFactories(
+			RecordReaderFactory recordReaderFactory, RecordUpdaterFactory recordUpdaterFactory,
+			DivaDbToCoraConverterFactory converterFactory, DivaDbToCoraFactory divaDbToCoraFactory,
+			CoraToDbConverterFactory toDbConverterFactory) {
+		return new DivaDbRecordStorage(recordReaderFactory, recordUpdaterFactory, converterFactory,
+				divaDbToCoraFactory, toDbConverterFactory);
 	}
 
 	@Override
 	public DataGroup read(String type, String id) {
-		if ("divaOrganisation".equals(type)) {
+		if (DIVA_ORGANISATION.equals(type)) {
 			DivaDbToCora divaDbToCora = divaDbToCoraFactory.factor(type);
-			return divaDbToCora.convertOneRowData(type, id);
+			return divaDbToCora.readAndConvertOneRow(type, id);
 		}
 		throw NotImplementedException.withMessage("read is not implemented for type: " + type);
 	}
@@ -79,13 +88,27 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	@Override
 	public void update(String type, String id, DataGroup record, DataGroup collectedTerms,
 			DataGroup linkList, String dataDivider) {
-		throw NotImplementedException.withMessage("update is not implemented");
+		if (DIVA_ORGANISATION.equals(type)) {
+			PreparedStatementInfo psInfo = convertRecord(type, record);
+			updateRecord(psInfo);
+		} else {
+			throw NotImplementedException.withMessage("update is not implemented");
+		}
+	}
 
+	private void updateRecord(PreparedStatementInfo psInfo) {
+		RecordUpdater recordUpdater = recordUpdaterFactory.factor();
+		recordUpdater.update(psInfo.tableName, psInfo.values, psInfo.conditions);
+	}
+
+	private PreparedStatementInfo convertRecord(String type, DataGroup record) {
+		CoraToDbConverter coraToDbOrganisationConverter = toDbConverterFactory.factor(type);
+		return coraToDbOrganisationConverter.convert(record);
 	}
 
 	@Override
 	public SpiderReadResult readList(String type, DataGroup filter) {
-		if ("divaOrganisation".equals(type)) {
+		if (DIVA_ORGANISATION.equals(type)) {
 			List<Map<String, String>> rowsFromDb = readAllFromDb(type);
 			return createSpiderReadResultFromDbData(type, rowsFromDb);
 		}

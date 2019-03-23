@@ -20,6 +20,7 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
 import java.util.List;
@@ -32,21 +33,29 @@ import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.spider.data.SpiderReadResult;
 import se.uu.ub.cora.spider.record.storage.RecordStorage;
 
-public class DivaDbToCoraRecordStorageTest {
+public class DivaDbRecordStorageTest {
 	private static final String TABLE_NAME = "divaOrganisation";
-	private DivaDbToCoraRecordStorage divaToCoraRecordStorage;
-	private DivaDbToCoraConverterFactorySpy converterFactory;
+	private DivaDbRecordStorage divaToCoraRecordStorage;
+	private DivaDbToCoraConverterFactorySpy toCoraConverterFactory;
 	private RecordReaderFactorySpy recordReaderFactory;
+	private RecordUpdaterFactorySpy recordUpdaterFactory;
 	private DivaDbToCoraFactorySpy divaDbToCoraFactory;
+	private CoraToDbConverterFactorySpy toDbConverterFactory;
+	// private CoraToDbFactorySpy coraToDbFactory;
 
 	@BeforeMethod
 	public void BeforeMethod() {
-		converterFactory = new DivaDbToCoraConverterFactorySpy();
+		// dbXXFactory som innehåller factorReader, factorUpdater, factorCreator osv??
+		// istället för en factory för varje?
+		toCoraConverterFactory = new DivaDbToCoraConverterFactorySpy();
 		recordReaderFactory = new RecordReaderFactorySpy();
+		recordUpdaterFactory = new RecordUpdaterFactorySpy();
 		divaDbToCoraFactory = new DivaDbToCoraFactorySpy();
-		divaToCoraRecordStorage = DivaDbToCoraRecordStorage
-				.usingRecordReaderFactoryConverterFactoryAndDbToCoraFactory(recordReaderFactory,
-						converterFactory, divaDbToCoraFactory);
+		toDbConverterFactory = new CoraToDbConverterFactorySpy();
+		// coraToDbFactory = new CoraToDbFactorySpy();
+		divaToCoraRecordStorage = DivaDbRecordStorage.usingFactories(recordReaderFactory,
+				recordUpdaterFactory, toCoraConverterFactory, divaDbToCoraFactory,
+				toDbConverterFactory);
 	}
 
 	@Test
@@ -105,6 +114,24 @@ public class DivaDbToCoraRecordStorageTest {
 		divaToCoraRecordStorage.linksExistForRecord(null, null);
 	}
 
+	@Test
+	public void testUpdateOrganisationMakeCorrectCalls() throws Exception {
+		DataGroup dataGroup = DataGroup.withNameInData("organisation");
+		divaToCoraRecordStorage.update(TABLE_NAME, "someId", dataGroup, null, null, "diva");
+
+		CoraToDbConverterSpy factoredConverter = toDbConverterFactory.factored;
+		assertEquals(toDbConverterFactory.type, TABLE_NAME);
+
+		assertSame(factoredConverter.dataGroup, dataGroup);
+
+		RecordUpdaterSpy factoredUpdater = (RecordUpdaterSpy) recordUpdaterFactory.factored;
+		PreparedStatementInfo psInfoFromConverter = factoredConverter.psInfo;
+
+		assertSame(psInfoFromConverter.tableName, factoredUpdater.tableName);
+		assertSame(psInfoFromConverter.values, factoredUpdater.values);
+		assertSame(psInfoFromConverter.conditions, factoredUpdater.conditions);
+	}
+
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
 			+ "update is not implemented")
 	public void updateThrowsNotImplementedException() throws Exception {
@@ -133,7 +160,8 @@ public class DivaDbToCoraRecordStorageTest {
 	@Test
 	public void testReadOrganisationListConverterIsFactored() throws Exception {
 		divaToCoraRecordStorage.readList(TABLE_NAME, DataGroup.withNameInData("filter"));
-		DivaDbToCoraConverter divaDbToCoraConverter = converterFactory.factoredConverters.get(0);
+		DivaDbToCoraConverter divaDbToCoraConverter = toCoraConverterFactory.factoredConverters
+				.get(0);
 		assertNotNull(divaDbToCoraConverter);
 	}
 
@@ -141,7 +169,7 @@ public class DivaDbToCoraRecordStorageTest {
 	public void testReadOrganisationListConverterIsCalledWithDataFromDbStorage() throws Exception {
 		divaToCoraRecordStorage.readList(TABLE_NAME, DataGroup.withNameInData("filter"));
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
-		DivaDbToCoraConverterSpy divaDbToCoraConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
+		DivaDbToCoraConverterSpy divaDbToCoraConverter = (DivaDbToCoraConverterSpy) toCoraConverterFactory.factoredConverters
 				.get(0);
 		assertNotNull(divaDbToCoraConverter.mapToConvert);
 		assertEquals(recordReader.returnedList.get(0), divaDbToCoraConverter.mapToConvert);
@@ -153,7 +181,7 @@ public class DivaDbToCoraRecordStorageTest {
 				DataGroup.withNameInData("filter"));
 		List<DataGroup> readCountryList = spiderReadresult.listOfDataGroups;
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
-		DivaDbToCoraConverterSpy divaDbToCoraConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
+		DivaDbToCoraConverterSpy divaDbToCoraConverter = (DivaDbToCoraConverterSpy) toCoraConverterFactory.factoredConverters
 				.get(0);
 		assertEquals(recordReader.returnedList.size(), 1);
 		assertEquals(recordReader.returnedList.get(0), divaDbToCoraConverter.mapToConvert);
@@ -170,17 +198,17 @@ public class DivaDbToCoraRecordStorageTest {
 
 		assertEquals(recordReader.returnedList.size(), 3);
 
-		DivaDbToCoraConverterSpy divaDbToCoraConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
+		DivaDbToCoraConverterSpy divaDbToCoraConverter = (DivaDbToCoraConverterSpy) toCoraConverterFactory.factoredConverters
 				.get(0);
 		assertEquals(recordReader.returnedList.get(0), divaDbToCoraConverter.mapToConvert);
 		assertEquals(readOrganisationList.get(0), divaDbToCoraConverter.convertedDbDataGroup);
 
-		DivaDbToCoraConverterSpy divaDbToCoraConverter2 = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
+		DivaDbToCoraConverterSpy divaDbToCoraConverter2 = (DivaDbToCoraConverterSpy) toCoraConverterFactory.factoredConverters
 				.get(1);
 		assertEquals(recordReader.returnedList.get(1), divaDbToCoraConverter2.mapToConvert);
 		assertEquals(readOrganisationList.get(1), divaDbToCoraConverter2.convertedDbDataGroup);
 
-		DivaDbToCoraConverterSpy divaDbToCoraConverter3 = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
+		DivaDbToCoraConverterSpy divaDbToCoraConverter3 = (DivaDbToCoraConverterSpy) toCoraConverterFactory.factoredConverters
 				.get(2);
 		assertEquals(recordReader.returnedList.get(2), divaDbToCoraConverter3.mapToConvert);
 		assertEquals(readOrganisationList.get(2), divaDbToCoraConverter3.convertedDbDataGroup);

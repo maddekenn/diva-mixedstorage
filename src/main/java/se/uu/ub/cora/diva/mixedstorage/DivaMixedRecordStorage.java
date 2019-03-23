@@ -76,6 +76,8 @@ public final class DivaMixedRecordStorage implements RecordStorage {
 			DataGroup linkList, String dataDivider) {
 		if (PERSON.equals(type)) {
 			divaFedoraToCoraStorage.update(type, id, record, collectedTerms, linkList, dataDivider);
+		} else if (ORGANISATION.equals(type)) {
+			divaDbToCoraStorage.update(type, id, record, collectedTerms, linkList, dataDivider);
 		} else {
 			basicStorage.update(type, id, record, collectedTerms, linkList, dataDivider);
 		}

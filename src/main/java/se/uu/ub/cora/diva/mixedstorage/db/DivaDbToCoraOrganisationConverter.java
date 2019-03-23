@@ -97,9 +97,9 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 
 	private void createAndAddUpdatedInfo(DataGroup recordInfo) {
 		DataGroup updated = DataGroup.withNameInData("updated");
+		updated.setRepeatId("0");
 		DataGroup updatedBy = createLinkUsingNameInDataRecordTypeAndRecordId("updatedBy",
 				"coraUser", "coraUser:4412982402853626");
-		updatedBy.setRepeatId("0");
 		updated.addChild(updatedBy);
 		addPredefinedTimestampToDataGroupUsingNameInData(updated, "tsUpdated");
 		recordInfo.addChild(updated);
@@ -113,7 +113,7 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 	}
 
 	private String getLocalTimeDateAsString(LocalDateTime localDateTime) {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.ms");
 		return localDateTime.format(formatter);
 	}
 

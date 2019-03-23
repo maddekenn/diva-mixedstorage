@@ -18,10 +18,25 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import java.util.Map;
 
-public interface DivaDbToCora {
+import se.uu.ub.cora.sqldatabase.RecordUpdater;
 
-	DataGroup readAndConvertOneRow(String type, String id);
+public class RecordUpdaterSpy implements RecordUpdater {
+
+	public boolean updateWasCalled = false;
+	public String tableName;
+	public Map<String, Object> values;
+	public Map<String, Object> conditions;
+
+	@Override
+	public void update(String tableName, Map<String, Object> values,
+			Map<String, Object> conditions) {
+		this.tableName = tableName;
+		this.values = values;
+		this.conditions = conditions;
+		updateWasCalled = true;
+
+	}
 
 }
