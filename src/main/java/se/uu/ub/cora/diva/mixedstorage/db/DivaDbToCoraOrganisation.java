@@ -63,7 +63,7 @@ public class DivaDbToCoraOrganisation implements DivaDbToCora {
 	}
 
 	private Map<String, String> readOneRowFromDbUsingTypeAndId(String type, String id) {
-		Map<String, String> conditions = new HashMap<>();
+		Map<String, Object> conditions = new HashMap<>();
 		conditions.put("id", id);
 		return recordReader.readOneRowFromDbUsingTableAndConditions(type, conditions);
 	}
@@ -80,7 +80,7 @@ public class DivaDbToCoraOrganisation implements DivaDbToCora {
 	}
 
 	private void tryToReadAndConvertPredecessors(String id, DataGroup organisation) {
-		Map<String, String> conditions = new HashMap<>();
+		Map<String, Object> conditions = new HashMap<>();
 		conditions.put("organisation_id", id);
 		List<Map<String, String>> predecessors = recordReader
 				.readFromTableUsingConditions(DIVA_ORGANISATION_PREDECESSOR, conditions);
@@ -118,7 +118,7 @@ public class DivaDbToCoraOrganisation implements DivaDbToCora {
 	}
 
 	private void tryToReadAndConvertSuccessors(String id, DataGroup organisation) {
-		Map<String, String> conditions = new HashMap<>();
+		Map<String, Object> conditions = new HashMap<>();
 		conditions.put("predecessor_id", id);
 		List<Map<String, String>> successors = recordReader
 				.readFromTableUsingConditions(DIVA_ORGANISATION_PREDECESSOR, conditions);

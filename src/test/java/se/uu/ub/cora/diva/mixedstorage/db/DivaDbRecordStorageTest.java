@@ -19,11 +19,13 @@
 package se.uu.ub.cora.diva.mixedstorage.db;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
 import java.util.List;
+import java.util.Map;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -232,6 +234,35 @@ public class DivaDbRecordStorageTest {
 	public void generateLinkCollectionPointingToRecordThrowsNotImplementedException()
 			throws Exception {
 		divaToCoraRecordStorage.generateLinkCollectionPointingToRecord(null, null);
+	}
+
+	@Test
+	public void recordsExistForRecordTypeOrganisationMakeCorrectCalls() throws Exception {
+		divaToCoraRecordStorage
+				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(TABLE_NAME, "45");
+		RecordReaderSpy factored = recordReaderFactory.factored;
+
+		assertEquals(factored.usedTableName, "organisation");
+		Map<String, Object> usedConditions = factored.usedConditions;
+
+		assertEquals(usedConditions.get("organisation_id"), 45);
+	}
+
+	@Test
+	public void recordsExistForRecordTypeOrganisationReturnsTrueWhenResultIsNotEmpty()
+			throws Exception {
+		boolean recordExists = divaToCoraRecordStorage
+				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(TABLE_NAME, "45");
+		assertTrue(recordExists);
+	}
+
+	@Test
+	public void recordsExistForRecordTypeOrganisationReturnsFalseWhenResultIsEmpty()
+			throws Exception {
+		recordReaderFactory.returnEmptyResult = true;
+		boolean recordExists = divaToCoraRecordStorage
+				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(TABLE_NAME, "45");
+		assertFalse(recordExists);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""

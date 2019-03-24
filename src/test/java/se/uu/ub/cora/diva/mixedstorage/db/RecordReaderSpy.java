@@ -19,6 +19,7 @@
 package se.uu.ub.cora.diva.mixedstorage.db;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,14 +32,15 @@ public class RecordReaderSpy implements RecordReader {
 	public List<String> usedTableNames = new ArrayList<>();
 	public List<Map<String, String>> returnedList = new ArrayList<>();
 	public int noOfRecordsToReturn = 1;
-	public Map<String, String> usedConditions;
-	public List<Map<String, String>> usedConditionsList = new ArrayList<>();
+	public Map<String, Object> usedConditions;
+	public List<Map<String, Object>> usedConditionsList = new ArrayList<>();
 	public int numOfPredecessorsToReturn = 0;
 	public int numOfSuccessorsToReturn = 0;
 
 	public Map<String, String> oneRowRead;
 	public List<Map<String, String>> predecessorsToReturn = new ArrayList<>();
 	public List<Map<String, String>> successorsToReturn = new ArrayList<>();
+	public boolean returnEmptyResult = false;
 
 	@Override
 	public List<Map<String, String>> readAllFromTable(String tableName) {
@@ -55,7 +57,7 @@ public class RecordReaderSpy implements RecordReader {
 
 	@Override
 	public Map<String, String> readOneRowFromDbUsingTableAndConditions(String tableName,
-			Map<String, String> conditions) {
+			Map<String, Object> conditions) {
 		usedTableName = tableName;
 		usedTableNames.add(usedTableName);
 		usedConditions = conditions;
@@ -71,12 +73,15 @@ public class RecordReaderSpy implements RecordReader {
 		}
 		oneRowRead = map;
 		returnedList.add(map);
+		if (returnEmptyResult) {
+			return Collections.emptyMap();
+		}
 		return map;
 	}
 
 	@Override
 	public List<Map<String, String>> readFromTableUsingConditions(String tableName,
-			Map<String, String> conditions) {
+			Map<String, Object> conditions) {
 		usedTableName = tableName;
 		usedTableNames.add(usedTableName);
 		usedConditions = conditions;
@@ -91,19 +96,6 @@ public class RecordReaderSpy implements RecordReader {
 		listToReturn.addAll(predecessorsToReturn);
 		listToReturn.addAll(successorsToReturn);
 
-		// if (numOfOredecessorsToReturn == 0) {
-		//
-		// predecessorsToReturn = Collections.emptyList();
-		// return predecessorsToReturn;
-		// } else {
-		// }
-		// if (numOfSuccessorsToReturn == 0) {
-		// successorsToReturn = Collections.emptyList();
-		// return successorsToReturn;
-		// } else {
-		// }
-		// List<Map<String, String>> listToReturn =
-		// createListToReturn(noOfRecordsToReturn);
 		if (conditions.containsKey("organisation_id")) {
 			return predecessorsToReturn;
 		}

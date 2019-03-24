@@ -117,6 +117,10 @@ public final class DivaMixedRecordStorage implements RecordStorage {
 	@Override
 	public boolean recordExistsForAbstractOrImplementingRecordTypeAndRecordId(String type,
 			String id) {
+		if (ORGANISATION.equals(type)) {
+			return divaDbToCoraStorage
+					.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(type, id);
+		}
 		return basicStorage.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(type, id);
 	}
 

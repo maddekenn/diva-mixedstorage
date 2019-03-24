@@ -367,4 +367,24 @@ public class DivaMixedRecordStorageTest {
 		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);
 		assertNoInteractionWithStorage(divaFedoraToCoraStorage);
 	}
+
+	@Test
+	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdWhenOrganisationGoesToDb()
+			throws Exception {
+		assertNoInteractionWithStorage(basicStorage);
+		assertNoInteractionWithStorage(divaFedoraToCoraStorage);
+		assertNoInteractionWithStorage(divaDbToCoraStorage);
+
+		RecordStorageSpyData expectedData = new RecordStorageSpyData();
+		expectedData.type = "divaOrganisation";
+		expectedData.id = "45";
+		expectedData.answer = divaMixedRecordStorage
+				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(expectedData.type,
+						expectedData.id);
+
+		expectedData.calledMethod = "recordExistsForAbstractOrImplementingRecordTypeAndRecordId";
+		assertExpectedDataSameAsInStorageSpy(divaDbToCoraStorage, expectedData);
+		assertNoInteractionWithStorage(divaFedoraToCoraStorage);
+		assertNoInteractionWithStorage(basicStorage);
+	}
 }

@@ -49,7 +49,7 @@ public class DivaDbToCoraOrganisationTest {
 	public void testReadOrganisationConditionsForOrganisationTable() throws Exception {
 		toCoraOrganisation.readAndConvertOneRow(TABLE_NAME, "someId");
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
-		Map<String, String> conditions = recordReader.usedConditionsList.get(0);
+		Map<String, Object> conditions = recordReader.usedConditionsList.get(0);
 		assertEquals(conditions.get("id"), "someId");
 	}
 
@@ -92,7 +92,7 @@ public class DivaDbToCoraOrganisationTest {
 
 	private void assertCorrectTableNamesAndConditionsAreUsedWhenReading(
 			RecordReaderSpy recordReader) {
-		List<Map<String, String>> usedConditionsList = recordReader.usedConditionsList;
+		List<Map<String, Object>> usedConditionsList = recordReader.usedConditionsList;
 
 		assertEquals(recordReader.usedTableNames.get(0), "divaOrganisation");
 		assertEquals(usedConditionsList.get(0).get("id"), "someId");

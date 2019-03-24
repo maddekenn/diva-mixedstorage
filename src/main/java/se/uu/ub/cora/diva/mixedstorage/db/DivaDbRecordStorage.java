@@ -20,6 +20,7 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,8 +53,8 @@ public class DivaDbRecordStorage implements RecordStorage {
 		this.toDbConverterFactory = toDbConverterFactory;
 	}
 
-	public static DivaDbRecordStorage usingFactories(
-			RecordReaderFactory recordReaderFactory, RecordUpdaterFactory recordUpdaterFactory,
+	public static DivaDbRecordStorage usingFactories(RecordReaderFactory recordReaderFactory,
+			RecordUpdaterFactory recordUpdaterFactory,
 			DivaDbToCoraConverterFactory converterFactory, DivaDbToCoraFactory divaDbToCoraFactory,
 			CoraToDbConverterFactory toDbConverterFactory) {
 		return new DivaDbRecordStorage(recordReaderFactory, recordUpdaterFactory, converterFactory,
@@ -166,8 +167,30 @@ public class DivaDbRecordStorage implements RecordStorage {
 	@Override
 	public boolean recordExistsForAbstractOrImplementingRecordTypeAndRecordId(String type,
 			String id) {
-		throw NotImplementedException.withMessage(
-				"recordExistsForAbstractOrImplementingRecordTypeAndRecordId is not implemented");
+		if (DIVA_ORGANISATION.equals(type)) {
+			return organisationWithIdExistInDatabase(id);
+		} else {
+			throw NotImplementedException.withMessage(
+					"recordExistsForAbstractOrImplementingRecordTypeAndRecordId is not implemented");
+		}
+	}
+
+	private boolean organisationWithIdExistInDatabase(String id) {
+		Map<String, Object> conditions = createConditions(id);
+		RecordReader reader = recordReaderFactory.factor();
+		Map<String, String> readRow = reader.readOneRowFromDbUsingTableAndConditions("organisation",
+				conditions);
+		return recordExist(readRow);
+	}
+
+	private boolean recordExist(Map<String, String> readRow) {
+		return !readRow.isEmpty();
+	}
+
+	private Map<String, Object> createConditions(String id) {
+		Map<String, Object> conditions = new HashMap<>();
+		conditions.put("organisation_id", Integer.valueOf(id));
+		return conditions;
 	}
 
 }

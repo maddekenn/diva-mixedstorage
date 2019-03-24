@@ -28,6 +28,7 @@ public class RecordReaderFactorySpy implements RecordReaderFactory {
 	public int noOfRecordsToReturn = 1;
 	public int numOfPredecessorsToReturn = 0;
 	public int numOfSuccessorsToReturn = 0;
+	public boolean returnEmptyResult = false;
 
 	@Override
 	public RecordReader factor() {
@@ -36,6 +37,7 @@ public class RecordReaderFactorySpy implements RecordReaderFactory {
 		factored.numOfPredecessorsToReturn = numOfPredecessorsToReturn;
 		factored.numOfSuccessorsToReturn = numOfSuccessorsToReturn;
 		factored.noOfRecordsToReturn = noOfRecordsToReturn;
+		factored.returnEmptyResult = returnEmptyResult;
 		return factored;
 	}
 
