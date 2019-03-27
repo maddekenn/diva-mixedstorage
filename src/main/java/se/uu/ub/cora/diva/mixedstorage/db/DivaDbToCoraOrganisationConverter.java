@@ -1,3 +1,21 @@
+/*
+ * Copyright 2019 Uppsala University Library
+ *
+ * This file is part of Cora.
+ *
+ *     Cora is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     Cora is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
 import java.time.LocalDateTime;
@@ -9,7 +27,6 @@ import se.uu.ub.cora.bookkeeper.data.DataGroup;
 
 public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter {
 
-	private static final String ORGANISATION_PARENTID = "organisation_parentid";
 	private static final String ORGANISATION_ID = "id";
 	private static final String ALTERNATIVE_NAME = "alternative_name";
 	private Map<String, String> dbRow;
@@ -41,7 +58,6 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 		possiblyCreateAndAddOrganisationNumber();
 		possiblyCreateAndAddOrganisationCode();
 		possiblyCreateAndAddURL();
-		possiblyAddParentOrganisation();
 
 		return organisation;
 	}
@@ -186,21 +202,6 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 
 	private void possiblyCreateAndAddURL() {
 		possiblyAddAtomicValueUsingKeyAndNameInData("organisation_homepage", "URL");
-	}
-
-	private void possiblyAddParentOrganisation() {
-		if (valueExistsForKey(ORGANISATION_PARENTID)) {
-			DataGroup parentOrg = DataGroup.withNameInData("parentOrganisation");
-			createAndAddLinkToParentOrganisation(parentOrg);
-			organisation.addChild(parentOrg);
-		}
-	}
-
-	private void createAndAddLinkToParentOrganisation(DataGroup parentOrg) {
-		String parentId = dbRow.get(ORGANISATION_PARENTID);
-		DataGroup parentOrgLink = createLinkUsingNameInDataRecordTypeAndRecordId("organisationLink",
-				"divaOrganisation", parentId);
-		parentOrg.addChild(parentOrgLink);
 	}
 
 }

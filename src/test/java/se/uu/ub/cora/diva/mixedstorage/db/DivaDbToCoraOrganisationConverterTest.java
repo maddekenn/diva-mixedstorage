@@ -270,35 +270,37 @@ public class DivaDbToCoraOrganisationConverterTest {
 		assertEquals(organisation.getFirstAtomicValueWithNameInData("URL"), "www.something.org");
 	}
 
-	@Test
-	public void testParentIdMissing() {
-		DataGroup organisation = converter.fromMap(rowFromDb);
-		assertFalse(organisation.containsChildWithNameInData("parentOrganisation"));
-	}
-
-	@Test
-	public void testParentIdIsNull() {
-		rowFromDb.put("organisation_parentid", null);
-		DataGroup organisation = converter.fromMap(rowFromDb);
-		assertFalse(organisation.containsChildWithNameInData("parentOrganisation"));
-	}
-
-	@Test
-	public void testParentIdIsEmpty() {
-		rowFromDb.put("organisation_parentid", "");
-		DataGroup organisation = converter.fromMap(rowFromDb);
-		assertFalse(organisation.containsChildWithNameInData("parentOrganisation"));
-	}
-
-	@Test
-	public void testParentId() {
-		rowFromDb.put("organisation_parentid", "someParentOrganisation");
-		DataGroup organisation = converter.fromMap(rowFromDb);
-		DataGroup parentOrg = organisation.getFirstGroupWithNameInData("parentOrganisation");
-		DataGroup parentOrgLink = parentOrg.getFirstGroupWithNameInData("organisationLink");
-		assertEquals(parentOrgLink.getFirstAtomicValueWithNameInData("linkedRecordType"),
-				"divaOrganisation");
-		assertEquals(parentOrgLink.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				"someParentOrganisation");
-	}
+	// @Test
+	// public void testParentIdMissing() {
+	// DataGroup organisation = converter.fromMap(rowFromDb);
+	// assertFalse(organisation.containsChildWithNameInData("parentOrganisation"));
+	// }
+	//
+	// @Test
+	// public void testParentIdIsNull() {
+	// rowFromDb.put("organisation_parentid", null);
+	// DataGroup organisation = converter.fromMap(rowFromDb);
+	// assertFalse(organisation.containsChildWithNameInData("parentOrganisation"));
+	// }
+	//
+	// @Test
+	// public void testParentIdIsEmpty() {
+	// rowFromDb.put("organisation_parentid", "");
+	// DataGroup organisation = converter.fromMap(rowFromDb);
+	// assertFalse(organisation.containsChildWithNameInData("parentOrganisation"));
+	// }
+	//
+	// @Test
+	// public void testParentId() {
+	// rowFromDb.put("organisation_parentid", "someParentOrganisation");
+	// DataGroup organisation = converter.fromMap(rowFromDb);
+	// DataGroup parentOrg =
+	// organisation.getFirstGroupWithNameInData("parentOrganisation");
+	// DataGroup parentOrgLink =
+	// parentOrg.getFirstGroupWithNameInData("organisationLink");
+	// assertEquals(parentOrgLink.getFirstAtomicValueWithNameInData("linkedRecordType"),
+	// "divaOrganisation");
+	// assertEquals(parentOrgLink.getFirstAtomicValueWithNameInData("linkedRecordId"),
+	// "someParentOrganisation");
+	// }
 }

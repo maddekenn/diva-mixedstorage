@@ -20,10 +20,9 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 
 import java.util.Map;
 
-import se.uu.ub.cora.bookkeeper.data.DataAtomic;
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 
-public class DivaDbToCoraOrganisationSuccessorConverter
+public class DivaDbToCoraOrganisationParentConverter
 		extends DivaDbToCoraOrganisationAncestryConverter implements DivaDbToCoraConverter {
 
 	@Override
@@ -31,34 +30,31 @@ public class DivaDbToCoraOrganisationSuccessorConverter
 		this.dbRow = dbRow;
 		if (mandatoryValuesAreMissing()) {
 			throw ConversionException.withMessageAndException(
-					"Error converting organisation successor to Cora organisation successor: Map does not "
-							+ "contain mandatory values for organisation id and prdecessor id",
+					"Error converting organisation parent to Cora organisation parent: Map does not "
+							+ "contain mandatory values for organisation id and parent id",
 					null);
 		}
 		return createDataGroup();
 	}
 
+	@Override
+	protected boolean mandatoryValuesAreMissing() {
+		return organisationIdIsMissing() || parentIdIsMissing();
+	}
+
+	protected boolean parentIdIsMissing() {
+		return !dbRowHasValueForKey("organisation_parent_id");
+	}
+
 	private DataGroup createDataGroup() {
-		DataGroup closed = DataGroup.withNameInData("closed");
-		addSuccessorLink(closed);
-		possiblyAddClosedDate(closed);
-		return closed;
+		DataGroup parent = DataGroup.withNameInData("parentOrganisation");
+		addParentLink(parent);
+		return parent;
 	}
 
-	private void addSuccessorLink(DataGroup closed) {
-		DataGroup successor = createOrganisationLinkUsingLinkedRecordId(dbRow.get(ORGANISATION_ID));
-		closed.addChild(successor);
+	private void addParentLink(DataGroup formerName) {
+		DataGroup predecessor = createOrganisationLinkUsingLinkedRecordId(
+				dbRow.get("organisation_parent_id"));
+		formerName.addChild(predecessor);
 	}
-
-	private void possiblyAddClosedDate(DataGroup closed) {
-		if (successorHasClosedDate()) {
-			closed.addChild(
-					DataAtomic.withNameInDataAndValue("closedDate", dbRow.get("closed_date")));
-		}
-	}
-
-	private boolean successorHasClosedDate() {
-		return dbRowHasValueForKey("closed_date");
-	}
-
 }

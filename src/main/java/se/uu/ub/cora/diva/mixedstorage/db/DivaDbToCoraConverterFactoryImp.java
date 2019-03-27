@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Uppsala University Library
+ * Copyright 2018, 2019 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -26,6 +26,9 @@ public class DivaDbToCoraConverterFactoryImp implements DivaDbToCoraConverterFac
 	public DivaDbToCoraConverter factor(String type) {
 		if ("divaOrganisation".equals(type)) {
 			return new DivaDbToCoraOrganisationConverter();
+		}
+		if ("divaOrganisationParent".equals(type)) {
+			return new DivaDbToCoraOrganisationParentConverter();
 		}
 		if ("divaOrganisationPredecessor".equals(type)) {
 			return new DivaDbToCoraOrganisationPredecessorConverter();

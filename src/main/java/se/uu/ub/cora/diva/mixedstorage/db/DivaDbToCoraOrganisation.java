@@ -1,3 +1,21 @@
+/*
+ * Copyright 2019 Uppsala University Library
+ *
+ * This file is part of Cora.
+ *
+ *     Cora is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     Cora is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
 import java.util.HashMap;
@@ -33,6 +51,7 @@ public class DivaDbToCoraOrganisation implements DivaDbToCora {
 	public DataGroup convertOneRowData(String type, String id) {
 		recordReader = getRecordReaderFactory().factor();
 		DataGroup organisation = readAndConvertOrganisationFromDb(type, id);
+		tryToReadAndConvertParents(id, organisation);
 		tryToReadAndConvertPredecessors(id, organisation);
 		tryToReadAndConvertSuccessors(id, organisation);
 		return organisation;
@@ -59,6 +78,38 @@ public class DivaDbToCoraOrganisation implements DivaDbToCora {
 	private DataGroup convertOneMapFromDbToDataGroup(String type, Map<String, String> readRow) {
 		DivaDbToCoraConverter dbToCoraConverter = getConverterFactory().factor(type);
 		return dbToCoraConverter.fromMap(readRow);
+	}
+
+	private void tryToReadAndConvertParents(String id, DataGroup organisation) {
+		Map<String, String> conditions = new HashMap<>();
+		conditions.put("organisation_id", id);
+		List<Map<String, String>> parents = recordReader
+				.readFromTableUsingConditions("divaOrganisationParent", conditions);
+
+		possiblyConvertParents(organisation, parents);
+	}
+
+	private void possiblyConvertParents(DataGroup organisation, List<Map<String, String>> parents) {
+		if (collectionContainsData(parents)) {
+			convertAndAddParents(organisation, parents);
+		}
+	}
+
+	private void convertAndAddParents(DataGroup organisation, List<Map<String, String>> parents) {
+		int repeatId = 0;
+		for (Map<String, String> parentValues : parents) {
+			convertAndAddParent(organisation, repeatId, parentValues);
+			repeatId++;
+		}
+	}
+
+	private void convertAndAddParent(DataGroup organisation, int repeatId,
+			Map<String, String> parentValues) {
+		DivaDbToCoraConverter predecessorConverter = getConverterFactory()
+				.factor("divaOrganisationParent");
+		DataGroup parent = predecessorConverter.fromMap(parentValues);
+		parent.setRepeatId(String.valueOf(repeatId));
+		organisation.addChild(parent);
 	}
 
 	private void tryToReadAndConvertPredecessors(String id, DataGroup organisation) {

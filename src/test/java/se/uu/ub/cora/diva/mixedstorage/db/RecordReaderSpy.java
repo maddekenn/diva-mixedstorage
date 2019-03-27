@@ -35,10 +35,12 @@ public class RecordReaderSpy implements RecordReader {
 	public List<Map<String, String>> usedConditionsList = new ArrayList<>();
 	public int numOfPredecessorsToReturn = 0;
 	public int numOfSuccessorsToReturn = 0;
+	public int numOfParentsToReturn = 0;
 
 	public Map<String, String> oneRowRead;
 	public List<Map<String, String>> predecessorsToReturn = new ArrayList<>();
 	public List<Map<String, String>> successorsToReturn = new ArrayList<>();
+	public List<Map<String, String>> parentsToReturn = new ArrayList<>();
 
 	@Override
 	public List<Map<String, String>> readAllFromTable(String tableName) {
@@ -86,24 +88,16 @@ public class RecordReaderSpy implements RecordReader {
 		}
 		predecessorsToReturn = createListToReturn(numOfPredecessorsToReturn);
 		successorsToReturn = createListToReturn(numOfSuccessorsToReturn);
+		parentsToReturn = createListToReturn(numOfParentsToReturn);
 
-		List<Map<String, String>> listToReturn = new ArrayList<>();
-		listToReturn.addAll(predecessorsToReturn);
-		listToReturn.addAll(successorsToReturn);
+		// List<Map<String, String>> listToReturn = new ArrayList<>();
+		// listToReturn.addAll(predecessorsToReturn);
+		// listToReturn.addAll(successorsToReturn);
 
-		// if (numOfOredecessorsToReturn == 0) {
-		//
-		// predecessorsToReturn = Collections.emptyList();
-		// return predecessorsToReturn;
-		// } else {
-		// }
-		// if (numOfSuccessorsToReturn == 0) {
-		// successorsToReturn = Collections.emptyList();
-		// return successorsToReturn;
-		// } else {
-		// }
-		// List<Map<String, String>> listToReturn =
-		// createListToReturn(noOfRecordsToReturn);
+		if ("divaOrganisationParent".equals(tableName)) {
+			return parentsToReturn;
+		}
+
 		if (conditions.containsKey("organisation_id")) {
 			return predecessorsToReturn;
 		}

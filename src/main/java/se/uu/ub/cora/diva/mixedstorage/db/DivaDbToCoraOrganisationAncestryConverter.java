@@ -32,7 +32,7 @@ public class DivaDbToCoraOrganisationAncestryConverter {
 		return organisationIdIsMissing() || predecessorIdIsMissing();
 	}
 
-	private boolean organisationIdIsMissing() {
+	protected boolean organisationIdIsMissing() {
 		return !dbRowHasValueForKey(ORGANISATION_ID);
 	}
 
