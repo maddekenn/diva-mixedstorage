@@ -41,12 +41,12 @@ public class DivaFedoraToCoraPersonConverter implements DivaFedoraToCoraConverte
 	}
 
 	private DataGroup tryToCreateDataGroupFromDocument() {
-		DataGroup person = DataGroup.withNameInData("person");
+		DataGroup person = DataGroup.withNameInData("authorityPerson");
 		createRecordInfoAndAddToPerson(person);
 
 		createDefaultNameAndAddToPerson(person);
 		createAlternativeNamesAndAddToPerson(person);
-
+		createAndAddPublicRecord(person);
 		return person;
 	}
 
@@ -134,5 +134,11 @@ public class DivaFedoraToCoraPersonConverter implements DivaFedoraToCoraConverte
 			String xmlTagName) {
 		return parser.getStringFromDocumentUsingNodeAndXPath(nameForm,
 				"./" + xmlTagName + "/text()");
+	}
+
+	private void createAndAddPublicRecord(DataGroup person) {
+		String publicRecord = getStringFromDocumentUsingXPath("/authorityPerson/publicRecord");
+		String publicValue = "true".equals(publicRecord) ? "yes" : "no";
+		person.addChild(DataAtomic.withNameInDataAndValue("public", publicValue));
 	}
 }

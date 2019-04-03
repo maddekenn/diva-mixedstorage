@@ -37,6 +37,7 @@ import se.uu.ub.cora.diva.mixedstorage.ParseException;
 
 public class DivaFedoraToCoraPersonConverterTest {
 
+	private static final String TOP_DATAGROUP_NAMEINDATA = "authorityPerson";
 	private DivaFedoraToCoraPersonConverter converter;
 
 	@BeforeMethod
@@ -56,7 +57,7 @@ public class DivaFedoraToCoraPersonConverterTest {
 	public void convertFromXML() throws Exception {
 		DataGroup personDataGroup = converter
 				.fromXML(DivaFedoraToCoraPersonConverterTestData.person11685XML);
-		assertEquals(personDataGroup.getNameInData(), "person");
+		assertEquals(personDataGroup.getNameInData(), TOP_DATAGROUP_NAMEINDATA);
 		DataGroup recordInfo = personDataGroup.getFirstGroupWithNameInData("recordInfo");
 		assertRecordInfoPersonInDiva(recordInfo);
 
@@ -77,6 +78,8 @@ public class DivaFedoraToCoraPersonConverterTest {
 		assertCorrectName(allGroupsWithNameInData.get(1), "Testsson", "Test", "1");
 		assertCorrectName(allGroupsWithNameInData.get(2), "Testsson2", "Test2", "2");
 		assertEquals(allGroupsWithNameInData.size(), 3);
+
+		assertEquals(personDataGroup.getFirstAtomicValueWithNameInData("public"), "yes");
 	}
 
 	private void assertCorrectHardCodedUpdatedInRecordInfo(DataGroup recordInfo) {
@@ -101,7 +104,7 @@ public class DivaFedoraToCoraPersonConverterTest {
 	public void convertFromXMLPerson10000() throws Exception {
 		DataGroup personDataGroup = converter
 				.fromXML(DivaFedoraToCoraPersonConverterTestData.person10000XML);
-		assertEquals(personDataGroup.getNameInData(), "person");
+		assertEquals(personDataGroup.getNameInData(), TOP_DATAGROUP_NAMEINDATA);
 		DataGroup recordInfo = personDataGroup.getFirstGroupWithNameInData("recordInfo");
 		assertRecordInfoPersonInDiva(recordInfo);
 
@@ -127,7 +130,7 @@ public class DivaFedoraToCoraPersonConverterTest {
 	public void convertFromXMLPersonNoFirstName() throws Exception {
 		DataGroup personDataGroup = converter
 				.fromXML(DivaFedoraToCoraPersonConverterTestData.personNoFirstNameXML);
-		assertEquals(personDataGroup.getNameInData(), "person");
+		assertEquals(personDataGroup.getNameInData(), TOP_DATAGROUP_NAMEINDATA);
 		DataGroup recordInfo = personDataGroup.getFirstGroupWithNameInData("recordInfo");
 		assertRecordInfoPersonInDiva(recordInfo);
 
@@ -148,7 +151,7 @@ public class DivaFedoraToCoraPersonConverterTest {
 	public void convertFromXMLPersonNoLastName() throws Exception {
 		DataGroup personDataGroup = converter
 				.fromXML(DivaFedoraToCoraPersonConverterTestData.personNoLastNameXML);
-		assertEquals(personDataGroup.getNameInData(), "person");
+		assertEquals(personDataGroup.getNameInData(), TOP_DATAGROUP_NAMEINDATA);
 		DataGroup recordInfo = personDataGroup.getFirstGroupWithNameInData("recordInfo");
 		assertRecordInfoPersonInDiva(recordInfo);
 
@@ -169,7 +172,7 @@ public class DivaFedoraToCoraPersonConverterTest {
 	public void convertFromXMLPersonNoName() throws Exception {
 		DataGroup personDataGroup = converter
 				.fromXML(DivaFedoraToCoraPersonConverterTestData.personNoNameXML);
-		assertEquals(personDataGroup.getNameInData(), "person");
+		assertEquals(personDataGroup.getNameInData(), TOP_DATAGROUP_NAMEINDATA);
 		DataGroup recordInfo = personDataGroup.getFirstGroupWithNameInData("recordInfo");
 		assertRecordInfoPersonInDiva(recordInfo);
 
@@ -186,7 +189,7 @@ public class DivaFedoraToCoraPersonConverterTest {
 	public void convertFromXMLPersonNoFirstNameInAlternativeName() throws Exception {
 		DataGroup personDataGroup = converter
 				.fromXML(DivaFedoraToCoraPersonConverterTestData.personNoFirstNameAlternativeXML);
-		assertEquals(personDataGroup.getNameInData(), "person");
+		assertEquals(personDataGroup.getNameInData(), TOP_DATAGROUP_NAMEINDATA);
 		DataGroup recordInfo = personDataGroup.getFirstGroupWithNameInData("recordInfo");
 		assertRecordInfoPersonInDiva(recordInfo);
 
@@ -210,7 +213,7 @@ public class DivaFedoraToCoraPersonConverterTest {
 	public void convertFromXMLPersonNoLastNameInAlternativeName() throws Exception {
 		DataGroup personDataGroup = converter
 				.fromXML(DivaFedoraToCoraPersonConverterTestData.personNoLastNameAlternativeXML);
-		assertEquals(personDataGroup.getNameInData(), "person");
+		assertEquals(personDataGroup.getNameInData(), TOP_DATAGROUP_NAMEINDATA);
 		DataGroup recordInfo = personDataGroup.getFirstGroupWithNameInData("recordInfo");
 		assertRecordInfoPersonInDiva(recordInfo);
 
@@ -234,7 +237,7 @@ public class DivaFedoraToCoraPersonConverterTest {
 	public void convertFromXMLPersonNoAlternativeName() throws Exception {
 		DataGroup personDataGroup = converter
 				.fromXML(DivaFedoraToCoraPersonConverterTestData.personNoAlternativeNameXML);
-		assertEquals(personDataGroup.getNameInData(), "person");
+		assertEquals(personDataGroup.getNameInData(), TOP_DATAGROUP_NAMEINDATA);
 		DataGroup recordInfo = personDataGroup.getFirstGroupWithNameInData("recordInfo");
 		assertRecordInfoPersonInDiva(recordInfo);
 
@@ -249,4 +252,12 @@ public class DivaFedoraToCoraPersonConverterTest {
 
 	}
 
+	@Test
+	public void convertFromXMLNotPublic() throws Exception {
+		DataGroup personDataGroup = converter
+				.fromXML(DivaFedoraToCoraPersonConverterTestData.person10000XML);
+
+		assertEquals(personDataGroup.getFirstAtomicValueWithNameInData("public"), "no");
+
+	}
 }
