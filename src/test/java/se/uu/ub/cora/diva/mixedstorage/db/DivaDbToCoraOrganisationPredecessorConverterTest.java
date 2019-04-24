@@ -104,6 +104,20 @@ public class DivaDbToCoraOrganisationPredecessorConverterTest {
 	}
 
 	@Test
+	public void testMinimalValuesWithNullValueForDescriptionReturnsDataGroupWithCorrectStructure() {
+		rowFromDb.put("description", null);
+		DataGroup predecessor = converter.fromMap(rowFromDb);
+		assertEquals(predecessor.getNameInData(), "formerName");
+		DataGroup linkedOrganisation = predecessor.getFirstGroupWithNameInData("organisationLink");
+
+		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordType"),
+				"divaOrganisation");
+		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordId"),
+				"somePredecessorId");
+		assertFalse(predecessor.containsChildWithNameInData("organisationComment"));
+	}
+
+	@Test
 	public void testCompleteValuesReturnsDataGroupWithCorrectStructure() {
 		rowFromDb.put("description", "some description text");
 		DataGroup predecessor = converter.fromMap(rowFromDb);

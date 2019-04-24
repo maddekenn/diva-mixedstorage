@@ -37,7 +37,7 @@ public class DivaDbToCoraOrganisationAncestryConverter {
 	}
 
 	protected boolean dbRowHasValueForKey(String key) {
-		return dbRow.containsKey(key) && !"".equals(dbRow.get(key));
+		return dbRow.containsKey(key) && !"".equals(dbRow.get(key)) && dbRow.get(key) != null;
 	}
 
 	private boolean predecessorIdIsMissing() {
