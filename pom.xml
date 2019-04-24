@@ -22,19 +22,21 @@
 	<parent>
 		<groupId>se.uu.ub.cora</groupId>
 		<artifactId>cora-parent</artifactId>
-		<version>0.8.6</version>
+		<version>0.9.0</version>
 	</parent>
 
 	<artifactId>divamixedstorage</artifactId>
-	<version>0.8-SNAPSHOT</version>
+	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Diva Mixed Storage</name>
 
 	<properties>
-		<spider.version>0.17.0</spider.version>
-		<sqldatabase.version>0.4.0</sqldatabase.version>
-		<httphandler.version>0.5.1</httphandler.version>
+		<logger.version>1.0.0</logger.version>
+<!-- 		<gatekeeper.version>1.1-SNAPSHOT</gatekeeper.version> -->
+		<spider.version>1.0.0</spider.version>
+		<sqldatabase.version>1.0.0</sqldatabase.version>
+		<httphandler.version>1.0.0</httphandler.version>
 	</properties>
 
 	<scm>
@@ -45,6 +47,18 @@
   </scm>
 
 	<dependencies>
+		<dependency>
+			<groupId>se.uu.ub.cora</groupId>
+			<artifactId>logger</artifactId>
+			<version>${logger.version}</version>
+			<scope>provided</scope>
+		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>se.uu.ub.cora</groupId> -->
+<!-- 			<artifactId>gatekeeper</artifactId> -->
+<!-- 			<version>${gatekeeper.version}</version> -->
+<!-- 			<scope>compile</scope> -->
+<!-- 		</dependency> -->
 		<dependency>
 			<groupId>se.uu.ub.cora</groupId>
 			<artifactId>spider</artifactId>
