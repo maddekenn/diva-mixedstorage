@@ -642,7 +642,7 @@ public class DivaFedoraToCoraPersonConverterTestData {
 			+ "      <string>&lt;p&gt;A biography is an account of a person's life. If the production is made by the author himself, it is called autobiography or memoirs. The word biography comes from the Greek biography, of bios, \"life\", and graphō, \"write\". An author of biographies is called cinema. :)&lt;/p&gt;</string>\n"
 			+ "    </entry>\n" + "    <entry>\n" + "      <string>swe</string>\n"
 			+ "      <string>&lt;p&gt;En &lt;strong&gt;biografi&lt;/strong&gt; är en redogörelse för en persons liv. Om framställningen är gjord av författaren själv kallas den självbiografi eller memoarer. Ordet &lt;strong&gt;biografi&lt;/strong&gt; kommer av grekiskans biographia, av bios, \"liv\", och graphō, \"skriva\". En författare av biografier kallas biograf.&lt;/p&gt;</string>\n"
-			+ "    </entry>\n" + "  </biographies>\n" + "  <publicRecord>true</publicRecord>\n"
+			+ "    </entry>\n" + "  </biographies>\n" + "  <publicRecord>false</publicRecord>\n"
 			+ "</authorityPerson>";
 
 	public static String personNoFirstNameXML = "<authorityPerson>\n" + "  <type>PERSON</type>\n"
