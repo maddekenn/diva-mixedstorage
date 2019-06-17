@@ -19,6 +19,7 @@
 package se.uu.ub.cora.diva.mixedstorage.db;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
@@ -28,6 +29,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.diva.mixedstorage.DataReaderSpy;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.spider.data.SpiderReadResult;
 import se.uu.ub.cora.spider.record.storage.RecordStorage;
@@ -38,15 +40,18 @@ public class DivaDbToCoraRecordStorageTest {
 	private DivaDbToCoraConverterFactorySpy converterFactory;
 	private RecordReaderFactorySpy recordReaderFactory;
 	private DivaDbToCoraFactorySpy divaDbToCoraFactory;
+	private DataReaderSpy dataReader;
 
 	@BeforeMethod
 	public void BeforeMethod() {
 		converterFactory = new DivaDbToCoraConverterFactorySpy();
 		recordReaderFactory = new RecordReaderFactorySpy();
 		divaDbToCoraFactory = new DivaDbToCoraFactorySpy();
+		dataReader = new DataReaderSpy();
+
 		divaToCoraRecordStorage = DivaDbToCoraRecordStorage
-				.usingRecordReaderFactoryConverterFactoryAndDbToCoraFactory(recordReaderFactory,
-						converterFactory, divaDbToCoraFactory);
+				.usingRecordReaderFactoryConverterFactoryAndDbToCoraFactoryAndDataReader(
+						recordReaderFactory, converterFactory, divaDbToCoraFactory, dataReader);
 	}
 
 	@Test
@@ -218,5 +223,37 @@ public class DivaDbToCoraRecordStorageTest {
 			throws Exception {
 		divaToCoraRecordStorage.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(null,
 				null);
+	}
+
+	@Test
+	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdForDivaOrganisation() {
+		boolean userExists = divaToCoraRecordStorage
+				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("divaOrganisation",
+						"26");
+		assertTrue(dataReader.readOneRowWasCalled);
+		assertEquals(dataReader.sqlSentToReader,
+				"select * from organisation where organisation_id = ?");
+		assertEquals(dataReader.valuesSentToReader.get(0), 26);
+		assertTrue(userExists);
+	}
+
+	@Test
+	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdForDivaOrganisationWhenUserDoesNotExist() {
+		boolean userExists = divaToCoraRecordStorage
+				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("divaOrganisation",
+						"600");
+		assertTrue(dataReader.readOneRowWasCalled);
+		assertEquals(dataReader.sqlSentToReader,
+				"select * from organisation where organisation_id = ?");
+		assertEquals(dataReader.valuesSentToReader.get(0), 600);
+		assertFalse(userExists);
+		assertFalse(userExists);
+	}
+
+	@Test
+	public void testecordExistsDivaOrganisationCallsDataReaderWithStringIdReturnsFalse()
+			throws Exception {
+		divaToCoraRecordStorage.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(
+				"divaOrganisation", "notAnInt");
 	}
 }

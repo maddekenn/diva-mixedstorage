@@ -34,7 +34,7 @@
 	<properties>
 		<logger.version>1.0.0</logger.version>
 		<spider.version>1.0.0</spider.version>
-		<sqldatabase.version>1.0.0</sqldatabase.version>
+		<sqldatabase.version>1.1.0</sqldatabase.version>
 		<httphandler.version>1.0.0</httphandler.version>
 	</properties>
 

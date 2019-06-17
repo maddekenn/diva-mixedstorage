@@ -343,5 +343,36 @@ public class DivaMixedRecordStorageTest {
 		expectedData.calledMethod = "recordExistsForAbstractOrImplementingRecordTypeAndRecordId";
 		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);
 		assertNoInteractionWithStorage(divaFedoraToCoraStorage);
+		assertNoInteractionWithStorage(divaDbToCoraStorage);
+	}
+
+	@Test
+	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdForOrgansiationGoesToDbStorage()
+			throws Exception {
+		DivaDbToCoraStorageSpy alvinDbToCoraStorageSpy = new DivaDbToCoraStorageSpy();
+		divaMixedRecordStorage = DivaMixedRecordStorage.usingBasicAndFedoraAndDbStorage(
+				basicStorage, divaFedoraToCoraStorage, alvinDbToCoraStorageSpy);
+
+		RecordStorageSpyData expectedData = new RecordStorageSpyData();
+		expectedData.type = "divaOrganisation";
+		expectedData.id = "someId";
+		expectedData.calledMethod = "recordExistsForAbstractOrImplementingRecordTypeAndRecordId";
+		boolean recordExists = divaMixedRecordStorage
+				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(expectedData.type,
+						expectedData.id);
+
+		assertTrue(recordExists);
+		assertNoInteractionWithStorage(basicStorage);
+		assertNoInteractionWithStorage(divaFedoraToCoraStorage);
+
+		RecordStorageSpyData spyData = alvinDbToCoraStorageSpy.data;
+		assertCorrectSpyData(expectedData, spyData);
+	}
+
+	private void assertCorrectSpyData(RecordStorageSpyData expectedData,
+			RecordStorageSpyData spyData) {
+		assertEquals(spyData.type, expectedData.type);
+		assertEquals(spyData.id, expectedData.id);
+		assertEquals(spyData.calledMethod, expectedData.calledMethod);
 	}
 }
