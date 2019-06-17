@@ -35,6 +35,7 @@ import se.uu.ub.cora.sqldatabase.SqlStorageException;
 
 public class DivaDbToCoraRecordStorage implements RecordStorage {
 
+	private static final String DIVA_ORGANISATION = "divaOrganisation";
 	private RecordReaderFactory recordReaderFactory;
 	private DivaDbToCoraConverterFactory converterFactory;
 	private DivaDbToCoraFactory divaDbToCoraFactory;
@@ -58,7 +59,7 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 
 	@Override
 	public DataGroup read(String type, String id) {
-		if ("divaOrganisation".equals(type)) {
+		if (DIVA_ORGANISATION.equals(type)) {
 			DivaDbToCora divaDbToCora = divaDbToCoraFactory.factor(type);
 			return divaDbToCora.convertOneRowData(type, id);
 		}
@@ -90,7 +91,7 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 
 	@Override
 	public SpiderReadResult readList(String type, DataGroup filter) {
-		if ("divaOrganisation".equals(type)) {
+		if (DIVA_ORGANISATION.equals(type)) {
 			List<Map<String, String>> rowsFromDb = readAllFromDb(type);
 			return createSpiderReadResultFromDbData(type, rowsFromDb);
 		}
@@ -148,7 +149,7 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	@Override
 	public boolean recordExistsForAbstractOrImplementingRecordTypeAndRecordId(String type,
 			String id) {
-		if ("divaOrganisation".equals(type)) {
+		if (DIVA_ORGANISATION.equals(type)) {
 			return organisationExistsInDb(id);
 		}
 		throw NotImplementedException.withMessage(
