@@ -26,29 +26,34 @@ import java.util.Map;
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.spider.data.SpiderReadResult;
+import se.uu.ub.cora.spider.record.storage.RecordNotFoundException;
 import se.uu.ub.cora.spider.record.storage.RecordStorage;
+import se.uu.ub.cora.sqldatabase.DataReader;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
+import se.uu.ub.cora.sqldatabase.SqlStorageException;
 
 public class DivaDbToCoraRecordStorage implements RecordStorage {
 
 	private RecordReaderFactory recordReaderFactory;
 	private DivaDbToCoraConverterFactory converterFactory;
 	private DivaDbToCoraFactory divaDbToCoraFactory;
+	private DataReader dataReader;
 
 	private DivaDbToCoraRecordStorage(RecordReaderFactory recordReaderFactory,
-			DivaDbToCoraConverterFactory converterFactory,
-			DivaDbToCoraFactory divaDbToCoraFactory) {
+			DivaDbToCoraConverterFactory converterFactory, DivaDbToCoraFactory divaDbToCoraFactory,
+			DataReader dataReader) {
 		this.recordReaderFactory = recordReaderFactory;
 		this.converterFactory = converterFactory;
 		this.divaDbToCoraFactory = divaDbToCoraFactory;
+		this.dataReader = dataReader;
 	}
 
-	public static DivaDbToCoraRecordStorage usingRecordReaderFactoryConverterFactoryAndDbToCoraFactory(
+	public static DivaDbToCoraRecordStorage usingRecordReaderFactoryConverterFactoryAndDbToCoraFactoryAndDataReader(
 			RecordReaderFactory recordReaderFactory, DivaDbToCoraConverterFactory converterFactory,
-			DivaDbToCoraFactory divaDbToCoraFactory) {
+			DivaDbToCoraFactory divaDbToCoraFactory, DataReader dataReader) {
 		return new DivaDbToCoraRecordStorage(recordReaderFactory, converterFactory,
-				divaDbToCoraFactory);
+				divaDbToCoraFactory, dataReader);
 	}
 
 	@Override
@@ -143,8 +148,46 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	@Override
 	public boolean recordExistsForAbstractOrImplementingRecordTypeAndRecordId(String type,
 			String id) {
+		if ("divaOrganisation".equals(type)) {
+			return organisationExistsInDb(id);
+		}
 		throw NotImplementedException.withMessage(
 				"recordExistsForAbstractOrImplementingRecordTypeAndRecordId is not implemented");
+	}
+
+	private boolean organisationExistsInDb(String id) {
+		try {
+			tryToReadOrganisationFromDb(id);
+			return true;
+		} catch (RecordNotFoundException e) {
+			return false;
+		}
+	}
+
+	private Map<String, Object> tryToReadOrganisationFromDb(String id) {
+		try {
+			List<Object> values = createListOfValuesWithId(id);
+			return dataReader.readOneRowOrFailUsingSqlAndValues(
+					"select * from organisation where organisation_id = ?", values);
+		} catch (SqlStorageException e) {
+			throw new RecordNotFoundException("Organisation not found: " + id);
+		}
+	}
+
+	private List<Object> createListOfValuesWithId(String id) {
+		throwErrorIfIdNotAnIntegerValue(id);
+		Integer idAsInteger = Integer.valueOf(id);
+		List<Object> values = new ArrayList<>();
+		values.add(idAsInteger);
+		return values;
+	}
+
+	private void throwErrorIfIdNotAnIntegerValue(String id) {
+		try {
+			Integer.valueOf(id);
+		} catch (NumberFormatException ne) {
+			throw new RecordNotFoundException("User not found: " + id);
+		}
 	}
 
 }
