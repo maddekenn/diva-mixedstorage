@@ -25,13 +25,13 @@ import java.util.Map;
 
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.spider.data.SpiderReadResult;
 import se.uu.ub.cora.spider.record.storage.RecordNotFoundException;
-import se.uu.ub.cora.spider.record.storage.RecordStorage;
 import se.uu.ub.cora.sqldatabase.DataReader;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
+import se.uu.ub.cora.storage.RecordStorage;
+import se.uu.ub.cora.storage.SpiderReadResult;
 
 public class DivaDbToCoraRecordStorage implements RecordStorage {
 
@@ -189,6 +189,26 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 		} catch (NumberFormatException ne) {
 			throw new RecordNotFoundException("User not found: " + id);
 		}
+	}
+
+	public DataReader getDataReader() {
+		// needed for test
+		return dataReader;
+	}
+
+	public DivaDbToCoraConverterFactory getConverterFactory() {
+		// needed for test
+		return converterFactory;
+	}
+
+	public RecordReaderFactory getRecordReaderFactory() {
+		// needed for test
+		return recordReaderFactory;
+	}
+
+	public DivaDbToCoraFactory getDivaDbToCoraFactory() {
+		// needed for test
+		return divaDbToCoraFactory;
 	}
 
 }
