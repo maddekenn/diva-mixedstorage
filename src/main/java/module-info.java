@@ -10,5 +10,8 @@ module se.uu.ub.cora.diva.mixedstorage {
 	exports se.uu.ub.cora.diva.mixedstorage.db;
 	exports se.uu.ub.cora.diva.mixedstorage.fedora;
 
+	provides se.uu.ub.cora.storage.RecordStorageProvider
+			with se.uu.ub.cora.diva.mixedstorage.DivaMixedRecordStorageProvider;
+
 	opens person;
 }

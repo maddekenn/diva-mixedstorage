@@ -6,10 +6,15 @@ import java.util.List;
 
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 import se.uu.ub.cora.storage.RecordStorage;
+import se.uu.ub.cora.storage.SearchStorage;
 import se.uu.ub.cora.storage.SpiderReadResult;
 
-public class RecordStorageSpy implements RecordStorage {
+public class RecordStorageSpy implements RecordStorage, SearchStorage {
 	RecordStorageSpyData data = new RecordStorageSpyData();
+	public String searchTermId;
+	public DataGroup returnedSearchTerm = DataGroup.withNameInData("searchTerm");
+	public String indexTermId;
+	public DataGroup returnedIndexTerm = DataGroup.withNameInData("indexTerm");
 
 	@Override
 	public DataGroup read(String type, String id) {
@@ -130,6 +135,18 @@ public class RecordStorageSpy implements RecordStorage {
 		data.calledMethod = "recordExistsForAbstractOrImplementingRecordTypeAndRecordId";
 		data.answer = false;
 		return false;
+	}
+
+	@Override
+	public DataGroup getSearchTerm(String searchTermId) {
+		this.searchTermId = searchTermId;
+		return returnedSearchTerm;
+	}
+
+	@Override
+	public DataGroup getCollectIndexTerm(String collectIndexTermId) {
+		indexTermId = collectIndexTermId;
+		return returnedIndexTerm;
 	}
 
 }

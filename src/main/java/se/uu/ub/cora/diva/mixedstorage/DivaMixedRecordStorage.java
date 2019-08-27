@@ -22,9 +22,10 @@ import java.util.Collection;
 
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 import se.uu.ub.cora.storage.RecordStorage;
+import se.uu.ub.cora.storage.SearchStorage;
 import se.uu.ub.cora.storage.SpiderReadResult;
 
-public final class DivaMixedRecordStorage implements RecordStorage {
+public final class DivaMixedRecordStorage implements RecordStorage, SearchStorage {
 
 	private static final String PERSON = "person";
 	private static final String ORGANISATION = "divaOrganisation";
@@ -135,5 +136,15 @@ public final class DivaMixedRecordStorage implements RecordStorage {
 	RecordStorage getDbStorage() {
 		// needed for test
 		return divaDbToCoraStorage;
+	}
+
+	@Override
+	public DataGroup getSearchTerm(String searchTermId) {
+		return ((SearchStorage) basicStorage).getSearchTerm(searchTermId);
+	}
+
+	@Override
+	public DataGroup getCollectIndexTerm(String collectIndexTermId) {
+		return ((SearchStorage) basicStorage).getCollectIndexTerm(collectIndexTermId);
 	}
 }
