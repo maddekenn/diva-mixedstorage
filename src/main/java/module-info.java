@@ -12,6 +12,8 @@ module se.uu.ub.cora.diva.mixedstorage {
 
 	provides se.uu.ub.cora.storage.RecordStorageProvider
 			with se.uu.ub.cora.diva.mixedstorage.DivaMixedRecordStorageProvider;
+	provides se.uu.ub.cora.storage.MetadataStorageProvider
+			with se.uu.ub.cora.diva.mixedstorage.DivaMixedRecordStorageProvider;
 
 	opens person;
 }
