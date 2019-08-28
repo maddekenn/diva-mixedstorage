@@ -33,8 +33,10 @@
 
 	<properties>
 		<logger.version>1.0.0</logger.version>
-		<spider.version>1.0.0</spider.version>
-		<sqldatabase.version>1.1.0</sqldatabase.version>
+		<storage.version>1.1-SNAPSHOT</storage.version>
+		<spider.version>1.2.0</spider.version>
+		<basicstorage.version>1.5.0</basicstorage.version>
+		<sqldatabase.version>1.1.1</sqldatabase.version>
 		<httphandler.version>1.0.0</httphandler.version>
 	</properties>
 
@@ -54,8 +56,19 @@
 		</dependency>
 		<dependency>
 			<groupId>se.uu.ub.cora</groupId>
+			<artifactId>storage</artifactId>
+			<version>${storage.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>se.uu.ub.cora</groupId>
 			<artifactId>spider</artifactId>
 			<version>${spider.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>se.uu.ub.cora</groupId>
+			<artifactId>basicstorage</artifactId>
+			<version>${basicstorage.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>se.uu.ub.cora</groupId>

@@ -21,13 +21,14 @@ package se.uu.ub.cora.diva.mixedstorage;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
-import se.uu.ub.cora.spider.record.storage.RecordStorage;
+import se.uu.ub.cora.storage.RecordStorage;
 
 public class DivaMixedRecordStorageTest {
 	private RecordStorageSpy basicStorage;
@@ -375,4 +376,21 @@ public class DivaMixedRecordStorageTest {
 		assertEquals(spyData.id, expectedData.id);
 		assertEquals(spyData.calledMethod, expectedData.calledMethod);
 	}
+
+	@Test
+	public void testGetSearchTermGoesToBasicStorage() throws Exception {
+		DataGroup searchTerm = ((DivaMixedRecordStorage) divaMixedRecordStorage)
+				.getSearchTerm("someSearchTermId");
+		assertEquals(basicStorage.searchTermId, "someSearchTermId");
+		assertSame(searchTerm, basicStorage.returnedSearchTerm);
+	}
+
+	@Test
+	public void testGetCollectIndexTermGoesToBasicStorage() throws Exception {
+		DataGroup searchTerm = ((DivaMixedRecordStorage) divaMixedRecordStorage)
+				.getCollectIndexTerm("someIndexTermId");
+		assertEquals(basicStorage.indexTermId, "someIndexTermId");
+		assertSame(searchTerm, basicStorage.returnedIndexTerm);
+	}
+
 }

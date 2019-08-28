@@ -31,8 +31,8 @@ import org.testng.annotations.Test;
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.DataReaderSpy;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.spider.data.SpiderReadResult;
-import se.uu.ub.cora.spider.record.storage.RecordStorage;
+import se.uu.ub.cora.storage.RecordStorage;
+import se.uu.ub.cora.storage.SpiderReadResult;
 
 public class DivaDbToCoraRecordStorageTest {
 	private static final String TABLE_NAME = "divaOrganisation";

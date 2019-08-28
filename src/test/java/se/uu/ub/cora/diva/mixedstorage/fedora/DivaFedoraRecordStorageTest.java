@@ -35,7 +35,7 @@ import se.uu.ub.cora.bookkeeper.data.DataAtomic;
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.FedoraException;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.spider.record.storage.RecordStorage;
+import se.uu.ub.cora.storage.RecordStorage;
 
 public class DivaFedoraRecordStorageTest {
 	private DivaFedoraRecordStorage divaToCoraRecordStorage;
