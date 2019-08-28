@@ -33,9 +33,9 @@ public class DivaFedoraToCoraRecordInfoConverter {
 	}
 
 	public static DataGroup createRecordInfo(XMLXPathParser parser) {
-		DivaFedoraToCoraRecordInfoConverter alvinToCoraRecordInfoConverter = new DivaFedoraToCoraRecordInfoConverter(
+		DivaFedoraToCoraRecordInfoConverter divaToCoraRecordInfoConverter = new DivaFedoraToCoraRecordInfoConverter(
 				parser);
-		return alvinToCoraRecordInfoConverter.createRecordInfoAsDataGroup();
+		return divaToCoraRecordInfoConverter.createRecordInfoAsDataGroup();
 	}
 
 	private DataGroup createRecordInfoAsDataGroup() {

@@ -113,7 +113,7 @@ public class DivaMixedRecordStorageProviderTest {
 	}
 
 	@Test
-	public void testNormalStartupReturnsAlvinMixedRecordStorage() {
+	public void testNormalStartupReturnsDivaMixedRecordStorage() {
 		recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
 		RecordStorage recordStorage = recordStorageOnDiskProvider.getRecordStorage();
 		assertTrue(recordStorage instanceof DivaMixedRecordStorage);
@@ -155,7 +155,7 @@ public class DivaMixedRecordStorageProviderTest {
 		assertTrue(fedoraToCoraStorage.getHttpHandlerFactory() instanceof HttpHandlerFactoryImp);
 
 		DivaFedoraConverterFactory divaFedoraConverterFactory = fedoraToCoraStorage
-				.getAlvinFedoraConverterFactory();
+				.getDivaFedoraConverterFactory();
 		assertTrue(divaFedoraConverterFactory instanceof DivaFedoraConverterFactoryImp);
 		String fedoraURLInConverter = ((DivaFedoraConverterFactoryImp) divaFedoraConverterFactory)
 				.getFedoraURL();

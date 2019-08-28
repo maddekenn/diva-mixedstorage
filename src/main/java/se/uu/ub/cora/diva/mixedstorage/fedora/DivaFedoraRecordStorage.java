@@ -252,7 +252,7 @@ public final class DivaFedoraRecordStorage implements RecordStorage {
 		return httpHandlerFactory;
 	}
 
-	public DivaFedoraConverterFactory getAlvinFedoraConverterFactory() {
+	public DivaFedoraConverterFactory getDivaFedoraConverterFactory() {
 		// needed for test
 		return converterFactory;
 	}

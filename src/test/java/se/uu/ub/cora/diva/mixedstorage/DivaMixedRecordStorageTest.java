@@ -350,9 +350,9 @@ public class DivaMixedRecordStorageTest {
 	@Test
 	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdForOrgansiationGoesToDbStorage()
 			throws Exception {
-		DivaDbToCoraStorageSpy alvinDbToCoraStorageSpy = new DivaDbToCoraStorageSpy();
+		DivaDbToCoraStorageSpy divaDbToCoraStorageSpy = new DivaDbToCoraStorageSpy();
 		divaMixedRecordStorage = DivaMixedRecordStorage.usingBasicAndFedoraAndDbStorage(
-				basicStorage, divaFedoraToCoraStorage, alvinDbToCoraStorageSpy);
+				basicStorage, divaFedoraToCoraStorage, divaDbToCoraStorageSpy);
 
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "divaOrganisation";
@@ -366,7 +366,7 @@ public class DivaMixedRecordStorageTest {
 		assertNoInteractionWithStorage(basicStorage);
 		assertNoInteractionWithStorage(divaFedoraToCoraStorage);
 
-		RecordStorageSpyData spyData = alvinDbToCoraStorageSpy.data;
+		RecordStorageSpyData spyData = divaDbToCoraStorageSpy.data;
 		assertCorrectSpyData(expectedData, spyData);
 	}
 

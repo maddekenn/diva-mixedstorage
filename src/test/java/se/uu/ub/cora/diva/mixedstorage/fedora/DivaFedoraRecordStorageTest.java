@@ -41,7 +41,7 @@ public class DivaFedoraRecordStorageTest {
 	private DivaFedoraRecordStorage divaToCoraRecordStorage;
 	private HttpHandlerFactorySpy httpHandlerFactory;
 	private DivaFedoraConverterFactorySpy converterFactory;
-	private String baseURL = "http://alvin-cora-fedora:8088/fedora/";
+	private String baseURL = "http://diva-cora-fedora:8088/fedora/";
 	private String fedoraUsername = "fedoraUser";
 	private String fedoraPassword = "fedoraPassword";
 
@@ -61,7 +61,7 @@ public class DivaFedoraRecordStorageTest {
 	}
 
 	@Test
-	public void alvinToCoraRecordStorageImplementsRecordStorage() throws Exception {
+	public void divaToCoraRecordStorageImplementsRecordStorage() throws Exception {
 		assertTrue(divaToCoraRecordStorage instanceof RecordStorage);
 	}
 
