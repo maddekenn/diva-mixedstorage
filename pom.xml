@@ -33,9 +33,9 @@
 
 	<properties>
 		<logger.version>1.0.0</logger.version>
-		<storage.version>1.1-SNAPSHOT</storage.version>
-		<spider.version>1.2.0</spider.version>
-		<basicstorage.version>1.5.0</basicstorage.version>
+		<storage.version>1.1.0</storage.version>
+		<spider.version>1.4.0</spider.version>
+		<basicstorage.version>1.6.0</basicstorage.version>
 		<sqldatabase.version>1.1.1</sqldatabase.version>
 		<httphandler.version>1.0.0</httphandler.version>
 	</properties>
