@@ -23,15 +23,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.spider.record.storage.RecordNotFoundException;
 import se.uu.ub.cora.sqldatabase.DataReader;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
+import se.uu.ub.cora.storage.RecordNotFoundException;
+import se.uu.ub.cora.storage.StorageReadResult;
 import se.uu.ub.cora.storage.RecordStorage;
-import se.uu.ub.cora.storage.SpiderReadResult;
 
 public class DivaDbToCoraRecordStorage implements RecordStorage {
 
@@ -90,10 +90,10 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	}
 
 	@Override
-	public SpiderReadResult readList(String type, DataGroup filter) {
+	public StorageReadResult readList(String type, DataGroup filter) {
 		if (DIVA_ORGANISATION.equals(type)) {
 			List<Map<String, String>> rowsFromDb = readAllFromDb(type);
-			return createSpiderReadResultFromDbData(type, rowsFromDb);
+			return createStorageReadResultFromDbData(type, rowsFromDb);
 		}
 		throw NotImplementedException.withMessage("readList is not implemented for type: " + type);
 	}
@@ -103,11 +103,11 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 		return recordReader.readAllFromTable(type);
 	}
 
-	private SpiderReadResult createSpiderReadResultFromDbData(String type,
+	private StorageReadResult createStorageReadResultFromDbData(String type,
 			List<Map<String, String>> rowsFromDb) {
-		SpiderReadResult spiderReadResult = new SpiderReadResult();
-		spiderReadResult.listOfDataGroups = convertListOfMapsFromDbToDataGroups(type, rowsFromDb);
-		return spiderReadResult;
+		StorageReadResult storageReadResult = new StorageReadResult();
+		storageReadResult.listOfDataGroups = convertListOfMapsFromDbToDataGroups(type, rowsFromDb);
+		return storageReadResult;
 	}
 
 	private List<DataGroup> convertListOfMapsFromDbToDataGroups(String type,
@@ -126,7 +126,7 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	}
 
 	@Override
-	public SpiderReadResult readAbstractList(String type, DataGroup filter) {
+	public StorageReadResult readAbstractList(String type, DataGroup filter) {
 		throw NotImplementedException.withMessage("readAbstractList is not implemented");
 	}
 

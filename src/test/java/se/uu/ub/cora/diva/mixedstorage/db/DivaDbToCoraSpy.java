@@ -1,6 +1,6 @@
 package se.uu.ub.cora.diva.mixedstorage.db;
 
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.data.DataGroup;
 
 public class DivaDbToCoraSpy implements DivaDbToCora {
 

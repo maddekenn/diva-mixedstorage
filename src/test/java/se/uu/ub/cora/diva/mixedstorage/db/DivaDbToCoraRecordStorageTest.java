@@ -28,11 +28,11 @@ import java.util.List;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.DataReaderSpy;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
+import se.uu.ub.cora.storage.StorageReadResult;
 import se.uu.ub.cora.storage.RecordStorage;
-import se.uu.ub.cora.storage.SpiderReadResult;
 
 public class DivaDbToCoraRecordStorageTest {
 	private static final String TABLE_NAME = "divaOrganisation";
@@ -154,7 +154,7 @@ public class DivaDbToCoraRecordStorageTest {
 
 	@Test
 	public void testReadOrganisationListConverteredIsAddedToList() throws Exception {
-		SpiderReadResult spiderReadresult = divaToCoraRecordStorage.readList(TABLE_NAME,
+		StorageReadResult spiderReadresult = divaToCoraRecordStorage.readList(TABLE_NAME,
 				DataGroup.withNameInData("filter"));
 		List<DataGroup> readCountryList = spiderReadresult.listOfDataGroups;
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
@@ -168,9 +168,9 @@ public class DivaDbToCoraRecordStorageTest {
 	@Test
 	public void testReadOrganisationListConverteredMoreThanOneIsAddedToList() throws Exception {
 		recordReaderFactory.noOfRecordsToReturn = 3;
-		SpiderReadResult spiderReadResult = divaToCoraRecordStorage.readList(TABLE_NAME,
+		StorageReadResult storageReadResult = divaToCoraRecordStorage.readList(TABLE_NAME,
 				DataGroup.withNameInData("filter"));
-		List<DataGroup> readOrganisationList = spiderReadResult.listOfDataGroups;
+		List<DataGroup> readOrganisationList = storageReadResult.listOfDataGroups;
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
 
 		assertEquals(recordReader.returnedList.size(), 3);

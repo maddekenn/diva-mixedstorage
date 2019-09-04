@@ -20,10 +20,10 @@ package se.uu.ub.cora.diva.mixedstorage;
 
 import java.util.Collection;
 
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.searchstorage.SearchStorage;
 import se.uu.ub.cora.storage.RecordStorage;
-import se.uu.ub.cora.storage.SearchStorage;
-import se.uu.ub.cora.storage.SpiderReadResult;
+import se.uu.ub.cora.storage.StorageReadResult;
 
 public final class DivaMixedRecordStorage implements RecordStorage, SearchStorage {
 
@@ -83,7 +83,7 @@ public final class DivaMixedRecordStorage implements RecordStorage, SearchStorag
 	}
 
 	@Override
-	public SpiderReadResult readList(String type, DataGroup filter) {
+	public StorageReadResult readList(String type, DataGroup filter) {
 		if (PERSON.equals(type)) {
 			return divaFedoraToCoraStorage.readList(type, filter);
 		}
@@ -94,7 +94,7 @@ public final class DivaMixedRecordStorage implements RecordStorage, SearchStorag
 	}
 
 	@Override
-	public SpiderReadResult readAbstractList(String type, DataGroup filter) {
+	public StorageReadResult readAbstractList(String type, DataGroup filter) {
 		return basicStorage.readAbstractList(type, filter);
 	}
 

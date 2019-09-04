@@ -21,8 +21,8 @@ package se.uu.ub.cora.diva.mixedstorage.fedora;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import se.uu.ub.cora.bookkeeper.data.DataAtomic;
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.ParseException;
 
 public class DivaFedoraToCoraPersonConverter implements DivaFedoraToCoraConverter {

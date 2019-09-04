@@ -27,13 +27,13 @@ import java.util.List;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.FedoraException;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.httphandler.HttpHandler;
 import se.uu.ub.cora.httphandler.HttpHandlerFactory;
 import se.uu.ub.cora.storage.RecordStorage;
-import se.uu.ub.cora.storage.SpiderReadResult;
+import se.uu.ub.cora.storage.StorageReadResult;
 
 public final class DivaFedoraRecordStorage implements RecordStorage {
 
@@ -162,26 +162,26 @@ public final class DivaFedoraRecordStorage implements RecordStorage {
 	}
 
 	@Override
-	public SpiderReadResult readList(String type, DataGroup filter) {
+	public StorageReadResult readList(String type, DataGroup filter) {
 		if (PERSON.equals(type)) {
 			return readAndConvertPersonListFromFedora();
 		}
 		throw NotImplementedException.withMessage("readList is not implemented for type: " + type);
 	}
 
-	private SpiderReadResult readAndConvertPersonListFromFedora() {
+	private StorageReadResult readAndConvertPersonListFromFedora() {
 		try {
-			return tryGetSpiderReadResultFromFedoraPersonListConversion();
+			return tryGetStorageReadResultFromFedoraPersonListConversion();
 		} catch (Exception e) {
 			throw FedoraException.withMessageAndException(
 					"Unable to read list of persons: " + e.getMessage(), e);
 		}
 	}
 
-	private SpiderReadResult tryGetSpiderReadResultFromFedoraPersonListConversion() {
-		SpiderReadResult spiderReadResult = new SpiderReadResult();
-		spiderReadResult.listOfDataGroups = (List<DataGroup>) tryReadAndConvertPersonListFromFedora();
-		return spiderReadResult;
+	private StorageReadResult tryGetStorageReadResultFromFedoraPersonListConversion() {
+		StorageReadResult storageReadResult = new StorageReadResult();
+		storageReadResult.listOfDataGroups = (List<DataGroup>) tryReadAndConvertPersonListFromFedora();
+		return storageReadResult;
 	}
 
 	private Collection<DataGroup> tryReadAndConvertPersonListFromFedora() {
@@ -220,7 +220,7 @@ public final class DivaFedoraRecordStorage implements RecordStorage {
 	}
 
 	@Override
-	public SpiderReadResult readAbstractList(String type, DataGroup filter) {
+	public StorageReadResult readAbstractList(String type, DataGroup filter) {
 		throw NotImplementedException.withMessage("readAbstractList is not implemented");
 	}
 

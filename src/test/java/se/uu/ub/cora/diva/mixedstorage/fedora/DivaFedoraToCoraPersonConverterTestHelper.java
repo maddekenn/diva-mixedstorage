@@ -4,8 +4,8 @@ import static org.testng.Assert.assertEquals;
 
 import java.util.Collection;
 
-import se.uu.ub.cora.bookkeeper.data.DataAttribute;
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.data.DataAttribute;
+import se.uu.ub.cora.data.DataGroup;
 
 public class DivaFedoraToCoraPersonConverterTestHelper {
 	public static void assertCorrectIdUsingRecordInfoAndId(DataGroup recordInfo, String id) {
