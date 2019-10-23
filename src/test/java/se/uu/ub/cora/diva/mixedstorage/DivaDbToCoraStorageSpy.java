@@ -3,16 +3,22 @@ package se.uu.ub.cora.diva.mixedstorage;
 import java.util.Collection;
 
 import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.storage.StorageReadResult;
 import se.uu.ub.cora.storage.RecordStorage;
+import se.uu.ub.cora.storage.StorageReadResult;
 
 public class DivaDbToCoraStorageSpy implements RecordStorage {
 	public RecordStorageSpyData data = new RecordStorageSpyData();
 
 	@Override
-	public void create(String arg0, String arg1, DataGroup arg2, DataGroup arg3, DataGroup arg4,
-			String arg5) {
-		// TODO Auto-generated method stub
+	public void create(String type, String id, DataGroup record, DataGroup collectedTerms,
+			DataGroup linkList, String dataDivider) {
+		data.type = type;
+		data.id = id;
+		data.record = record;
+		data.collectedTerms = collectedTerms;
+		data.linkList = linkList;
+		data.dataDivider = dataDivider;
+		data.calledMethod = "create";
 
 	}
 

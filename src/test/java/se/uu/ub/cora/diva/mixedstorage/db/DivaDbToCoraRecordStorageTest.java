@@ -31,8 +31,8 @@ import org.testng.annotations.Test;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.DataReaderSpy;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.storage.StorageReadResult;
 import se.uu.ub.cora.storage.RecordStorage;
+import se.uu.ub.cora.storage.StorageReadResult;
 
 public class DivaDbToCoraRecordStorageTest {
 	private static final String TABLE_NAME = "divaOrganisation";
@@ -90,6 +90,12 @@ public class DivaDbToCoraRecordStorageTest {
 		DataGroup readOrganisation = divaToCoraRecordStorage.read(TABLE_NAME, "someId");
 		DivaDbToCoraSpy factored = divaDbToCoraFactory.factored;
 		assertEquals(readOrganisation, factored.dataGroup);
+	}
+
+	@Test
+	public void createOrganisationGoesToDb() {
+		DataGroup record = DataGroup.withNameInData("organisation");
+		divaToCoraRecordStorage.create("divaOrganisation", "someOrgId", record, null, null, null);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
