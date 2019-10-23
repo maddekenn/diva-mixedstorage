@@ -29,11 +29,11 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 
 	private static final String ORGANISATION_ID = "id";
 	private static final String ALTERNATIVE_NAME = "alternative_name";
-	private Map<String, String> dbRow;
+	private Map<String, Object> dbRow;
 	private DataGroup organisation;
 
 	@Override
-	public DataGroup fromMap(Map<String, String> dbRow) {
+	public DataGroup fromMap(Map<String, Object> dbRow) {
 		this.dbRow = dbRow;
 		if (organisationIsEmpty()) {
 			throw ConversionException.withMessageAndException(
@@ -64,7 +64,7 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 
 	private void createAndAddOrganisationWithRecordInfo() {
 		organisation = DataGroup.withNameInData("organisation");
-		String id = dbRow.get(ORGANISATION_ID);
+		String id = (String) dbRow.get(ORGANISATION_ID);
 		DataGroup recordInfo = createRecordInfo(id);
 		organisation.addChild(recordInfo);
 	}
@@ -134,7 +134,7 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 	}
 
 	private void createAndAddName() {
-		String divaOrganisationName = dbRow.get("defaultname");
+		String divaOrganisationName = (String) dbRow.get("defaultname");
 		organisation.addChild(
 				DataAtomic.withNameInDataAndValue("organisationName", divaOrganisationName));
 	}
@@ -142,7 +142,7 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 	private void createAndAddAlternativeName() {
 		DataGroup alternativeNameDataGroup = DataGroup.withNameInData("alternativeName");
 		alternativeNameDataGroup.addChild(DataAtomic.withNameInDataAndValue("language", "en"));
-		String alternativeName = dbRow.get(ALTERNATIVE_NAME);
+		String alternativeName = (String) dbRow.get(ALTERNATIVE_NAME);
 		alternativeNameDataGroup
 				.addChild(DataAtomic.withNameInDataAndValue("organisationName", alternativeName));
 		organisation.addChild(alternativeNameDataGroup);
@@ -153,7 +153,7 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 	}
 
 	private void createAndAddEligibility() {
-		String eligible = dbRow.get("not_eligible");
+		String eligible = (String) dbRow.get("not_eligible");
 		String coraEligible = isEligible(eligible) ? "yes" : "no";
 		organisation.addChild(DataAtomic.withNameInDataAndValue("eligible", coraEligible));
 	}
@@ -172,7 +172,7 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 
 	private void possiblyAddAtomicValueUsingKeyAndNameInData(String key, String nameInData) {
 		if (valueExistsForKey(key)) {
-			String value = dbRow.get(key);
+			String value = (String) dbRow.get(key);
 			organisation.addChild(DataAtomic.withNameInDataAndValue(nameInData, value));
 		}
 	}
@@ -187,7 +187,7 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 
 	private void possiblyAddCountryConvertedToUpperCase() {
 		if (valueExistsForKey("country_code")) {
-			String uppercaseValue = dbRow.get("country_code").toUpperCase();
+			String uppercaseValue = ((String) dbRow.get("country_code")).toUpperCase();
 			organisation.addChild(DataAtomic.withNameInDataAndValue("country", uppercaseValue));
 		}
 	}

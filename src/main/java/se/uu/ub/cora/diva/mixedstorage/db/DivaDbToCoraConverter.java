@@ -23,6 +23,6 @@ import java.util.Map;
 import se.uu.ub.cora.data.DataGroup;
 
 public interface DivaDbToCoraConverter {
-	DataGroup fromMap(Map<String, String> map);
+	DataGroup fromMap(Map<String, Object> map);
 
 }

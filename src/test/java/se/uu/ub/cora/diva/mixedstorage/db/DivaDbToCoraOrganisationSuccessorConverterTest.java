@@ -32,7 +32,7 @@ import se.uu.ub.cora.data.DataGroup;
 
 public class DivaDbToCoraOrganisationSuccessorConverterTest {
 	private DivaDbToCoraOrganisationSuccessorConverter converter;
-	private Map<String, String> rowFromDb;
+	private Map<String, Object> rowFromDb;
 
 	@BeforeMethod
 	public void beforeMethod() {

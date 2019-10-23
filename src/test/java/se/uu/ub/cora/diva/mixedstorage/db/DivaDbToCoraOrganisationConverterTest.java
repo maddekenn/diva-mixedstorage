@@ -34,7 +34,7 @@ import se.uu.ub.cora.data.DataGroup;
 public class DivaDbToCoraOrganisationConverterTest {
 
 	private DivaDbToCoraOrganisationConverter converter;
-	private Map<String, String> rowFromDb;
+	private Map<String, Object> rowFromDb;
 
 	@BeforeMethod
 	public void beforeMethod() {
@@ -62,7 +62,7 @@ public class DivaDbToCoraOrganisationConverterTest {
 	@Test(expectedExceptions = ConversionException.class, expectedExceptionsMessageRegExp = ""
 			+ "Error converting organisation to Cora organisation: Map does not contain value for id")
 	public void testMapWithNonEmptyValueANDEmptyValueThrowsError() {
-		Map<String, String> rowFromDb = new HashMap<>();
+		Map<String, Object> rowFromDb = new HashMap<>();
 		rowFromDb.put("defaultname", "someName");
 		rowFromDb.put("id", "");
 		converter.fromMap(rowFromDb);

@@ -108,9 +108,8 @@ public class DivaMixedRecordStorageProvider
 		DataReaderImp dataReader = DataReaderImp.usingSqlConnectionProvider(sqlConnectionProvider);
 
 		return DivaDbToCoraRecordStorage
-				.usingRecordReaderFactoryConverterFactoryAndDbToCoraFactoryAndDataReader(
-						recordReaderFactory, divaDbToCoraConverterFactory, divaDbToCoraFactory,
-						dataReader);
+				.usingRecordReaderFactoryConverterFactoryAndDbToCoraFactory(
+						recordReaderFactory, divaDbToCoraConverterFactory, divaDbToCoraFactory);
 	}
 
 	private SqlConnectionProvider tryToCreateConnectionProvider() {

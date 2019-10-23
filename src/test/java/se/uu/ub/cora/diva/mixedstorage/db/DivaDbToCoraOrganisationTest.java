@@ -68,7 +68,7 @@ public class DivaDbToCoraOrganisationTest {
 	public void testReadOrganisationConditionsForOrganisationTable() throws Exception {
 		toCoraOrganisation.convertOneRowData(TABLE_NAME, "someId");
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
-		Map<String, String> conditions = recordReader.usedConditionsList.get(0);
+		Map<String, Object> conditions = recordReader.usedConditionsList.get(0);
 		assertEquals(conditions.get("id"), "someId");
 	}
 
@@ -111,7 +111,7 @@ public class DivaDbToCoraOrganisationTest {
 
 	private void assertCorrectTableNamesAndConditionsAreUsedWhenReading(
 			RecordReaderSpy recordReader) {
-		List<Map<String, String>> usedConditionsList = recordReader.usedConditionsList;
+		List<Map<String, Object>> usedConditionsList = recordReader.usedConditionsList;
 
 		assertEquals(recordReader.usedTableNames.get(0), "divaOrganisation");
 		assertEquals(usedConditionsList.get(0).get("id"), "someId");
@@ -127,12 +127,12 @@ public class DivaDbToCoraOrganisationTest {
 	}
 
 	private void assertReadDataIsSentToConverterUsingReadListReadIndexAndConverterIndex(
-			List<Map<String, String>> listToReadFrom, int readerIndex, int converterIndex) {
+			List<Map<String, Object>> listToReadFrom, int readerIndex, int converterIndex) {
 		DivaDbToCoraConverterSpy predecessorConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
 				.get(converterIndex);
 
-		Map<String, String> firstPredecessorRead = listToReadFrom.get(readerIndex);
-		Map<String, String> mapSentToConverter = predecessorConverter.mapToConvert;
+		Map<String, Object> firstPredecessorRead = listToReadFrom.get(readerIndex);
+		Map<String, Object> mapSentToConverter = predecessorConverter.mapToConvert;
 		assertEquals(firstPredecessorRead, mapSentToConverter);
 	}
 
@@ -148,8 +148,8 @@ public class DivaDbToCoraOrganisationTest {
 
 		DivaDbToCoraConverterSpy organisationConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
 				.get(0);
-		Map<String, String> readOrganisation = recordReader.oneRowRead;
-		Map<String, String> mapSentToFirstConverter = organisationConverter.mapToConvert;
+		Map<String, Object> readOrganisation = recordReader.oneRowRead;
+		Map<String, Object> mapSentToFirstConverter = organisationConverter.mapToConvert;
 		assertEquals(readOrganisation, mapSentToFirstConverter);
 
 		assertFalse(convertedOrganisation.containsChildWithNameInData("from Db converter"));
@@ -172,11 +172,11 @@ public class DivaDbToCoraOrganisationTest {
 
 		DivaDbToCoraConverterSpy organisationConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
 				.get(0);
-		Map<String, String> readOrganisation = recordReader.oneRowRead;
-		Map<String, String> mapSentToFirstConverter = organisationConverter.mapToConvert;
+		Map<String, Object> readOrganisation = recordReader.oneRowRead;
+		Map<String, Object> mapSentToFirstConverter = organisationConverter.mapToConvert;
 		assertEquals(readOrganisation, mapSentToFirstConverter);
 
-		List<Map<String, String>> predecessorsToReturn = recordReader.predecessorsToReturn;
+		List<Map<String, Object>> predecessorsToReturn = recordReader.predecessorsToReturn;
 		assertReadDataIsSentToConverterUsingReadListReadIndexAndConverterIndex(predecessorsToReturn,
 				0, 1);
 
@@ -202,8 +202,8 @@ public class DivaDbToCoraOrganisationTest {
 
 		DivaDbToCoraConverterSpy organisationConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
 				.get(0);
-		Map<String, String> firstReadResult = recordReader.returnedList.get(0);
-		Map<String, String> mapSentToFirstConverter = organisationConverter.mapToConvert;
+		Map<String, Object> firstReadResult = recordReader.returnedList.get(0);
+		Map<String, Object> mapSentToFirstConverter = organisationConverter.mapToConvert;
 		assertEquals(firstReadResult, mapSentToFirstConverter);
 
 		assertEquals(converterFactory.factoredTypes.get(0), "divaOrganisation");
@@ -250,11 +250,11 @@ public class DivaDbToCoraOrganisationTest {
 
 		DivaDbToCoraConverterSpy organisationConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
 				.get(0);
-		Map<String, String> readOrganisation = recordReader.oneRowRead;
-		Map<String, String> mapSentToFirstConverter = organisationConverter.mapToConvert;
+		Map<String, Object> readOrganisation = recordReader.oneRowRead;
+		Map<String, Object> mapSentToFirstConverter = organisationConverter.mapToConvert;
 		assertEquals(readOrganisation, mapSentToFirstConverter);
 
-		List<Map<String, String>> successorsToReturn = recordReader.successorsToReturn;
+		List<Map<String, Object>> successorsToReturn = recordReader.successorsToReturn;
 		assertReadDataIsSentToConverterUsingReadListReadIndexAndConverterIndex(successorsToReturn,
 				0, 1);
 
@@ -280,8 +280,8 @@ public class DivaDbToCoraOrganisationTest {
 
 		DivaDbToCoraConverterSpy organisationConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
 				.get(0);
-		Map<String, String> firstReadResult = recordReader.returnedList.get(0);
-		Map<String, String> mapSentToFirstConverter = organisationConverter.mapToConvert;
+		Map<String, Object> firstReadResult = recordReader.returnedList.get(0);
+		Map<String, Object> mapSentToFirstConverter = organisationConverter.mapToConvert;
 		assertEquals(firstReadResult, mapSentToFirstConverter);
 
 		assertEquals(converterFactory.factoredTypes.get(0), "divaOrganisation");
@@ -335,8 +335,8 @@ public class DivaDbToCoraOrganisationTest {
 
 		DivaDbToCoraConverterSpy organisationConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
 				.get(0);
-		Map<String, String> firstReadResult = recordReader.returnedList.get(0);
-		Map<String, String> mapSentToFirstConverter = organisationConverter.mapToConvert;
+		Map<String, Object> firstReadResult = recordReader.returnedList.get(0);
+		Map<String, Object> mapSentToFirstConverter = organisationConverter.mapToConvert;
 		assertEquals(firstReadResult, mapSentToFirstConverter);
 
 		assertClosedDateIsSentToSuccesorConverterWithIndex(1);
@@ -369,11 +369,11 @@ public class DivaDbToCoraOrganisationTest {
 
 		DivaDbToCoraConverterSpy organisationConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
 				.get(0);
-		Map<String, String> readOrganisation = recordReader.oneRowRead;
-		Map<String, String> mapSentToFirstConverter = organisationConverter.mapToConvert;
+		Map<String, Object> readOrganisation = recordReader.oneRowRead;
+		Map<String, Object> mapSentToFirstConverter = organisationConverter.mapToConvert;
 		assertEquals(readOrganisation, mapSentToFirstConverter);
 
-		List<Map<String, String>> parentsToReturn = recordReader.parentsToReturn;
+		List<Map<String, Object>> parentsToReturn = recordReader.parentsToReturn;
 		assertReadDataIsSentToConverterUsingReadListReadIndexAndConverterIndex(parentsToReturn, 0,
 				1);
 
@@ -399,8 +399,8 @@ public class DivaDbToCoraOrganisationTest {
 
 		DivaDbToCoraConverterSpy organisationConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
 				.get(0);
-		Map<String, String> firstReadResult = recordReader.returnedList.get(0);
-		Map<String, String> mapSentToFirstConverter = organisationConverter.mapToConvert;
+		Map<String, Object> firstReadResult = recordReader.returnedList.get(0);
+		Map<String, Object> mapSentToFirstConverter = organisationConverter.mapToConvert;
 		assertEquals(firstReadResult, mapSentToFirstConverter);
 
 		assertEquals(converterFactory.factoredTypes.get(0), "divaOrganisation");

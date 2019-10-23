@@ -51,7 +51,6 @@ import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraRecordStorage;
 import se.uu.ub.cora.diva.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.httphandler.HttpHandlerFactoryImp;
 import se.uu.ub.cora.logger.LoggerProvider;
-import se.uu.ub.cora.sqldatabase.DataReaderImp;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactoryImp;
 import se.uu.ub.cora.storage.MetadataStorage;
 import se.uu.ub.cora.storage.MetadataStorageProvider;
@@ -196,9 +195,6 @@ public class DivaMixedRecordStorageProviderTest {
 				.getDivaDbToCoraFactory();
 		assertSame(divaDbToCoraFactory.getReaderFactory(), recordReaderFactory);
 		assertSame(divaDbToCoraFactory.getConverterFactory(), dbStorage.getConverterFactory());
-
-		DataReaderImp dataReader = (DataReaderImp) dbStorage.getDataReader();
-		assertSame(dataReader.getSqlConnectionProvider(), connectionProvider);
 
 	}
 

@@ -24,12 +24,12 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 import java.util.List;
+import java.util.Map;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.diva.mixedstorage.DataReaderSpy;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.storage.RecordStorage;
 import se.uu.ub.cora.storage.StorageReadResult;
@@ -40,18 +40,16 @@ public class DivaDbToCoraRecordStorageTest {
 	private DivaDbToCoraConverterFactorySpy converterFactory;
 	private RecordReaderFactorySpy recordReaderFactory;
 	private DivaDbToCoraFactorySpy divaDbToCoraFactory;
-	private DataReaderSpy dataReader;
 
 	@BeforeMethod
 	public void BeforeMethod() {
 		converterFactory = new DivaDbToCoraConverterFactorySpy();
 		recordReaderFactory = new RecordReaderFactorySpy();
 		divaDbToCoraFactory = new DivaDbToCoraFactorySpy();
-		dataReader = new DataReaderSpy();
 
 		divaToCoraRecordStorage = DivaDbToCoraRecordStorage
-				.usingRecordReaderFactoryConverterFactoryAndDbToCoraFactoryAndDataReader(
-						recordReaderFactory, converterFactory, divaDbToCoraFactory, dataReader);
+				.usingRecordReaderFactoryConverterFactoryAndDbToCoraFactory(recordReaderFactory,
+						converterFactory, divaDbToCoraFactory);
 	}
 
 	@Test
@@ -92,11 +90,16 @@ public class DivaDbToCoraRecordStorageTest {
 		assertEquals(readOrganisation, factored.dataGroup);
 	}
 
-	@Test
-	public void createOrganisationGoesToDb() {
-		DataGroup record = DataGroup.withNameInData("organisation");
-		divaToCoraRecordStorage.create("divaOrganisation", "someOrgId", record, null, null, null);
-	}
+	// DataReaderImp dataReader =
+	// DataReaderImp.usingSqlConnectionProvider(sqlConnectionProvider);
+	// List<Map<String, Object>> executePreparedStatementQueryUsingSqlAndValues = dataReader
+	// .executePreparedStatementQueryUsingSqlAndValues(sql, Collections.emptyList());
+
+	// @Test
+	// public void createOrganisationGoesToDb() {
+	// DataGroup record = DataGroup.withNameInData("organisation");
+	// divaToCoraRecordStorage.create("divaOrganisation", "someOrgId", record, null, null, null);
+	// }
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
 			+ "create is not implemented")
@@ -233,27 +236,26 @@ public class DivaDbToCoraRecordStorageTest {
 
 	@Test
 	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdForDivaOrganisation() {
-		boolean userExists = divaToCoraRecordStorage
+		boolean organisationExists = divaToCoraRecordStorage
 				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("divaOrganisation",
 						"26");
-		assertTrue(dataReader.readOneRowWasCalled);
-		assertEquals(dataReader.sqlSentToReader,
-				"select * from organisation where organisation_id = ?");
-		assertEquals(dataReader.valuesSentToReader.get(0), 26);
-		assertTrue(userExists);
+		RecordReaderSpy readerSpy = recordReaderFactory.factored;
+		assertEquals(readerSpy.usedTableName, "organisation");
+		Map<String, Object> usedConditions = readerSpy.usedConditions;
+		assertEquals(usedConditions.get("organisation_id"), 26);
+		assertTrue(organisationExists);
 	}
 
 	@Test
-	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdForDivaOrganisationWhenUserDoesNotExist() {
-		boolean userExists = divaToCoraRecordStorage
+	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdForDivaOrganisationWhenOrganisationDoesNotExist() {
+		boolean organisationExists = divaToCoraRecordStorage
 				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("divaOrganisation",
 						"600");
-		assertTrue(dataReader.readOneRowWasCalled);
-		assertEquals(dataReader.sqlSentToReader,
-				"select * from organisation where organisation_id = ?");
-		assertEquals(dataReader.valuesSentToReader.get(0), 600);
-		assertFalse(userExists);
-		assertFalse(userExists);
+		RecordReaderSpy readerSpy = recordReaderFactory.factored;
+		assertEquals(readerSpy.usedTableName, "organisation");
+		Map<String, Object> usedConditions = readerSpy.usedConditions;
+		assertEquals(usedConditions.get("organisation_id"), 600);
+		assertFalse(organisationExists);
 	}
 
 	@Test

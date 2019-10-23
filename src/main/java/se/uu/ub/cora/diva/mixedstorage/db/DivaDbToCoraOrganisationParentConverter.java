@@ -26,7 +26,7 @@ public class DivaDbToCoraOrganisationParentConverter
 		extends DivaDbToCoraOrganisationAncestryConverter implements DivaDbToCoraConverter {
 
 	@Override
-	public DataGroup fromMap(Map<String, String> dbRow) {
+	public DataGroup fromMap(Map<String, Object> dbRow) {
 		this.dbRow = dbRow;
 		if (mandatoryValuesAreMissing()) {
 			throw ConversionException.withMessageAndException(
@@ -53,8 +53,8 @@ public class DivaDbToCoraOrganisationParentConverter
 	}
 
 	private void addParentLink(DataGroup formerName) {
-		DataGroup predecessor = createOrganisationLinkUsingLinkedRecordId(
-				dbRow.get("organisation_parent_id"));
+		String predecessorId = (String) dbRow.get("organisation_parent_id");
+		DataGroup predecessor = createOrganisationLinkUsingLinkedRecordId(predecessorId);
 		formerName.addChild(predecessor);
 	}
 }

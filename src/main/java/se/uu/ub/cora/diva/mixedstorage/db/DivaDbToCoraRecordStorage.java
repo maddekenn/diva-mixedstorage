@@ -16,22 +16,40 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
+/*
+ * Copyright 2019 Uppsala University Library
+ *
+ * This file is part of Cora.
+ *
+ *     Cora is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     Cora is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.sqldatabase.DataReader;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
 import se.uu.ub.cora.storage.RecordNotFoundException;
-import se.uu.ub.cora.storage.StorageReadResult;
 import se.uu.ub.cora.storage.RecordStorage;
+import se.uu.ub.cora.storage.StorageReadResult;
 
 public class DivaDbToCoraRecordStorage implements RecordStorage {
 
@@ -39,22 +57,20 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	private RecordReaderFactory recordReaderFactory;
 	private DivaDbToCoraConverterFactory converterFactory;
 	private DivaDbToCoraFactory divaDbToCoraFactory;
-	private DataReader dataReader;
 
 	private DivaDbToCoraRecordStorage(RecordReaderFactory recordReaderFactory,
-			DivaDbToCoraConverterFactory converterFactory, DivaDbToCoraFactory divaDbToCoraFactory,
-			DataReader dataReader) {
+			DivaDbToCoraConverterFactory converterFactory,
+			DivaDbToCoraFactory divaDbToCoraFactory) {
 		this.recordReaderFactory = recordReaderFactory;
 		this.converterFactory = converterFactory;
 		this.divaDbToCoraFactory = divaDbToCoraFactory;
-		this.dataReader = dataReader;
 	}
 
-	public static DivaDbToCoraRecordStorage usingRecordReaderFactoryConverterFactoryAndDbToCoraFactoryAndDataReader(
+	public static DivaDbToCoraRecordStorage usingRecordReaderFactoryConverterFactoryAndDbToCoraFactory(
 			RecordReaderFactory recordReaderFactory, DivaDbToCoraConverterFactory converterFactory,
-			DivaDbToCoraFactory divaDbToCoraFactory, DataReader dataReader) {
+			DivaDbToCoraFactory divaDbToCoraFactory) {
 		return new DivaDbToCoraRecordStorage(recordReaderFactory, converterFactory,
-				divaDbToCoraFactory, dataReader);
+				divaDbToCoraFactory);
 	}
 
 	@Override
@@ -92,35 +108,35 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	@Override
 	public StorageReadResult readList(String type, DataGroup filter) {
 		if (DIVA_ORGANISATION.equals(type)) {
-			List<Map<String, String>> rowsFromDb = readAllFromDb(type);
+			List<Map<String, Object>> rowsFromDb = readAllFromDb(type);
 			return createStorageReadResultFromDbData(type, rowsFromDb);
 		}
 		throw NotImplementedException.withMessage("readList is not implemented for type: " + type);
 	}
 
-	private List<Map<String, String>> readAllFromDb(String type) {
+	private List<Map<String, Object>> readAllFromDb(String type) {
 		RecordReader recordReader = recordReaderFactory.factor();
 		return recordReader.readAllFromTable(type);
 	}
 
 	private StorageReadResult createStorageReadResultFromDbData(String type,
-			List<Map<String, String>> rowsFromDb) {
+			List<Map<String, Object>> rowsFromDb) {
 		StorageReadResult storageReadResult = new StorageReadResult();
 		storageReadResult.listOfDataGroups = convertListOfMapsFromDbToDataGroups(type, rowsFromDb);
 		return storageReadResult;
 	}
 
 	private List<DataGroup> convertListOfMapsFromDbToDataGroups(String type,
-			List<Map<String, String>> readAllFromTable) {
+			List<Map<String, Object>> readAllFromTable) {
 		List<DataGroup> convertedList = new ArrayList<>();
-		for (Map<String, String> map : readAllFromTable) {
+		for (Map<String, Object> map : readAllFromTable) {
 			DataGroup convertedGroup = convertOneMapFromDbToDataGroup(type, map);
 			convertedList.add(convertedGroup);
 		}
 		return convertedList;
 	}
 
-	private DataGroup convertOneMapFromDbToDataGroup(String type, Map<String, String> readRow) {
+	private DataGroup convertOneMapFromDbToDataGroup(String type, Map<String, Object> readRow) {
 		DivaDbToCoraConverter dbToCoraConverter = converterFactory.factor(type);
 		return dbToCoraConverter.fromMap(readRow);
 	}
@@ -167,20 +183,20 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 
 	private Map<String, Object> tryToReadOrganisationFromDb(String id) {
 		try {
-			List<Object> values = createListOfValuesWithId(id);
-			return dataReader.readOneRowOrFailUsingSqlAndValues(
-					"select * from organisation where organisation_id = ?", values);
+			RecordReader recordReader = recordReaderFactory.factor();
+			Integer idAsInteger = transformIdToIntegerIfPossible(id);
+
+			Map<String, Object> conditions = new HashMap<>();
+			conditions.put("organisation_id", idAsInteger);
+			return recordReader.readOneRowFromDbUsingTableAndConditions("organisation", conditions);
 		} catch (SqlStorageException e) {
 			throw new RecordNotFoundException("Organisation not found: " + id);
 		}
 	}
 
-	private List<Object> createListOfValuesWithId(String id) {
+	private Integer transformIdToIntegerIfPossible(String id) {
 		throwErrorIfIdNotAnIntegerValue(id);
-		Integer idAsInteger = Integer.valueOf(id);
-		List<Object> values = new ArrayList<>();
-		values.add(idAsInteger);
-		return values;
+		return Integer.valueOf(id);
 	}
 
 	private void throwErrorIfIdNotAnIntegerValue(String id) {
@@ -190,11 +206,11 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 			throw new RecordNotFoundException("User not found: " + id);
 		}
 	}
-
-	public DataReader getDataReader() {
-		// needed for test
-		return dataReader;
-	}
+	//
+	// public DataReader getDataReader() {
+	// // needed for test
+	// return dataReader;
+	// }
 
 	public DivaDbToCoraConverterFactory getConverterFactory() {
 		// needed for test
