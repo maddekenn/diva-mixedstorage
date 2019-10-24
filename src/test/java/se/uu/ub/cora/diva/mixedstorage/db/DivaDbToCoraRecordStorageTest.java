@@ -40,16 +40,19 @@ public class DivaDbToCoraRecordStorageTest {
 	private DivaDbToCoraConverterFactorySpy converterFactory;
 	private RecordReaderFactorySpy recordReaderFactory;
 	private DivaDbToCoraFactorySpy divaDbToCoraFactory;
+	private RecordUpdaterFactorySpy recordUpdaterFactory;
 
 	@BeforeMethod
 	public void BeforeMethod() {
 		converterFactory = new DivaDbToCoraConverterFactorySpy();
 		recordReaderFactory = new RecordReaderFactorySpy();
+		recordUpdaterFactory = new RecordUpdaterFactorySpy();
 		divaDbToCoraFactory = new DivaDbToCoraFactorySpy();
 
 		divaToCoraRecordStorage = DivaDbToCoraRecordStorage
-				.usingRecordReaderFactoryConverterFactoryAndDbToCoraFactory(recordReaderFactory,
-						converterFactory, divaDbToCoraFactory);
+				.usingRecordReaderFactoryAndRecordUpdaterFactoryConverterFactoryAndDbToCoraFactory(
+						recordReaderFactory, converterFactory, divaDbToCoraFactory,
+						recordUpdaterFactory);
 	}
 
 	@Test
@@ -90,17 +93,6 @@ public class DivaDbToCoraRecordStorageTest {
 		assertEquals(readOrganisation, factored.dataGroup);
 	}
 
-	// DataReaderImp dataReader =
-	// DataReaderImp.usingSqlConnectionProvider(sqlConnectionProvider);
-	// List<Map<String, Object>> executePreparedStatementQueryUsingSqlAndValues = dataReader
-	// .executePreparedStatementQueryUsingSqlAndValues(sql, Collections.emptyList());
-
-	// @Test
-	// public void createOrganisationGoesToDb() {
-	// DataGroup record = DataGroup.withNameInData("organisation");
-	// divaToCoraRecordStorage.create("divaOrganisation", "someOrgId", record, null, null, null);
-	// }
-
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
 			+ "create is not implemented")
 	public void createThrowsNotImplementedException() throws Exception {
@@ -117,6 +109,30 @@ public class DivaDbToCoraRecordStorageTest {
 			+ "linksExistForRecord is not implemented")
 	public void linksExistForRecordThrowsNotImplementedException() throws Exception {
 		divaToCoraRecordStorage.linksExistForRecord(null, null);
+	}
+
+	@Test
+	public void testUpdateOrganisationFactorDbReader() throws Exception {
+		String type = "divaOrganisation";
+		String id = "";
+		DataGroup record = DataGroup.withNameInData("organisation");
+		String dataDivider = "";
+		divaToCoraRecordStorage.update(type, id, record, null, null, dataDivider);
+		assertTrue(recordUpdaterFactory.factorWasCalled);
+
+	}
+
+	@Test
+	public void testUpdateOrganisationCorrectDbReaderIsFactored() throws Exception {
+		String type = "divaOrganisation";
+		String id = "";
+		DataGroup record = DataGroup.withNameInData("organisation");
+		String dataDivider = "";
+		divaToCoraRecordStorage.update(type, id, record, null, null, dataDivider);
+
+		RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
+		assertEquals(factoredUpdater.tableName, "organisation");
+
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""

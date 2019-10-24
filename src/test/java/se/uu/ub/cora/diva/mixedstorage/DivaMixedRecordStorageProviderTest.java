@@ -184,7 +184,7 @@ public class DivaMixedRecordStorageProviderTest {
 				.getRecordReaderFactory();
 
 		ContextConnectionProviderImp connectionProvider = (ContextConnectionProviderImp) recordReaderFactory
-				.getConnectionProvider();
+				.getSqlConnectionProvider();
 
 		assertEquals(connectionProvider.getName(), initInfo.get("databaseLookupName"));
 		assertTrue(connectionProvider.getContext() instanceof InitialContext);

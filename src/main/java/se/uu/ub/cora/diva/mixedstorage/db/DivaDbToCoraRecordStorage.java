@@ -38,6 +38,7 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,8 @@ import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
+import se.uu.ub.cora.sqldatabase.RecordUpdater;
+import se.uu.ub.cora.sqldatabase.RecordUpdaterFactory;
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
 import se.uu.ub.cora.storage.RecordNotFoundException;
 import se.uu.ub.cora.storage.RecordStorage;
@@ -57,6 +60,7 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	private RecordReaderFactory recordReaderFactory;
 	private DivaDbToCoraConverterFactory converterFactory;
 	private DivaDbToCoraFactory divaDbToCoraFactory;
+	private static RecordUpdaterFactory recordUpdaterFactory;
 
 	private DivaDbToCoraRecordStorage(RecordReaderFactory recordReaderFactory,
 			DivaDbToCoraConverterFactory converterFactory,
@@ -66,9 +70,10 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 		this.divaDbToCoraFactory = divaDbToCoraFactory;
 	}
 
-	public static DivaDbToCoraRecordStorage usingRecordReaderFactoryConverterFactoryAndDbToCoraFactory(
+	public static DivaDbToCoraRecordStorage usingRecordReaderFactoryAndRecordUpdaterFactoryConverterFactoryAndDbToCoraFactory(
 			RecordReaderFactory recordReaderFactory, DivaDbToCoraConverterFactory converterFactory,
-			DivaDbToCoraFactory divaDbToCoraFactory) {
+			DivaDbToCoraFactory divaDbToCoraFactory, RecordUpdaterFactory recordUpdaterFactory) {
+		DivaDbToCoraRecordStorage.recordUpdaterFactory = recordUpdaterFactory;
 		return new DivaDbToCoraRecordStorage(recordReaderFactory, converterFactory,
 				divaDbToCoraFactory);
 	}
@@ -101,8 +106,13 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	@Override
 	public void update(String type, String id, DataGroup record, DataGroup collectedTerms,
 			DataGroup linkList, String dataDivider) {
-		throw NotImplementedException.withMessage("update is not implemented");
-
+		if (DIVA_ORGANISATION.equals(type)) {
+			RecordUpdater recordUpdater = recordUpdaterFactory.factor();
+			recordUpdater.updateRecordInDbUsingTableAndValuesAndConditions("organisation",
+					Collections.emptyMap(), Collections.emptyMap());
+		} else {
+			throw NotImplementedException.withMessage("update is not implemented");
+		}
 	}
 
 	@Override
