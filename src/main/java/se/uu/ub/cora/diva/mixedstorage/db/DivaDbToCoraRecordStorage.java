@@ -237,4 +237,9 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 		return divaDbToCoraFactory;
 	}
 
+	public RecordUpdaterFactory getRecordUpdaterFactory() {
+		// needed for test
+		return recordUpdaterFactory;
+	}
+
 }

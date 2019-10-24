@@ -52,6 +52,7 @@ import se.uu.ub.cora.diva.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.httphandler.HttpHandlerFactoryImp;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactoryImp;
+import se.uu.ub.cora.sqldatabase.RecordUpdaterFactoryImp;
 import se.uu.ub.cora.storage.MetadataStorage;
 import se.uu.ub.cora.storage.MetadataStorageProvider;
 import se.uu.ub.cora.storage.RecordStorage;
@@ -180,14 +181,9 @@ public class DivaMixedRecordStorageProviderTest {
 
 		DivaDbToCoraRecordStorage dbStorage = (DivaDbToCoraRecordStorage) dbStorageInRecordStorage;
 
-		RecordReaderFactoryImp recordReaderFactory = (RecordReaderFactoryImp) dbStorage
-				.getRecordReaderFactory();
+		RecordReaderFactoryImp recordReaderFactory = assertCorrectRecordReaderFactory(dbStorage);
 
-		ContextConnectionProviderImp connectionProvider = (ContextConnectionProviderImp) recordReaderFactory
-				.getSqlConnectionProvider();
-
-		assertEquals(connectionProvider.getName(), initInfo.get("databaseLookupName"));
-		assertTrue(connectionProvider.getContext() instanceof InitialContext);
+		assertCorrectRecordUpdaterFactory(dbStorage);
 
 		assertTrue(dbStorage.getConverterFactory() instanceof DivaDbToCoraConverterFactoryImp);
 
@@ -196,6 +192,32 @@ public class DivaMixedRecordStorageProviderTest {
 		assertSame(divaDbToCoraFactory.getReaderFactory(), recordReaderFactory);
 		assertSame(divaDbToCoraFactory.getConverterFactory(), dbStorage.getConverterFactory());
 
+	}
+
+	private RecordReaderFactoryImp assertCorrectRecordReaderFactory(
+			DivaDbToCoraRecordStorage dbStorage) {
+		RecordReaderFactoryImp recordReaderFactory = (RecordReaderFactoryImp) dbStorage
+				.getRecordReaderFactory();
+
+		ContextConnectionProviderImp readerConnectionProvider = (ContextConnectionProviderImp) recordReaderFactory
+				.getSqlConnectionProvider();
+
+		assertCorrectSqlConnectionProvider(readerConnectionProvider);
+		return recordReaderFactory;
+	}
+
+	private void assertCorrectSqlConnectionProvider(
+			ContextConnectionProviderImp connectionProvider) {
+		assertEquals(connectionProvider.getName(), initInfo.get("databaseLookupName"));
+		assertTrue(connectionProvider.getContext() instanceof InitialContext);
+	}
+
+	private void assertCorrectRecordUpdaterFactory(DivaDbToCoraRecordStorage dbStorage) {
+		RecordUpdaterFactoryImp recordUpdaterFactory = (RecordUpdaterFactoryImp) dbStorage
+				.getRecordUpdaterFactory();
+		ContextConnectionProviderImp updaterConnectionProvider = (ContextConnectionProviderImp) recordUpdaterFactory
+				.getSqlConnectionProvider();
+		assertCorrectSqlConnectionProvider(updaterConnectionProvider);
 	}
 
 	@Test
@@ -229,8 +251,10 @@ public class DivaMixedRecordStorageProviderTest {
 		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 4),
 				"Found java:/comp/env/jdbc/postgres as databaseLookupName");
 		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 5),
+				"Found java:/comp/env/jdbc/postgres as databaseLookupName");
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 6),
 				"DivaMixedRecordStorageProvider started DivaMixedRecordStorage");
-		assertEquals(loggerFactorySpy.getNoOfInfoLogMessagesUsingClassName(testedClassName), 6);
+		assertEquals(loggerFactorySpy.getNoOfInfoLogMessagesUsingClassName(testedClassName), 7);
 	}
 
 	@Test
