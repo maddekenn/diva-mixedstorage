@@ -38,7 +38,6 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,10 +107,36 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 			DataGroup linkList, String dataDivider) {
 		if (DIVA_ORGANISATION.equals(type)) {
 			RecordUpdater recordUpdater = recordUpdaterFactory.factor();
-			recordUpdater.updateRecordInDbUsingTableAndValuesAndConditions("organisation",
-					Collections.emptyMap(), Collections.emptyMap());
+
+			Map<String, Object> values = createValuesForUpdateQuery(record);
+			Map<String, Object> conditions = addOrgansiationIdToConditions(id);
+
+			recordUpdater.updateRecordInDbUsingTableAndValuesAndConditions("organisation", values,
+					conditions);
 		} else {
 			throw NotImplementedException.withMessage("update is not implemented");
+		}
+	}
+
+	private Map<String, Object> createValuesForUpdateQuery(DataGroup record) {
+		String organisationName = record.getFirstAtomicValueWithNameInData("organisationName");
+		Map<String, Object> values = new HashMap<>();
+		values.put("organisation_name", organisationName);
+		return values;
+	}
+
+	private Map<String, Object> addOrgansiationIdToConditions(String id) {
+		Map<String, Object> conditions = new HashMap<>();
+		throwDbExceptionIfIdNotAnIntegerValue(id);
+		conditions.put("organisation_id", Integer.parseInt(id));
+		return conditions;
+	}
+
+	private void throwDbExceptionIfIdNotAnIntegerValue(String id) {
+		try {
+			Integer.valueOf(id);
+		} catch (NumberFormatException ne) {
+			throw DbException.withMessageAndException("User not found: " + id, ne);
 		}
 	}
 
@@ -205,22 +230,17 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	}
 
 	private Integer transformIdToIntegerIfPossible(String id) {
-		throwErrorIfIdNotAnIntegerValue(id);
+		throwRecordNotFoundExceptionIfIdNotAnIntegerValue(id);
 		return Integer.valueOf(id);
 	}
 
-	private void throwErrorIfIdNotAnIntegerValue(String id) {
+	private void throwRecordNotFoundExceptionIfIdNotAnIntegerValue(String id) {
 		try {
 			Integer.valueOf(id);
 		} catch (NumberFormatException ne) {
 			throw new RecordNotFoundException("User not found: " + id);
 		}
 	}
-	//
-	// public DataReader getDataReader() {
-	// // needed for test
-	// return dataReader;
-	// }
 
 	public DivaDbToCoraConverterFactory getConverterFactory() {
 		// needed for test

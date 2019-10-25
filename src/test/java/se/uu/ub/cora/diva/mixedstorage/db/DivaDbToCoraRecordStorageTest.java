@@ -29,6 +29,7 @@ import java.util.Map;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.storage.RecordStorage;
@@ -113,25 +114,43 @@ public class DivaDbToCoraRecordStorageTest {
 
 	@Test
 	public void testUpdateOrganisationFactorDbReader() throws Exception {
-		String type = "divaOrganisation";
-		String id = "";
 		DataGroup record = DataGroup.withNameInData("organisation");
 		String dataDivider = "";
-		divaToCoraRecordStorage.update(type, id, record, null, null, dataDivider);
+		divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
 		assertTrue(recordUpdaterFactory.factorWasCalled);
 
 	}
 
 	@Test
-	public void testUpdateOrganisationCorrectDbReaderIsFactored() throws Exception {
-		String type = "divaOrganisation";
-		String id = "";
+	public void testUpdateNameInOrganisation() throws Exception {
 		DataGroup record = DataGroup.withNameInData("organisation");
+		record.addChild(DataAtomic.withNameInDataAndValue("organisationName", "someChangedName"));
+
 		String dataDivider = "";
-		divaToCoraRecordStorage.update(type, id, record, null, null, dataDivider);
+		divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
 
 		RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
 		assertEquals(factoredUpdater.tableName, "organisation");
+		assertEquals(factoredUpdater.conditions.get("organisation_id"), 56);
+
+		assertEquals(factoredUpdater.values.get("organisation_name"), "someChangedName");
+
+	}
+
+	@Test(expectedExceptions = DbException.class)
+	public void testUpdateOrganisationIdNotAnInt() throws Exception {
+		DataGroup record = DataGroup.withNameInData("organisation");
+		record.addChild(DataAtomic.withNameInDataAndValue("organisationName", "someChangedName"));
+
+		String dataDivider = "";
+		divaToCoraRecordStorage.update("divaOrganisation", "notAnInt", record, null, null,
+				dataDivider);
+		//
+		// RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
+		// assertEquals(factoredUpdater.tableName, "organisation");
+		// assertEquals(factoredUpdater.conditions.get("organisation_id"), 56);
+		//
+		// assertEquals(factoredUpdater.values.get("organisation_name"), "someChangedName");
 
 	}
 
@@ -277,7 +296,9 @@ public class DivaDbToCoraRecordStorageTest {
 	@Test
 	public void testecordExistsDivaOrganisationCallsDataReaderWithStringIdReturnsFalse()
 			throws Exception {
-		divaToCoraRecordStorage.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(
-				"divaOrganisation", "notAnInt");
+		boolean organisationExists = divaToCoraRecordStorage
+				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("divaOrganisation",
+						"notAnInt");
+		assertFalse(organisationExists);
 	}
 }
