@@ -106,28 +106,30 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	public void update(String type, String id, DataGroup record, DataGroup collectedTerms,
 			DataGroup linkList, String dataDivider) {
 		if (DIVA_ORGANISATION.equals(type)) {
-			RecordUpdater recordUpdater = recordUpdaterFactory.factor();
-
-			Map<String, Object> values = createValuesForUpdateQuery(record);
-			Map<String, Object> conditions = addOrgansiationIdToConditions(id);
-
-			recordUpdater.updateRecordInDbUsingTableAndValuesAndConditions("organisation", values,
-					conditions);
+			updateOrganisation(id, record);
 		} else {
 			throw NotImplementedException.withMessage("update is not implemented");
 		}
 	}
 
+	private void updateOrganisation(String id, DataGroup record) {
+		RecordUpdater recordUpdater = recordUpdaterFactory.factor();
+		Map<String, Object> values = createValuesForUpdateQuery(record);
+		Map<String, Object> conditions = createConditionsAddingOrganisationId(id);
+		recordUpdater.updateRecordInDbUsingTableAndValuesAndConditions("organisation", values,
+				conditions);
+	}
+
 	private Map<String, Object> createValuesForUpdateQuery(DataGroup record) {
 		String organisationName = record.getFirstAtomicValueWithNameInData("organisationName");
-		Map<String, Object> values = new HashMap<>();
+		Map<String, Object> values = new HashMap<>(1);
 		values.put("organisation_name", organisationName);
 		return values;
 	}
 
-	private Map<String, Object> addOrgansiationIdToConditions(String id) {
-		Map<String, Object> conditions = new HashMap<>();
+	private Map<String, Object> createConditionsAddingOrganisationId(String id) {
 		throwDbExceptionIfIdNotAnIntegerValue(id);
+		Map<String, Object> conditions = new HashMap<>(1);
 		conditions.put("organisation_id", Integer.parseInt(id));
 		return conditions;
 	}
@@ -136,7 +138,7 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 		try {
 			Integer.valueOf(id);
 		} catch (NumberFormatException ne) {
-			throw DbException.withMessageAndException("User not found: " + id, ne);
+			throw DbException.withMessageAndException("Record not found: " + id, ne);
 		}
 	}
 
@@ -163,7 +165,7 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 
 	private List<DataGroup> convertListOfMapsFromDbToDataGroups(String type,
 			List<Map<String, Object>> readAllFromTable) {
-		List<DataGroup> convertedList = new ArrayList<>();
+		List<DataGroup> convertedList = new ArrayList<>(readAllFromTable.size());
 		for (Map<String, Object> map : readAllFromTable) {
 			DataGroup convertedGroup = convertOneMapFromDbToDataGroup(type, map);
 			convertedList.add(convertedGroup);
@@ -219,26 +221,10 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	private Map<String, Object> tryToReadOrganisationFromDb(String id) {
 		try {
 			RecordReader recordReader = recordReaderFactory.factor();
-			Integer idAsInteger = transformIdToIntegerIfPossible(id);
-
-			Map<String, Object> conditions = new HashMap<>();
-			conditions.put("organisation_id", idAsInteger);
+			Map<String, Object> conditions = createConditionsAddingOrganisationId(id);
 			return recordReader.readOneRowFromDbUsingTableAndConditions("organisation", conditions);
-		} catch (SqlStorageException e) {
+		} catch (SqlStorageException | DbException e) {
 			throw new RecordNotFoundException("Organisation not found: " + id);
-		}
-	}
-
-	private Integer transformIdToIntegerIfPossible(String id) {
-		throwRecordNotFoundExceptionIfIdNotAnIntegerValue(id);
-		return Integer.valueOf(id);
-	}
-
-	private void throwRecordNotFoundExceptionIfIdNotAnIntegerValue(String id) {
-		try {
-			Integer.valueOf(id);
-		} catch (NumberFormatException ne) {
-			throw new RecordNotFoundException("User not found: " + id);
 		}
 	}
 

@@ -115,6 +115,8 @@ public class DivaDbToCoraRecordStorageTest {
 	@Test
 	public void testUpdateOrganisationFactorDbReader() throws Exception {
 		DataGroup record = DataGroup.withNameInData("organisation");
+		record.addChild(DataAtomic.withNameInDataAndValue("organisationName", "someChangedName"));
+
 		String dataDivider = "";
 		divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
 		assertTrue(recordUpdaterFactory.factorWasCalled);
@@ -145,6 +147,19 @@ public class DivaDbToCoraRecordStorageTest {
 		String dataDivider = "";
 		divaToCoraRecordStorage.update("divaOrganisation", "notAnInt", record, null, null,
 				dataDivider);
+
+	}
+
+	@Test
+	public void testUpdateOrganisationIdNotAnIntSendsAlongInitalException() throws Exception {
+		DataGroup record = DataGroup.withNameInData("organisation");
+		record.addChild(DataAtomic.withNameInDataAndValue("organisationName", "someChangedName"));
+
+		try {
+			divaToCoraRecordStorage.update("divaOrganisation", "notAnInt", record, null, null, "");
+		} catch (Exception e) {
+			assertTrue(e.getCause() instanceof NumberFormatException);
+		}
 
 	}
 
@@ -288,7 +303,7 @@ public class DivaDbToCoraRecordStorageTest {
 	}
 
 	@Test
-	public void testecordExistsDivaOrganisationCallsDataReaderWithStringIdReturnsFalse()
+	public void testRecordExistsDivaOrganisationCallsDataReaderWithStringIdReturnsFalse()
 			throws Exception {
 		boolean organisationExists = divaToCoraRecordStorage
 				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("divaOrganisation",
