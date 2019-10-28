@@ -145,12 +145,6 @@ public class DivaDbToCoraRecordStorageTest {
 		String dataDivider = "";
 		divaToCoraRecordStorage.update("divaOrganisation", "notAnInt", record, null, null,
 				dataDivider);
-		//
-		// RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
-		// assertEquals(factoredUpdater.tableName, "organisation");
-		// assertEquals(factoredUpdater.conditions.get("organisation_id"), 56);
-		//
-		// assertEquals(factoredUpdater.values.get("organisation_name"), "someChangedName");
 
 	}
 
