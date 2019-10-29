@@ -81,9 +81,15 @@ public class DivaDbToCoraStorageSpy implements RecordStorage {
 	}
 
 	@Override
-	public void update(String arg0, String arg1, DataGroup arg2, DataGroup arg3, DataGroup arg4,
-			String arg5) {
-		// TODO Auto-generated method stub
+	public void update(String type, String id, DataGroup record, DataGroup collectedTerms,
+			DataGroup linkList, String dataDivider) {
+		data.type = type;
+		data.id = id;
+		data.record = record;
+		data.collectedTerms = collectedTerms;
+		data.linkList = linkList;
+		data.dataDivider = dataDivider;
+		data.calledMethod = "create";
 
 	}
 

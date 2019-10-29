@@ -195,35 +195,6 @@ public class DivaMixedRecordStorageTest {
 	}
 
 	@Test
-	public void createOrganisationGoesToDbStorage() {
-		assertNoInteractionWithStorage(basicStorage);
-		assertNoInteractionWithStorage(divaFedoraToCoraStorage);
-		assertNoInteractionWithStorage(divaDbToCoraStorage);
-
-		DivaDbToCoraStorageSpy divaDbToCoraStorageSpy = new DivaDbToCoraStorageSpy();
-		divaMixedRecordStorage = DivaMixedRecordStorage.usingBasicAndFedoraAndDbStorage(
-				basicStorage, divaFedoraToCoraStorage, divaDbToCoraStorageSpy);
-
-		RecordStorageSpyData expectedData = new RecordStorageSpyData();
-		expectedData.type = "divaOrganisation";
-		expectedData.id = "someId";
-		expectedData.record = DataGroup.withNameInData("dummyRecord");
-		expectedData.collectedTerms = DataGroup.withNameInData("collectedTerms");
-		expectedData.linkList = DataGroup.withNameInData("linkList");
-		expectedData.dataDivider = "someDataDivider";
-		expectedData.calledMethod = "create";
-
-		divaMixedRecordStorage.create(expectedData.type, expectedData.id, expectedData.record,
-				expectedData.collectedTerms, expectedData.linkList, expectedData.dataDivider);
-
-		RecordStorageSpyData spyData = divaDbToCoraStorageSpy.data;
-		assertCorrectSpyData(expectedData, spyData);
-
-		assertNoInteractionWithStorage(divaFedoraToCoraStorage);
-		assertNoInteractionWithStorage(basicStorage);
-	}
-
-	@Test
 	public void deleteByTypeAndIdGoesToBasicStorage() throws Exception {
 		assertNoInteractionWithStorage(basicStorage);
 		assertNoInteractionWithStorage(divaFedoraToCoraStorage);
@@ -294,6 +265,35 @@ public class DivaMixedRecordStorageTest {
 		assertExpectedDataSameAsInStorageSpy(divaFedoraToCoraStorage, expectedData);
 		assertNoInteractionWithStorage(basicStorage);
 		assertNoInteractionWithStorage(divaDbToCoraStorage);
+	}
+
+	@Test
+	public void updateOrganisationGoesToDbStorage() {
+		assertNoInteractionWithStorage(basicStorage);
+		assertNoInteractionWithStorage(divaFedoraToCoraStorage);
+		assertNoInteractionWithStorage(divaDbToCoraStorage);
+
+		DivaDbToCoraStorageSpy divaDbToCoraStorageSpy = new DivaDbToCoraStorageSpy();
+		divaMixedRecordStorage = DivaMixedRecordStorage.usingBasicAndFedoraAndDbStorage(
+				basicStorage, divaFedoraToCoraStorage, divaDbToCoraStorageSpy);
+
+		RecordStorageSpyData expectedData = new RecordStorageSpyData();
+		expectedData.type = "divaOrganisation";
+		expectedData.id = "someId";
+		expectedData.record = DataGroup.withNameInData("dummyRecord");
+		expectedData.collectedTerms = DataGroup.withNameInData("collectedTerms");
+		expectedData.linkList = DataGroup.withNameInData("linkList");
+		expectedData.dataDivider = "someDataDivider";
+		expectedData.calledMethod = "create";
+
+		divaMixedRecordStorage.update(expectedData.type, expectedData.id, expectedData.record,
+				expectedData.collectedTerms, expectedData.linkList, expectedData.dataDivider);
+
+		RecordStorageSpyData spyData = divaDbToCoraStorageSpy.data;
+		assertCorrectSpyData(expectedData, spyData);
+
+		assertNoInteractionWithStorage(divaFedoraToCoraStorage);
+		assertNoInteractionWithStorage(basicStorage);
 	}
 
 	@Test
