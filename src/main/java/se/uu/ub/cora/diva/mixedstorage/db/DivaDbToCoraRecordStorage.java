@@ -30,8 +30,8 @@ import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
 import se.uu.ub.cora.storage.RecordNotFoundException;
-import se.uu.ub.cora.storage.StorageReadResult;
 import se.uu.ub.cora.storage.RecordStorage;
+import se.uu.ub.cora.storage.StorageReadResult;
 
 public class DivaDbToCoraRecordStorage implements RecordStorage {
 
@@ -112,7 +112,7 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 
 	private List<DataGroup> convertListOfMapsFromDbToDataGroups(String type,
 			List<Map<String, String>> readAllFromTable) {
-		List<DataGroup> convertedList = new ArrayList<>();
+		List<DataGroup> convertedList = new ArrayList<>(readAllFromTable.size());
 		for (Map<String, String> map : readAllFromTable) {
 			DataGroup convertedGroup = convertOneMapFromDbToDataGroup(type, map);
 			convertedList.add(convertedGroup);

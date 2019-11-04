@@ -210,7 +210,7 @@ public final class DivaFedoraRecordStorage implements RecordStorage {
 	}
 
 	private Collection<DataGroup> constructCollectionOfPersonFromFedora(NodeList list) {
-		Collection<DataGroup> personList = new ArrayList<>();
+		Collection<DataGroup> personList = new ArrayList<>(list.getLength());
 		for (int i = 0; i < list.getLength(); i++) {
 			Node node = list.item(i);
 			String pid = node.getTextContent();
