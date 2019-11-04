@@ -120,7 +120,7 @@ public class DivaMixedRecordStorageProvider
 			return ContextConnectionProviderImp.usingInitialContextAndName(context,
 					databaseLookupName);
 		} catch (Exception e) {
-			throw DataStorageException.withMessage(e.getMessage());
+			throw DataStorageException.withMessageAndException(e.getMessage(), e);
 		}
 	}
 
