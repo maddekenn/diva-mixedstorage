@@ -19,6 +19,7 @@
 package se.uu.ub.cora.diva.mixedstorage.resource;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
@@ -31,9 +32,11 @@ public class ResourceReader {
 
 	public static String readResourceAsString(String resourceFile) {
 		ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-		try (InputStreamReader in = new InputStreamReader(
-				contextClassLoader.getResourceAsStream(resourceFile), StandardCharsets.UTF_8);
+		try (InputStream resourceAsStream = contextClassLoader.getResourceAsStream(resourceFile);
+				InputStreamReader in = new InputStreamReader(resourceAsStream,
+						StandardCharsets.UTF_8);
 				Stream<String> lines = new BufferedReader(in).lines();) {
+
 			return tryToReadResourceLines(lines);
 		} catch (Exception e) {
 			throw new RuntimeException(
