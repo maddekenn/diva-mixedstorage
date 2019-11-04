@@ -31,9 +31,9 @@ public class ResourceReader {
 
 	public static String readResourceAsString(String resourceFile) {
 		ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-		try (Stream<String> lines = new BufferedReader(new InputStreamReader(
-				contextClassLoader.getResourceAsStream(resourceFile), StandardCharsets.UTF_8))
-						.lines();) {
+		try (InputStreamReader in = new InputStreamReader(
+				contextClassLoader.getResourceAsStream(resourceFile), StandardCharsets.UTF_8);
+				Stream<String> lines = new BufferedReader(in).lines();) {
 			return tryToReadResourceLines(lines);
 		} catch (Exception e) {
 			throw new RuntimeException(
