@@ -37,7 +37,9 @@ public class ResourceReader {
 		BufferedReader bufferedReader = new BufferedReader(
 				new InputStreamReader(resourceAsStream, StandardCharsets.UTF_8));
 		try (Stream<String> lines = bufferedReader.lines();) {
-			return tryToReadResourceLines(lines);
+			String resourceLines = tryToReadResourceLines(lines);
+			bufferedReader.close();
+			return resourceLines;
 		} catch (Exception e) {
 			throw new RuntimeException(
 					"Unable to read resource to string for file: " + resourceFile, e);
