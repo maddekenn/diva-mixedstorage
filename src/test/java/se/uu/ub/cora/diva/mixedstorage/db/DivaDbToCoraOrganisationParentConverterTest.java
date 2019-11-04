@@ -37,7 +37,7 @@ public class DivaDbToCoraOrganisationParentConverterTest {
 	public void beforeMethod() {
 		rowFromDb = new HashMap<>();
 		rowFromDb.put("organisation_id", "someOrgId");
-		rowFromDb.put("organisation_parent_id", "someParentId");
+		rowFromDb.put("organisation_parent_id", 52);
 		converter = new DivaDbToCoraOrganisationParentConverter();
 
 	}
@@ -86,8 +86,7 @@ public class DivaDbToCoraOrganisationParentConverterTest {
 
 		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordType"),
 				"divaOrganisation");
-		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				"someParentId");
+		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordId"), "52");
 	}
 
 }

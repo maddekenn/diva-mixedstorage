@@ -22,7 +22,7 @@
 	<parent>
 		<groupId>se.uu.ub.cora</groupId>
 		<artifactId>cora-parent</artifactId>
-		<version>0.9.0</version>
+		<version>1.0.2</version>
 	</parent>
 
 	<artifactId>divamixedstorage</artifactId>
@@ -32,12 +32,12 @@
 	<name>Diva Mixed Storage</name>
 
 	<properties>
-		<logger.version>1.0.0</logger.version>
-		<storage.version>1.3.0</storage.version>
-		<searchstorage.version>1.1.0</searchstorage.version>
-		<basicstorage.version>1.8.0</basicstorage.version>
+		<logger.version>2.0.0</logger.version>
+		<storage.version>2.1.0</storage.version>
+		<searchstorage.version>2.0.0</searchstorage.version>
+		<basicstorage.version>2.1.0</basicstorage.version>
 		<sqldatabase.version>2.1-SNAPSHOT</sqldatabase.version>
-		<httphandler.version>1.0.0</httphandler.version>
+		<httphandler.version>2.0.0</httphandler.version>
 	</properties>
 
 	<scm>

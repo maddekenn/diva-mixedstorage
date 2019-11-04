@@ -75,7 +75,7 @@ public class DivaMixedRecordStorageProvider
 	}
 
 	private boolean noRunningRecordStorageExists() {
-		return RecordStorageInstance.instance == null;
+		return RecordStorageInstance.getInstance() == null;
 	}
 
 	private void startNewRecordStorageOnDiskInstance() {
@@ -163,7 +163,7 @@ public class DivaMixedRecordStorageProvider
 	}
 
 	static void setStaticInstance(RecordStorage recordStorage) {
-		RecordStorageInstance.instance = recordStorage;
+		RecordStorageInstance.setInstance(recordStorage);
 	}
 
 	private void useExistingRecordStorage() {
@@ -180,13 +180,14 @@ public class DivaMixedRecordStorageProvider
 
 	@Override
 	public MetadataStorage getMetadataStorage() {
-		DivaMixedRecordStorage mixedStorage = (DivaMixedRecordStorage) RecordStorageInstance.instance;
+		DivaMixedRecordStorage mixedStorage = (DivaMixedRecordStorage) RecordStorageInstance
+				.getInstance();
 		return (MetadataStorage) mixedStorage.getBasicStorage();
 	}
 
 	@Override
 	public RecordStorage getRecordStorage() {
-		return RecordStorageInstance.instance;
+		return RecordStorageInstance.getInstance();
 	}
 
 }

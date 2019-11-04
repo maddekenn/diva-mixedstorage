@@ -113,14 +113,14 @@ public class DivaDbToCoraOrganisationConverterTest {
 
 	@Test
 	public void testOrganisationNotEligible() {
-		rowFromDb.put("not_eligible", "t");
+		rowFromDb.put("not_eligible", true);
 		DataGroup organisation = converter.fromMap(rowFromDb);
 		assertEquals(organisation.getFirstAtomicValueWithNameInData("eligible"), "no");
 	}
 
 	@Test
 	public void testOrganisationEligible() {
-		rowFromDb.put("not_eligible", "f");
+		rowFromDb.put("not_eligible", false);
 		DataGroup organisation = converter.fromMap(rowFromDb);
 		assertEquals(organisation.getFirstAtomicValueWithNameInData("eligible"), "yes");
 	}

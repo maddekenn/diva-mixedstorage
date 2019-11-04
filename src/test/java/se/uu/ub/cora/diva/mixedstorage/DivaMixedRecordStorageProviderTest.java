@@ -78,7 +78,8 @@ public class DivaMixedRecordStorageProviderTest {
 
 		makeSureBasePathExistsAndIsEmpty();
 		recordStorageOnDiskProvider = new DivaMixedRecordStorageProvider();
-		RecordStorageInstance.instance = null;
+		RecordStorageInstance.setInstance(null);
+		;
 	}
 
 	public void makeSureBasePathExistsAndIsEmpty() throws IOException {
@@ -231,7 +232,7 @@ public class DivaMixedRecordStorageProviderTest {
 	@Test
 	public void testRecordStorageStartedByOtherProviderIsReturned() {
 		RecordStorageSpy recordStorageSpy = new RecordStorageSpy();
-		RecordStorageInstance.instance = recordStorageSpy;
+		RecordStorageInstance.setInstance(recordStorageSpy);
 		recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
 		RecordStorage recordStorage = recordStorageOnDiskProvider.getRecordStorage();
 		assertSame(recordStorage, recordStorageSpy);
@@ -260,7 +261,7 @@ public class DivaMixedRecordStorageProviderTest {
 	@Test
 	public void testLoggingRecordStorageStartedByOtherProvider() {
 		RecordStorageSpy recordStorageSpy = new RecordStorageSpy();
-		RecordStorageInstance.instance = recordStorageSpy;
+		RecordStorageInstance.setInstance(recordStorageSpy);
 		recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
 		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 0),
 				"DivaMixedRecordStorageProvider starting DivaMixedRecordStorage...");
@@ -275,7 +276,7 @@ public class DivaMixedRecordStorageProviderTest {
 	public void testRecordStorageIsAccessibleToOthers() {
 		recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
 		RecordStorage recordStorage = recordStorageOnDiskProvider.getRecordStorage();
-		assertSame(recordStorage, RecordStorageInstance.instance);
+		assertSame(recordStorage, RecordStorageInstance.getInstance());
 	}
 
 	@Test

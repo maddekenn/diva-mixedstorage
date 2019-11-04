@@ -53,7 +53,7 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 		createAndAddName();
 		createAndAddAlternativeName();
 		createAndAddOrganisationType();
-		createAndAddEligibility();
+		possiblyCreateAndAddEligibility();
 		possiblyCeateAndAddAddress();
 		possiblyCreateAndAddOrganisationNumber();
 		possiblyCreateAndAddOrganisationCode();
@@ -152,14 +152,21 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 		organisation.addChild(DataAtomic.withNameInDataAndValue("organisationType", "unit"));
 	}
 
-	private void createAndAddEligibility() {
-		String eligible = (String) dbRow.get("not_eligible");
-		String coraEligible = isEligible(eligible) ? "yes" : "no";
+	private void possiblyCreateAndAddEligibility() {
+		Object notEligable = dbRow.get("not_eligible");
+		if (notEligable != null) {
+			createAndAddEligibility(notEligable);
+
+		}
+	}
+
+	private void createAndAddEligibility(Object notEligable) {
+		String coraEligible = isEligible(notEligable) ? "yes" : "no";
 		organisation.addChild(DataAtomic.withNameInDataAndValue("eligible", coraEligible));
 	}
 
-	private boolean isEligible(String eligible) {
-		return "f".equals(eligible);
+	private boolean isEligible(Object notEligable) {
+		return !(boolean) notEligable;
 	}
 
 	private void possiblyCeateAndAddAddress() {
