@@ -18,6 +18,7 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -71,7 +72,8 @@ public class RecordReaderSpy implements RecordReader {
 		map.put("someKey", "someValue");
 		if (conditions.containsKey("id")) {
 			if (conditions.get("id").equals("someIdWithClosedDate")) {
-				map.put("closed_date", "2018-12-31");
+				Date date = Date.valueOf("2018-12-31");
+				map.put("closed_date", date);
 			} else if (conditions.get("id").equals("someIdWithEmptyClosedDate")) {
 				map.put("closed_date", "");
 			}

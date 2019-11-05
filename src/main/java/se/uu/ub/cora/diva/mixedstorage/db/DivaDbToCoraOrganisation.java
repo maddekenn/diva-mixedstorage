@@ -18,6 +18,9 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import java.sql.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,9 +73,15 @@ public class DivaDbToCoraOrganisation implements DivaDbToCora {
 	}
 
 	private void saveClosedDateIfItExists(Map<String, Object> readRow) {
-		if (readRow.containsKey(CLOSED_DATE) && !"".equals(readRow.get(CLOSED_DATE))) {
-			organisationClosedDate = (String) readRow.get(CLOSED_DATE);
+		if (readRow.get(CLOSED_DATE) != null && !"".equals(readRow.get(CLOSED_DATE))) {
+			organisationClosedDate = getDateAsString(readRow);
 		}
+	}
+
+	private String getDateAsString(Map<String, Object> readRow) {
+		Date closedDate = (Date) readRow.get(CLOSED_DATE);
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		return dateFormat.format(closedDate);
 	}
 
 	private DataGroup convertOneMapFromDbToDataGroup(String type, Map<String, Object> readRow) {

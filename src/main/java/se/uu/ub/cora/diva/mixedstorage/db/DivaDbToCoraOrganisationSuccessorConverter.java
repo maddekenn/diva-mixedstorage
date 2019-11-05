@@ -53,8 +53,8 @@ public class DivaDbToCoraOrganisationSuccessorConverter
 
 	private void possiblyAddClosedDate(DataGroup closed) {
 		if (successorHasClosedDate()) {
-			closed.addChild(DataAtomic.withNameInDataAndValue("closedDate",
-					(String) dbRow.get("closed_date")));
+			String closedDateAsString = (String) dbRow.get("closed_date");
+			closed.addChild(DataAtomic.withNameInDataAndValue("closedDate", closedDateAsString));
 		}
 	}
 
