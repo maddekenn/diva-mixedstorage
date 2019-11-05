@@ -101,7 +101,6 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 
 	private void createAndAddCreatedAndUpdatedInfo(DataGroup recordInfo) {
 		createAndAddCreatedInfo(recordInfo);
-
 		createAndAddUpdatedInfo(recordInfo);
 	}
 

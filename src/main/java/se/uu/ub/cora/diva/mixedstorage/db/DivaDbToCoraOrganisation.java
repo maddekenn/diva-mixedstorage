@@ -73,7 +73,8 @@ public class DivaDbToCoraOrganisation implements DivaDbToCora {
 	}
 
 	private void saveClosedDateIfItExists(Map<String, Object> readRow) {
-		if (readRow.get(CLOSED_DATE) != null && !"".equals(readRow.get(CLOSED_DATE))) {
+		Object closedDate = readRow.get(CLOSED_DATE);
+		if (closedDate != null && !"".equals(closedDate)) {
 			organisationClosedDate = getDateAsString(readRow);
 		}
 	}

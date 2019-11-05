@@ -79,7 +79,6 @@ public class DivaMixedRecordStorageProviderTest {
 		makeSureBasePathExistsAndIsEmpty();
 		recordStorageOnDiskProvider = new DivaMixedRecordStorageProvider();
 		RecordStorageInstance.setInstance(null);
-		;
 	}
 
 	public void makeSureBasePathExistsAndIsEmpty() throws IOException {
