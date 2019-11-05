@@ -35,7 +35,7 @@ public class ResourceReader {
 				Thread.currentThread().getContextClassLoader().getResource(resourceFile).toURI()),
 				StandardCharsets.UTF_8);) {
 
-			lines.forEach(line -> data.append(line).append("\n"));
+			lines.forEach(line -> data.append(line).append('\n'));
 			removeAddedExtraLineBreakAtEnd(data);
 		} catch (Exception e) {
 			throw new RuntimeException(
