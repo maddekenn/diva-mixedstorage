@@ -30,18 +30,27 @@ public class ResourceReader {
 	}
 
 	public static String readResourceAsString(String resourceFile) {
-		StringBuilder data = new StringBuilder();
 		try (Stream<String> lines = Files.lines(Paths.get(
 				Thread.currentThread().getContextClassLoader().getResource(resourceFile).toURI()),
 				StandardCharsets.UTF_8);) {
 
-			lines.forEach(line -> data.append(line).append('\n'));
-			removeAddedExtraLineBreakAtEnd(data);
+			return tryToReadResourceLines(lines);
 		} catch (Exception e) {
 			throw new RuntimeException(
 					"Unable to read resource to string for file: " + resourceFile, e);
 		}
+	}
+
+	private static String tryToReadResourceLines(Stream<String> lines) {
+		StringBuilder data = readAllLinesWithLinebreaks(lines);
+		removeAddedExtraLineBreakAtEnd(data);
 		return data.toString();
+	}
+
+	private static StringBuilder readAllLinesWithLinebreaks(Stream<String> lines) {
+		StringBuilder data = new StringBuilder();
+		lines.forEach(line -> data.append(line).append('\n'));
+		return data;
 	}
 
 	private static void removeAddedExtraLineBreakAtEnd(StringBuilder data) {
