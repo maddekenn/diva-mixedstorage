@@ -86,7 +86,7 @@ public class DivaFedoraToCoraRecordInfoConverter {
 	}
 
 	private String removeTAndZFromTimestamp(String tsCreatedWithLetters) {
-		return tsCreatedWithLetters.replace("T", " ").replace("Z", "");
+		return tsCreatedWithLetters.replace('T', ' ').replace("Z", "");
 	}
 
 	private void addUpdated() {

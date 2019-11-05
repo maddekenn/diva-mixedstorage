@@ -45,7 +45,8 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 	}
 
 	private boolean organisationIsEmpty() {
-		return !dbRow.containsKey(ORGANISATION_ID) || "".equals(dbRow.get(ORGANISATION_ID));
+		Object organisationId = dbRow.get(ORGANISATION_ID);
+		return organisationId == null || "".equals(organisationId);
 	}
 
 	private DataGroup createDataGroup() {

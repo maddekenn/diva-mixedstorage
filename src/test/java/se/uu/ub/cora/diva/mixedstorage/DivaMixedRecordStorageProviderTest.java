@@ -319,7 +319,6 @@ public class DivaMixedRecordStorageProviderTest {
 		} catch (Exception e) {
 			assertTrue(e instanceof DataStorageException);
 			assertEquals(e.getMessage(), errorMessage);
-
 		}
 		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 0),
 				"DivaMixedRecordStorageProvider starting DivaMixedRecordStorage...");
@@ -342,6 +341,27 @@ public class DivaMixedRecordStorageProviderTest {
 
 	@Test
 	public void testLoggingAndErrorIfMissingStartParameterDatabaseLookupName() {
-		assertCorrectErrorAndLogOnMissingParameter("databaseLookupName", 4);
+		assertCorrectErrorAndLogOnMissingParameterAndPassedOnError("databaseLookupName", 4);
+	}
+
+	private void assertCorrectErrorAndLogOnMissingParameterAndPassedOnError(String parameter,
+			int noOfInfoMessages) {
+		initInfo.remove(parameter);
+		String errorMessage = "InitInfo must contain " + parameter;
+		try {
+			recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
+		} catch (Exception e) {
+			assertTrue(e instanceof DataStorageException);
+			assertEquals(e.getMessage(), errorMessage);
+			assertTrue(e.getCause() instanceof DataStorageException);
+
+		}
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 0),
+				"DivaMixedRecordStorageProvider starting DivaMixedRecordStorage...");
+		assertEquals(loggerFactorySpy.getNoOfInfoLogMessagesUsingClassName(testedClassName),
+				noOfInfoMessages);
+		assertEquals(loggerFactorySpy.getFatalLogMessageUsingClassNameAndNo(testedClassName, 0),
+				errorMessage);
+		assertEquals(loggerFactorySpy.getNoOfFatalLogMessagesUsingClassName(testedClassName), 1);
 	}
 }
