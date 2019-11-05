@@ -115,21 +115,21 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 		DataGroup updated = DataGroup.withNameInData("updated");
 		DataGroup updatedBy = createLinkUsingNameInDataRecordTypeAndRecordId("updatedBy",
 				"coraUser", "coraUser:4412982402853626");
-		updatedBy.setRepeatId("0");
 		updated.addChild(updatedBy);
 		addPredefinedTimestampToDataGroupUsingNameInData(updated, "tsUpdated");
+		updated.setRepeatId("0");
 		recordInfo.addChild(updated);
 	}
 
 	private void addPredefinedTimestampToDataGroupUsingNameInData(DataGroup recordInfo,
 			String nameInData) {
-		LocalDateTime tsCreated = LocalDateTime.of(2015, 01, 01, 00, 00, 00);
+		LocalDateTime tsCreated = LocalDateTime.of(2017, 01, 01, 00, 00, 00, 0);
 		String dateTimeString = getLocalTimeDateAsString(tsCreated);
 		recordInfo.addChild(DataAtomic.withNameInDataAndValue(nameInData, dateTimeString));
 	}
 
 	private String getLocalTimeDateAsString(LocalDateTime localDateTime) {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
 		return localDateTime.format(formatter);
 	}
 
@@ -174,7 +174,7 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 		possiblyAddAtomicValueUsingKeyAndNameInData("street", "street");
 		possiblyAddAtomicValueUsingKeyAndNameInData("box", "box");
 		possiblyAddAtomicValueUsingKeyAndNameInData("postnumber", "postcode");
-		possiblyAddCountryConvertedToUpperCase();
+		addCountryConvertedToUpperCaseOrSetDefault();
 	}
 
 	private void possiblyAddAtomicValueUsingKeyAndNameInData(String key, String nameInData) {
@@ -185,18 +185,25 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 	}
 
 	private boolean valueExistsForKey(String key) {
-		return dbRow.containsKey(key) && valueForKeyHoldsNonEmptyData(key);
+		Object value = dbRow.get(key);
+		return value != null && !"".equals(value);
 	}
 
-	private boolean valueForKeyHoldsNonEmptyData(String key) {
-		return dbRow.get(key) != null && !"".equals(dbRow.get(key));
-	}
-
-	private void possiblyAddCountryConvertedToUpperCase() {
+	private void addCountryConvertedToUpperCaseOrSetDefault() {
 		if (valueExistsForKey("country_code")) {
-			String uppercaseValue = ((String) dbRow.get("country_code")).toUpperCase();
-			organisation.addChild(DataAtomic.withNameInDataAndValue("country", uppercaseValue));
+			addCountryConvertedToUpperCase();
+		} else {
+			setDefaultCountryCode();
 		}
+	}
+
+	private void addCountryConvertedToUpperCase() {
+		String uppercaseValue = ((String) dbRow.get("country_code")).toUpperCase();
+		organisation.addChild(DataAtomic.withNameInDataAndValue("country", uppercaseValue));
+	}
+
+	private void setDefaultCountryCode() {
+		organisation.addChild(DataAtomic.withNameInDataAndValue("country", "SE"));
 	}
 
 	private void possiblyCreateAndAddOrganisationNumber() {

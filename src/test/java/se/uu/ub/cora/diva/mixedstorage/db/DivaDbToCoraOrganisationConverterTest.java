@@ -142,7 +142,7 @@ public class DivaDbToCoraOrganisationConverterTest {
 
 	private void assertCorrectCreatedAndUpdatedInfo(DataGroup recordInfo) {
 		assertEquals(recordInfo.getFirstAtomicValueWithNameInData("tsCreated"),
-				"2015-01-01 00:00:00");
+				"2017-01-01 00:00:00.0");
 
 		DataGroup createdBy = recordInfo.getFirstGroupWithNameInData("createdBy");
 		assertEquals(createdBy.getFirstAtomicValueWithNameInData("linkedRecordType"), "coraUser");
@@ -151,13 +151,14 @@ public class DivaDbToCoraOrganisationConverterTest {
 
 		assertEquals(recordInfo.getAllGroupsWithNameInData("updated").size(), 1);
 		DataGroup updated = recordInfo.getFirstGroupWithNameInData("updated");
-		assertEquals(updated.getFirstAtomicValueWithNameInData("tsUpdated"), "2015-01-01 00:00:00");
+		assertEquals(updated.getFirstAtomicValueWithNameInData("tsUpdated"),
+				"2017-01-01 00:00:00.0");
+		assertEquals(updated.getRepeatId(), "0");
 
 		DataGroup updatedBy = updated.getFirstGroupWithNameInData("updatedBy");
 		assertEquals(updatedBy.getFirstAtomicValueWithNameInData("linkedRecordType"), "coraUser");
 		assertEquals(updatedBy.getFirstAtomicValueWithNameInData("linkedRecordId"),
 				"coraUser:4412982402853626");
-		assertEquals(updatedBy.getRepeatId(), "0");
 
 	}
 
@@ -168,7 +169,9 @@ public class DivaDbToCoraOrganisationConverterTest {
 		assertFalse(organisation.containsChildWithNameInData("street"));
 		assertFalse(organisation.containsChildWithNameInData("box"));
 		assertFalse(organisation.containsChildWithNameInData("postcode"));
-		assertFalse(organisation.containsChildWithNameInData("country"));
+
+		// default value, since country is mandatory
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("country"), "SE");
 	}
 
 	@Test
@@ -177,14 +180,14 @@ public class DivaDbToCoraOrganisationConverterTest {
 		rowFromDb.put("street", "Övre slottsgatan 1");
 		rowFromDb.put("box", "Box5435");
 		rowFromDb.put("postnumber", "345 34");
-		rowFromDb.put("country_code", "se");
+		rowFromDb.put("country_code", "fi");
 		DataGroup organisation = converter.fromMap(rowFromDb);
 		assertEquals(organisation.getFirstAtomicValueWithNameInData("city"), "uppsala");
 		assertEquals(organisation.getFirstAtomicValueWithNameInData("street"),
 				"Övre slottsgatan 1");
 		assertEquals(organisation.getFirstAtomicValueWithNameInData("box"), "Box5435");
 		assertEquals(organisation.getFirstAtomicValueWithNameInData("postcode"), "345 34");
-		assertEquals(organisation.getFirstAtomicValueWithNameInData("country"), "SE");
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("country"), "FI");
 	}
 
 	@Test
