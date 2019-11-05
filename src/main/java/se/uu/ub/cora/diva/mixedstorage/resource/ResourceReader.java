@@ -18,10 +18,9 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.resource;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 public class ResourceReader {
@@ -31,31 +30,18 @@ public class ResourceReader {
 	}
 
 	public static String readResourceAsString(String resourceFile) {
-		ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+		StringBuilder data = new StringBuilder();
+		try (Stream<String> lines = Files.lines(Paths.get(
+				Thread.currentThread().getContextClassLoader().getResource(resourceFile).toURI()),
+				StandardCharsets.UTF_8);) {
 
-		InputStream resourceAsStream = contextClassLoader.getResourceAsStream(resourceFile);
-		BufferedReader bufferedReader = new BufferedReader(
-				new InputStreamReader(resourceAsStream, StandardCharsets.UTF_8));
-		try (Stream<String> lines = bufferedReader.lines();) {
-			String resourceLines = tryToReadResourceLines(lines);
-			bufferedReader.close();
-			return resourceLines;
+			lines.forEach(line -> data.append(line).append("\n"));
+			removeAddedExtraLineBreakAtEnd(data);
 		} catch (Exception e) {
 			throw new RuntimeException(
 					"Unable to read resource to string for file: " + resourceFile, e);
 		}
-	}
-
-	private static String tryToReadResourceLines(Stream<String> lines) {
-		StringBuilder data = readAllLinesWithLinebreaks(lines);
-		removeAddedExtraLineBreakAtEnd(data);
 		return data.toString();
-	}
-
-	private static StringBuilder readAllLinesWithLinebreaks(Stream<String> lines) {
-		StringBuilder data = new StringBuilder();
-		lines.forEach(line -> data.append(line).append('\n'));
-		return data;
 	}
 
 	private static void removeAddedExtraLineBreakAtEnd(StringBuilder data) {
