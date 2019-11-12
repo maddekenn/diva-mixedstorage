@@ -29,7 +29,7 @@ public class DivaDbToCoraOrganisationPredecessorConverter
 	private static final String DESCRIPTION = "description";
 
 	@Override
-	public DataGroup fromMap(Map<String, String> dbRow) {
+	public DataGroup fromMap(Map<String, Object> dbRow) {
 		this.dbRow = dbRow;
 		if (mandatoryValuesAreMissing()) {
 			throw ConversionException.withMessageAndException(
@@ -49,14 +49,14 @@ public class DivaDbToCoraOrganisationPredecessorConverter
 
 	private void addPredecessorLink(DataGroup formerName) {
 		DataGroup predecessor = createOrganisationLinkUsingLinkedRecordId(
-				dbRow.get(PREDECESSOR_ID));
+				(String) dbRow.get(PREDECESSOR_ID));
 		formerName.addChild(predecessor);
 	}
 
 	private void possiblyAddDescription(DataGroup formerName) {
 		if (predecessorHasDescription()) {
 			formerName.addChild(DataAtomic.withNameInDataAndValue("organisationComment",
-					dbRow.get(DESCRIPTION)));
+					(String) dbRow.get(DESCRIPTION)));
 		}
 	}
 

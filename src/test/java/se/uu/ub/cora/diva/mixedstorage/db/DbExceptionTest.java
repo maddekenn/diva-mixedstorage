@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Uppsala University Library
+ * Copyright 2019 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -18,11 +18,25 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
-import java.util.Map;
+import static org.testng.Assert.assertEquals;
 
-import se.uu.ub.cora.data.DataGroup;
+import org.testng.annotations.Test;
 
-public interface DivaDbToCoraConverter {
-	DataGroup fromMap(Map<String, Object> map);
+public class DbExceptionTest {
 
+	@Test
+	public void testWithMessage() {
+		String message = "message";
+		DbException exception = DbException.withMessage(message);
+		assertEquals(exception.getMessage(), "message");
+	}
+
+	@Test
+	public void testWithMessageAndException() throws Exception {
+		Exception e = new Exception("some message");
+		DbException exception = DbException.withMessageAndException("second message", e);
+		assertEquals(exception.getMessage(), "second message");
+		assertEquals(exception.getCause().getMessage(), "some message");
+
+	}
 }

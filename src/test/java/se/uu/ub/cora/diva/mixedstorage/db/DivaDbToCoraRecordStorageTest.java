@@ -24,15 +24,16 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 import java.util.List;
+import java.util.Map;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.diva.mixedstorage.DataReaderSpy;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.storage.StorageReadResult;
 import se.uu.ub.cora.storage.RecordStorage;
+import se.uu.ub.cora.storage.StorageReadResult;
 
 public class DivaDbToCoraRecordStorageTest {
 	private static final String TABLE_NAME = "divaOrganisation";
@@ -40,18 +41,19 @@ public class DivaDbToCoraRecordStorageTest {
 	private DivaDbToCoraConverterFactorySpy converterFactory;
 	private RecordReaderFactorySpy recordReaderFactory;
 	private DivaDbToCoraFactorySpy divaDbToCoraFactory;
-	private DataReaderSpy dataReader;
+	private RecordUpdaterFactorySpy recordUpdaterFactory;
 
 	@BeforeMethod
 	public void BeforeMethod() {
 		converterFactory = new DivaDbToCoraConverterFactorySpy();
 		recordReaderFactory = new RecordReaderFactorySpy();
+		recordUpdaterFactory = new RecordUpdaterFactorySpy();
 		divaDbToCoraFactory = new DivaDbToCoraFactorySpy();
-		dataReader = new DataReaderSpy();
 
 		divaToCoraRecordStorage = DivaDbToCoraRecordStorage
-				.usingRecordReaderFactoryConverterFactoryAndDbToCoraFactoryAndDataReader(
-						recordReaderFactory, converterFactory, divaDbToCoraFactory, dataReader);
+				.usingRecordReaderFactoryAndRecordUpdaterFactoryConverterFactoryAndDbToCoraFactory(
+						recordReaderFactory, converterFactory, divaDbToCoraFactory,
+						recordUpdaterFactory);
 	}
 
 	@Test
@@ -108,6 +110,57 @@ public class DivaDbToCoraRecordStorageTest {
 			+ "linksExistForRecord is not implemented")
 	public void linksExistForRecordThrowsNotImplementedException() throws Exception {
 		divaToCoraRecordStorage.linksExistForRecord(null, null);
+	}
+
+	@Test
+	public void testUpdateOrganisationFactorDbReader() throws Exception {
+		DataGroup record = DataGroup.withNameInData("organisation");
+		record.addChild(DataAtomic.withNameInDataAndValue("organisationName", "someChangedName"));
+
+		String dataDivider = "";
+		divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
+		assertTrue(recordUpdaterFactory.factorWasCalled);
+
+	}
+
+	@Test
+	public void testUpdateNameInOrganisation() throws Exception {
+		DataGroup record = DataGroup.withNameInData("organisation");
+		record.addChild(DataAtomic.withNameInDataAndValue("organisationName", "someChangedName"));
+
+		String dataDivider = "";
+		divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
+
+		RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
+		assertEquals(factoredUpdater.tableName, "organisation");
+		assertEquals(factoredUpdater.conditions.get("organisation_id"), 56);
+
+		assertEquals(factoredUpdater.values.get("organisation_name"), "someChangedName");
+
+	}
+
+	@Test(expectedExceptions = DbException.class)
+	public void testUpdateOrganisationIdNotAnInt() throws Exception {
+		DataGroup record = DataGroup.withNameInData("organisation");
+		record.addChild(DataAtomic.withNameInDataAndValue("organisationName", "someChangedName"));
+
+		String dataDivider = "";
+		divaToCoraRecordStorage.update("divaOrganisation", "notAnInt", record, null, null,
+				dataDivider);
+
+	}
+
+	@Test
+	public void testUpdateOrganisationIdNotAnIntSendsAlongInitalException() throws Exception {
+		DataGroup record = DataGroup.withNameInData("organisation");
+		record.addChild(DataAtomic.withNameInDataAndValue("organisationName", "someChangedName"));
+
+		try {
+			divaToCoraRecordStorage.update("divaOrganisation", "notAnInt", record, null, null, "");
+		} catch (Exception e) {
+			assertTrue(e.getCause() instanceof NumberFormatException);
+		}
+
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
@@ -227,33 +280,34 @@ public class DivaDbToCoraRecordStorageTest {
 
 	@Test
 	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdForDivaOrganisation() {
-		boolean userExists = divaToCoraRecordStorage
+		boolean organisationExists = divaToCoraRecordStorage
 				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("divaOrganisation",
 						"26");
-		assertTrue(dataReader.readOneRowWasCalled);
-		assertEquals(dataReader.sqlSentToReader,
-				"select * from organisation where organisation_id = ?");
-		assertEquals(dataReader.valuesSentToReader.get(0), 26);
-		assertTrue(userExists);
+		RecordReaderSpy readerSpy = recordReaderFactory.factored;
+		assertEquals(readerSpy.usedTableName, "organisation");
+		Map<String, Object> usedConditions = readerSpy.usedConditions;
+		assertEquals(usedConditions.get("organisation_id"), 26);
+		assertTrue(organisationExists);
 	}
 
 	@Test
-	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdForDivaOrganisationWhenUserDoesNotExist() {
-		boolean userExists = divaToCoraRecordStorage
+	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdForDivaOrganisationWhenOrganisationDoesNotExist() {
+		boolean organisationExists = divaToCoraRecordStorage
 				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("divaOrganisation",
 						"600");
-		assertTrue(dataReader.readOneRowWasCalled);
-		assertEquals(dataReader.sqlSentToReader,
-				"select * from organisation where organisation_id = ?");
-		assertEquals(dataReader.valuesSentToReader.get(0), 600);
-		assertFalse(userExists);
-		assertFalse(userExists);
+		RecordReaderSpy readerSpy = recordReaderFactory.factored;
+		assertEquals(readerSpy.usedTableName, "organisation");
+		Map<String, Object> usedConditions = readerSpy.usedConditions;
+		assertEquals(usedConditions.get("organisation_id"), 600);
+		assertFalse(organisationExists);
 	}
 
 	@Test
-	public void testecordExistsDivaOrganisationCallsDataReaderWithStringIdReturnsFalse()
+	public void testRecordExistsDivaOrganisationCallsDataReaderWithStringIdReturnsFalse()
 			throws Exception {
-		divaToCoraRecordStorage.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(
-				"divaOrganisation", "notAnInt");
+		boolean organisationExists = divaToCoraRecordStorage
+				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("divaOrganisation",
+						"notAnInt");
+		assertFalse(organisationExists);
 	}
 }

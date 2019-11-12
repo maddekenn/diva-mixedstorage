@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Uppsala University Library
+ * Copyright 2019 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -20,9 +20,21 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 
 import java.util.Map;
 
-import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.sqldatabase.RecordUpdater;
 
-public interface DivaDbToCoraConverter {
-	DataGroup fromMap(Map<String, Object> map);
+public class RecordUpdaterSpy implements RecordUpdater {
+
+	public String tableName;
+	public Map<String, Object> values;
+	public Map<String, Object> conditions;
+
+	@Override
+	public void updateRecordInDbUsingTableAndValuesAndConditions(String tableName,
+			Map<String, Object> values, Map<String, Object> conditions) {
+		this.tableName = tableName;
+		this.values = values;
+		this.conditions = conditions;
+
+	}
 
 }

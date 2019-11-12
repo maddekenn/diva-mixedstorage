@@ -26,7 +26,7 @@ import se.uu.ub.cora.data.DataGroup;
 public class DivaDbToCoraOrganisationAncestryConverter {
 	protected static final String PREDECESSOR_ID = "predecessor_id";
 	protected static final String ORGANISATION_ID = "organisation_id";
-	protected Map<String, String> dbRow;
+	protected Map<String, Object> dbRow;
 
 	protected boolean mandatoryValuesAreMissing() {
 		return organisationIdIsMissing() || predecessorIdIsMissing();
@@ -37,7 +37,7 @@ public class DivaDbToCoraOrganisationAncestryConverter {
 	}
 
 	protected boolean dbRowHasValueForKey(String key) {
-		String value = dbRow.get(key);
+		Object value = dbRow.get(key);
 		return value != null && !"".equals(value);
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Uppsala University Library
+ * Copyright 2019 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -18,11 +18,23 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
-import java.util.Map;
+public final class DbException extends RuntimeException {
 
-import se.uu.ub.cora.data.DataGroup;
+	private static final long serialVersionUID = 2958232247295642083L;
 
-public interface DivaDbToCoraConverter {
-	DataGroup fromMap(Map<String, Object> map);
+	public static DbException withMessage(String message) {
+		return new DbException(message);
+	}
 
+	public static DbException withMessageAndException(String message, Exception e) {
+		return new DbException(message, e);
+	}
+
+	private DbException(String message) {
+		super(message);
+	}
+
+	private DbException(String message, Exception e) {
+		super(message, e);
+	}
 }

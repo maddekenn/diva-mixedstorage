@@ -27,7 +27,7 @@ public class DivaDbToCoraOrganisationSuccessorConverter
 		extends DivaDbToCoraOrganisationAncestryConverter implements DivaDbToCoraConverter {
 
 	@Override
-	public DataGroup fromMap(Map<String, String> dbRow) {
+	public DataGroup fromMap(Map<String, Object> dbRow) {
 		this.dbRow = dbRow;
 		if (mandatoryValuesAreMissing()) {
 			throw ConversionException.withMessageAndException(
@@ -46,14 +46,15 @@ public class DivaDbToCoraOrganisationSuccessorConverter
 	}
 
 	private void addSuccessorLink(DataGroup closed) {
-		DataGroup successor = createOrganisationLinkUsingLinkedRecordId(dbRow.get(ORGANISATION_ID));
+		String id = (String) dbRow.get(ORGANISATION_ID);
+		DataGroup successor = createOrganisationLinkUsingLinkedRecordId(id);
 		closed.addChild(successor);
 	}
 
 	private void possiblyAddClosedDate(DataGroup closed) {
 		if (successorHasClosedDate()) {
-			closed.addChild(
-					DataAtomic.withNameInDataAndValue("closedDate", dbRow.get("closed_date")));
+			String closedDateAsString = (String) dbRow.get("closed_date");
+			closed.addChild(DataAtomic.withNameInDataAndValue("closedDate", closedDateAsString));
 		}
 	}
 
