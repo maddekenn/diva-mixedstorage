@@ -112,7 +112,7 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	private Map<String, Object> createConditionsAddingOrganisationId(String id) {
 		throwDbExceptionIfIdNotAnIntegerValue(id);
 		Map<String, Object> conditions = new HashMap<>(1);
-		conditions.put("organisation_id", Integer.parseInt(id));
+		conditions.put("organisation_id", Integer.valueOf(id));
 		return conditions;
 	}
 
