@@ -96,17 +96,17 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 
 	private void updateOrganisation(String id, DataGroup record) {
 		RecordUpdater recordUpdater = recordUpdaterFactory.factor();
-		Map<String, Object> values = createValuesForUpdateQuery(record);
+		Map<String, Object> columnsWithValues = createColumnsWithValuesForUpdateQuery(record);
 		Map<String, Object> conditions = createConditionsAddingOrganisationId(id);
-		recordUpdater.updateRecordInDbUsingTableAndValuesAndConditions("organisation", values,
+		recordUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions("organisation", columnsWithValues,
 				conditions);
 	}
 
-	private Map<String, Object> createValuesForUpdateQuery(DataGroup record) {
+	private Map<String, Object> createColumnsWithValuesForUpdateQuery(DataGroup record) {
 		String organisationName = record.getFirstAtomicValueWithNameInData("organisationName");
-		Map<String, Object> values = new HashMap<>(1);
-		values.put("organisation_name", organisationName);
-		return values;
+		Map<String, Object> columnsWithValues = new HashMap<>(1);
+		columnsWithValues.put("organisation_name", organisationName);
+		return columnsWithValues;
 	}
 
 	private Map<String, Object> createConditionsAddingOrganisationId(String id) {

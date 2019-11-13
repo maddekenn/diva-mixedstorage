@@ -55,7 +55,7 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 		createAndAddAlternativeName();
 		createAndAddOrganisationType();
 		possiblyCreateAndAddEligibility();
-		possiblyCeateAndAddAddress();
+		possiblyCreateAndAddAddress();
 		possiblyCreateAndAddOrganisationNumber();
 		possiblyCreateAndAddOrganisationCode();
 		possiblyCreateAndAddURL();
@@ -169,7 +169,7 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 		return !(boolean) notEligable;
 	}
 
-	private void possiblyCeateAndAddAddress() {
+	private void possiblyCreateAndAddAddress() {
 		possiblyAddAtomicValueUsingKeyAndNameInData("city", "city");
 		possiblyAddAtomicValueUsingKeyAndNameInData("street", "street");
 		possiblyAddAtomicValueUsingKeyAndNameInData("box", "box");

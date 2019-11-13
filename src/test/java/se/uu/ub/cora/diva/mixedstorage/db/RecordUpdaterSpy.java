@@ -29,7 +29,7 @@ public class RecordUpdaterSpy implements RecordUpdater {
 	public Map<String, Object> conditions;
 
 	@Override
-	public void updateRecordInDbUsingTableAndValuesAndConditions(String tableName,
+	public void updateTableUsingNameAndColumnsWithValuesAndConditions(String tableName,
 			Map<String, Object> values, Map<String, Object> conditions) {
 		this.tableName = tableName;
 		this.values = values;
