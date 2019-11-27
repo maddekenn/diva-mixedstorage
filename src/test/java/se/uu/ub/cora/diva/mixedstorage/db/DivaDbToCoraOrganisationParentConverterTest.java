@@ -27,14 +27,26 @@ import java.util.Map;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.data.DataAtomicFactory;
+import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupFactory;
+import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.diva.mixedstorage.DataAtomicFactorySpy;
+import se.uu.ub.cora.diva.mixedstorage.fedora.DataGroupFactorySpy;
 
 public class DivaDbToCoraOrganisationParentConverterTest {
 	private DivaDbToCoraOrganisationParentConverter converter;
 	private Map<String, Object> rowFromDb;
+	private DataGroupFactory dataGroupFactory;
+	private DataAtomicFactory dataAtomicFactory;
 
 	@BeforeMethod
 	public void beforeMethod() {
+		dataGroupFactory = new DataGroupFactorySpy();
+		DataGroupProvider.setDataGroupFactory(dataGroupFactory);
+		dataAtomicFactory = new DataAtomicFactorySpy();
+		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactory);
 		rowFromDb = new HashMap<>();
 		rowFromDb.put("organisation_id", "someOrgId");
 		rowFromDb.put("organisation_parent_id", 52);
