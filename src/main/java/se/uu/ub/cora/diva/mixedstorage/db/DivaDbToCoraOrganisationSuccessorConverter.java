@@ -20,8 +20,9 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 
 import java.util.Map;
 
-import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupProvider;
 
 public class DivaDbToCoraOrganisationSuccessorConverter
 		extends DivaDbToCoraOrganisationAncestryConverter implements DivaDbToCoraConverter {
@@ -39,7 +40,7 @@ public class DivaDbToCoraOrganisationSuccessorConverter
 	}
 
 	private DataGroup createDataGroup() {
-		DataGroup closed = DataGroup.withNameInData("closed");
+		DataGroup closed = DataGroupProvider.getDataGroupUsingNameInData("closed");
 		addSuccessorLink(closed);
 		possiblyAddClosedDate(closed);
 		return closed;
@@ -54,7 +55,8 @@ public class DivaDbToCoraOrganisationSuccessorConverter
 	private void possiblyAddClosedDate(DataGroup closed) {
 		if (successorHasClosedDate()) {
 			String closedDateAsString = (String) dbRow.get("closed_date");
-			closed.addChild(DataAtomic.withNameInDataAndValue("closedDate", closedDateAsString));
+			closed.addChild(DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("closedDate",
+					closedDateAsString));
 		}
 	}
 

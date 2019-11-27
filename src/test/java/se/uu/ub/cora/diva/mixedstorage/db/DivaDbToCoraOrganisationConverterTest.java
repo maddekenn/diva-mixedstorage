@@ -21,6 +21,7 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
 import java.util.HashMap;
@@ -29,15 +30,27 @@ import java.util.Map;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.diva.mixedstorage.DataAtomicFactorySpy;
+import se.uu.ub.cora.diva.mixedstorage.DataAtomicSpy;
+import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
+import se.uu.ub.cora.diva.mixedstorage.fedora.DataGroupFactorySpy;
 
 public class DivaDbToCoraOrganisationConverterTest {
 
 	private DivaDbToCoraOrganisationConverter converter;
 	private Map<String, Object> rowFromDb;
+	private DataGroupFactorySpy dataGroupFactorySpy;
+	private DataAtomicFactorySpy dataAtomicFactorySpy;
 
 	@BeforeMethod
 	public void beforeMethod() {
+		dataGroupFactorySpy = new DataGroupFactorySpy();
+		DataGroupProvider.setDataGroupFactory(dataGroupFactorySpy);
+		dataAtomicFactorySpy = new DataAtomicFactorySpy();
+		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactorySpy);
 		rowFromDb = new HashMap<>();
 		rowFromDb.put("id", "someOrgId");
 		converter = new DivaDbToCoraOrganisationConverter();
@@ -80,8 +93,18 @@ public class DivaDbToCoraOrganisationConverterTest {
 	public void testMinimalValuesReturnsDataGroupWithCorrectRecordInfo() {
 		DataGroup organisation = converter.fromMap(rowFromDb);
 		assertEquals(organisation.getNameInData(), "organisation");
-
 		assertCorrectRecordInfoWithId(organisation, "someOrgId");
+
+		DataGroupSpy factoredOrganisation = dataGroupFactorySpy.factoredDataGroups.get(0);
+		assertEquals(factoredOrganisation.nameInData, "organisation");
+
+		DataGroupSpy factoredRecordInfo = dataGroupFactorySpy.factoredDataGroups.get(1);
+		assertEquals(factoredRecordInfo.nameInData, "recordInfo");
+		assertSame(factoredRecordInfo, organisation.getFirstChildWithNameInData("recordInfo"));
+
+		DataAtomicSpy factoredDataAtomicForId = dataAtomicFactorySpy.factoredDataAtomics.get(0);
+		assertEquals(factoredDataAtomicForId.nameInData, "id");
+		assertEquals(factoredDataAtomicForId.value, "someOrgId");
 	}
 
 	@Test
@@ -181,13 +204,38 @@ public class DivaDbToCoraOrganisationConverterTest {
 		rowFromDb.put("box", "Box5435");
 		rowFromDb.put("postnumber", "345 34");
 		rowFromDb.put("country_code", "fi");
+
 		DataGroup organisation = converter.fromMap(rowFromDb);
+		DataAtomicSpy factoredDataAtomicForCity = dataAtomicFactorySpy.factoredDataAtomics.get(15);
+		assertEquals(factoredDataAtomicForCity.nameInData, "city");
+		assertEquals(factoredDataAtomicForCity.value, "uppsala");
+
+		DataAtomicSpy factoredDataAtomicForStreet = dataAtomicFactorySpy.factoredDataAtomics
+				.get(16);
+		assertEquals(factoredDataAtomicForStreet.nameInData, "street");
+		assertEquals(factoredDataAtomicForStreet.value, "Övre slottsgatan 1");
+
+		DataAtomicSpy factoredDataAtomicForBox = dataAtomicFactorySpy.factoredDataAtomics.get(17);
+		assertEquals(factoredDataAtomicForBox.nameInData, "box");
+		assertEquals(factoredDataAtomicForBox.value, "Box5435");
+
+		DataAtomicSpy factoredDataAtomicForPostcode = dataAtomicFactorySpy.factoredDataAtomics
+				.get(18);
+		assertEquals(factoredDataAtomicForPostcode.nameInData, "postcode");
+		assertEquals(factoredDataAtomicForPostcode.value, "345 34");
+
+		DataAtomicSpy factoredDataAtomicForCountry = dataAtomicFactorySpy.factoredDataAtomics
+				.get(19);
+		assertEquals(factoredDataAtomicForCountry.nameInData, "country");
+		assertEquals(factoredDataAtomicForCountry.value, "FI");
+
 		assertEquals(organisation.getFirstAtomicValueWithNameInData("city"), "uppsala");
 		assertEquals(organisation.getFirstAtomicValueWithNameInData("street"),
 				"Övre slottsgatan 1");
 		assertEquals(organisation.getFirstAtomicValueWithNameInData("box"), "Box5435");
 		assertEquals(organisation.getFirstAtomicValueWithNameInData("postcode"), "345 34");
 		assertEquals(organisation.getFirstAtomicValueWithNameInData("country"), "FI");
+
 	}
 
 	@Test

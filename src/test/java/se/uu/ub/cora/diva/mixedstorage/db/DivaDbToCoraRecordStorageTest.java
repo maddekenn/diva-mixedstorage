@@ -29,8 +29,9 @@ import java.util.Map;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.diva.mixedstorage.DataAtomicSpy;
+import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.storage.RecordStorage;
 import se.uu.ub.cora.storage.StorageReadResult;
@@ -114,8 +115,8 @@ public class DivaDbToCoraRecordStorageTest {
 
 	@Test
 	public void testUpdateOrganisationFactorDbReader() throws Exception {
-		DataGroup record = DataGroup.withNameInData("organisation");
-		record.addChild(DataAtomic.withNameInDataAndValue("organisationName", "someChangedName"));
+		DataGroup record = new DataGroupSpy("organisation");
+		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 
 		String dataDivider = "";
 		divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
@@ -125,8 +126,8 @@ public class DivaDbToCoraRecordStorageTest {
 
 	@Test
 	public void testUpdateNameInOrganisation() throws Exception {
-		DataGroup record = DataGroup.withNameInData("organisation");
-		record.addChild(DataAtomic.withNameInDataAndValue("organisationName", "someChangedName"));
+		DataGroup record = new DataGroupSpy("organisation");
+		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 
 		String dataDivider = "";
 		divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
@@ -141,8 +142,8 @@ public class DivaDbToCoraRecordStorageTest {
 
 	@Test(expectedExceptions = DbException.class)
 	public void testUpdateOrganisationIdNotAnInt() throws Exception {
-		DataGroup record = DataGroup.withNameInData("organisation");
-		record.addChild(DataAtomic.withNameInDataAndValue("organisationName", "someChangedName"));
+		DataGroup record = new DataGroupSpy("organisation");
+		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 
 		String dataDivider = "";
 		divaToCoraRecordStorage.update("divaOrganisation", "notAnInt", record, null, null,
@@ -152,8 +153,8 @@ public class DivaDbToCoraRecordStorageTest {
 
 	@Test
 	public void testUpdateOrganisationIdNotAnIntSendsAlongInitalException() throws Exception {
-		DataGroup record = DataGroup.withNameInData("organisation");
-		record.addChild(DataAtomic.withNameInDataAndValue("organisationName", "someChangedName"));
+		DataGroup record = new DataGroupSpy("organisation");
+		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 
 		try {
 			divaToCoraRecordStorage.update("divaOrganisation", "notAnInt", record, null, null, "");
@@ -177,27 +178,27 @@ public class DivaDbToCoraRecordStorageTest {
 
 	@Test
 	public void testReadOrganisationListFactorDbReader() throws Exception {
-		divaToCoraRecordStorage.readList(TABLE_NAME, DataGroup.withNameInData("filter"));
+		divaToCoraRecordStorage.readList(TABLE_NAME, new DataGroupSpy("filter"));
 		assertTrue(recordReaderFactory.factorWasCalled);
 	}
 
 	@Test
 	public void testReadOrganisationListCountryTableRequestedFromReader() throws Exception {
-		divaToCoraRecordStorage.readList(TABLE_NAME, DataGroup.withNameInData("filter"));
+		divaToCoraRecordStorage.readList(TABLE_NAME, new DataGroupSpy("filter"));
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
 		assertEquals(recordReader.usedTableName, TABLE_NAME);
 	}
 
 	@Test
 	public void testReadOrganisationListConverterIsFactored() throws Exception {
-		divaToCoraRecordStorage.readList(TABLE_NAME, DataGroup.withNameInData("filter"));
+		divaToCoraRecordStorage.readList(TABLE_NAME, new DataGroupSpy("filter"));
 		DivaDbToCoraConverter divaDbToCoraConverter = converterFactory.factoredConverters.get(0);
 		assertNotNull(divaDbToCoraConverter);
 	}
 
 	@Test
 	public void testReadOrganisationListConverterIsCalledWithDataFromDbStorage() throws Exception {
-		divaToCoraRecordStorage.readList(TABLE_NAME, DataGroup.withNameInData("filter"));
+		divaToCoraRecordStorage.readList(TABLE_NAME, new DataGroupSpy("filter"));
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
 		DivaDbToCoraConverterSpy divaDbToCoraConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
 				.get(0);
@@ -208,7 +209,7 @@ public class DivaDbToCoraRecordStorageTest {
 	@Test
 	public void testReadOrganisationListConverteredIsAddedToList() throws Exception {
 		StorageReadResult spiderReadresult = divaToCoraRecordStorage.readList(TABLE_NAME,
-				DataGroup.withNameInData("filter"));
+				new DataGroupSpy("filter"));
 		List<DataGroup> readCountryList = spiderReadresult.listOfDataGroups;
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
 		DivaDbToCoraConverterSpy divaDbToCoraConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
@@ -222,7 +223,7 @@ public class DivaDbToCoraRecordStorageTest {
 	public void testReadOrganisationListConverteredMoreThanOneIsAddedToList() throws Exception {
 		recordReaderFactory.noOfRecordsToReturn = 3;
 		StorageReadResult storageReadResult = divaToCoraRecordStorage.readList(TABLE_NAME,
-				DataGroup.withNameInData("filter"));
+				new DataGroupSpy("filter"));
 		List<DataGroup> readOrganisationList = storageReadResult.listOfDataGroups;
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
 

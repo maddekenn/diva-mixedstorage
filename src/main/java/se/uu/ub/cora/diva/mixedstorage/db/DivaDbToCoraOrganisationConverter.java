@@ -22,8 +22,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
-import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupProvider;
 
 public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter {
 
@@ -64,15 +65,15 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 	}
 
 	private void createAndAddOrganisationWithRecordInfo() {
-		organisation = DataGroup.withNameInData("organisation");
+		organisation = DataGroupProvider.getDataGroupUsingNameInData("organisation");
 		String id = (String) dbRow.get(ORGANISATION_ID);
 		DataGroup recordInfo = createRecordInfo(id);
 		organisation.addChild(recordInfo);
 	}
 
 	private DataGroup createRecordInfo(String id) {
-		DataGroup recordInfo = DataGroup.withNameInData("recordInfo");
-		recordInfo.addChild(DataAtomic.withNameInDataAndValue("id", id));
+		DataGroup recordInfo = DataGroupProvider.getDataGroupUsingNameInData("recordInfo");
+		recordInfo.addChild(DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("id", id));
 		createAndAddType(recordInfo);
 		createAndAddDataDivider(recordInfo);
 		createAndAddCreatedAndUpdatedInfo(recordInfo);
@@ -87,9 +88,11 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 
 	private DataGroup createLinkUsingNameInDataRecordTypeAndRecordId(String nameInData,
 			String linkedRecordType, String linkedRecordId) {
-		DataGroup linkGroup = DataGroup.withNameInData(nameInData);
-		linkGroup.addChild(DataAtomic.withNameInDataAndValue("linkedRecordType", linkedRecordType));
-		linkGroup.addChild(DataAtomic.withNameInDataAndValue("linkedRecordId", linkedRecordId));
+		DataGroup linkGroup = DataGroupProvider.getDataGroupUsingNameInData(nameInData);
+		linkGroup.addChild(DataAtomicProvider
+				.getDataAtomicUsingNameInDataAndValue("linkedRecordType", linkedRecordType));
+		linkGroup.addChild(DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("linkedRecordId",
+				linkedRecordId));
 		return linkGroup;
 	}
 
@@ -112,7 +115,7 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 	}
 
 	private void createAndAddUpdatedInfo(DataGroup recordInfo) {
-		DataGroup updated = DataGroup.withNameInData("updated");
+		DataGroup updated = DataGroupProvider.getDataGroupUsingNameInData("updated");
 		DataGroup updatedBy = createLinkUsingNameInDataRecordTypeAndRecordId("updatedBy",
 				"coraUser", "coraUser:4412982402853626");
 		updated.addChild(updatedBy);
@@ -125,7 +128,8 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 			String nameInData) {
 		LocalDateTime tsCreated = LocalDateTime.of(2017, 01, 01, 00, 00, 00, 0);
 		String dateTimeString = getLocalTimeDateAsString(tsCreated);
-		recordInfo.addChild(DataAtomic.withNameInDataAndValue(nameInData, dateTimeString));
+		recordInfo.addChild(DataAtomicProvider.getDataAtomicUsingNameInDataAndValue(nameInData,
+				dateTimeString));
 	}
 
 	private String getLocalTimeDateAsString(LocalDateTime localDateTime) {
@@ -135,21 +139,24 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 
 	private void createAndAddName() {
 		String divaOrganisationName = (String) dbRow.get("defaultname");
-		organisation.addChild(
-				DataAtomic.withNameInDataAndValue("organisationName", divaOrganisationName));
+		organisation.addChild(DataAtomicProvider
+				.getDataAtomicUsingNameInDataAndValue("organisationName", divaOrganisationName));
 	}
 
 	private void createAndAddAlternativeName() {
-		DataGroup alternativeNameDataGroup = DataGroup.withNameInData("alternativeName");
-		alternativeNameDataGroup.addChild(DataAtomic.withNameInDataAndValue("language", "en"));
+		DataGroup alternativeNameDataGroup = DataGroupProvider
+				.getDataGroupUsingNameInData("alternativeName");
+		alternativeNameDataGroup.addChild(
+				DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("language", "en"));
 		String alternativeName = (String) dbRow.get(ALTERNATIVE_NAME);
-		alternativeNameDataGroup
-				.addChild(DataAtomic.withNameInDataAndValue("organisationName", alternativeName));
+		alternativeNameDataGroup.addChild(DataAtomicProvider
+				.getDataAtomicUsingNameInDataAndValue("organisationName", alternativeName));
 		organisation.addChild(alternativeNameDataGroup);
 	}
 
 	private void createAndAddOrganisationType() {
-		organisation.addChild(DataAtomic.withNameInDataAndValue("organisationType", "unit"));
+		organisation.addChild(DataAtomicProvider
+				.getDataAtomicUsingNameInDataAndValue("organisationType", "unit"));
 	}
 
 	private void possiblyCreateAndAddEligibility() {
@@ -162,7 +169,8 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 
 	private void createAndAddEligibility(Object notEligable) {
 		String coraEligible = isEligible(notEligable) ? "yes" : "no";
-		organisation.addChild(DataAtomic.withNameInDataAndValue("eligible", coraEligible));
+		organisation.addChild(
+				DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("eligible", coraEligible));
 	}
 
 	private boolean isEligible(Object notEligable) {
@@ -180,7 +188,8 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 	private void possiblyAddAtomicValueUsingKeyAndNameInData(String key, String nameInData) {
 		if (valueExistsForKey(key)) {
 			String value = (String) dbRow.get(key);
-			organisation.addChild(DataAtomic.withNameInDataAndValue(nameInData, value));
+			organisation.addChild(
+					DataAtomicProvider.getDataAtomicUsingNameInDataAndValue(nameInData, value));
 		}
 	}
 
@@ -199,11 +208,13 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 
 	private void addCountryConvertedToUpperCase() {
 		String uppercaseValue = ((String) dbRow.get("country_code")).toUpperCase();
-		organisation.addChild(DataAtomic.withNameInDataAndValue("country", uppercaseValue));
+		organisation.addChild(
+				DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("country", uppercaseValue));
 	}
 
 	private void setDefaultCountryCode() {
-		organisation.addChild(DataAtomic.withNameInDataAndValue("country", "SE"));
+		organisation
+				.addChild(DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("country", "SE"));
 	}
 
 	private void possiblyCreateAndAddOrganisationNumber() {

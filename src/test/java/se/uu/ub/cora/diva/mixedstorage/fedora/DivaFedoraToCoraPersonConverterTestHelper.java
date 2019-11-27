@@ -4,8 +4,8 @@ import static org.testng.Assert.assertEquals;
 
 import java.util.Collection;
 
-import se.uu.ub.cora.data.DataAttribute;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.diva.mixedstorage.DataAttributeSpy;
 
 public class DivaFedoraToCoraPersonConverterTestHelper {
 	public static void assertCorrectIdUsingRecordInfoAndId(DataGroup recordInfo, String id) {
@@ -15,14 +15,12 @@ public class DivaFedoraToCoraPersonConverterTestHelper {
 	public static Collection<DataGroup> getAlternativeNamesFromPersonDataGroup(
 			DataGroup personDataGroup) {
 		return personDataGroup.getAllGroupsWithNameInDataAndAttributes("name",
-				DataAttribute.withNameInDataAndValue("type", "alternative"));
+				new DataAttributeSpy("type", "alternative"));
 	}
 
 	public static DataGroup getDefaultNameFromPersonDataGroup(DataGroup personDataGroup) {
-		return personDataGroup
-				.getAllGroupsWithNameInDataAndAttributes("name",
-						DataAttribute.withNameInDataAndValue("type", "authorized"))
-				.iterator().next();
+		return personDataGroup.getAllGroupsWithNameInDataAndAttributes("name",
+				new DataAttributeSpy("type", "authorized")).iterator().next();
 	}
 
 	public static void assertCorrectTsUpdatedUsingUpdatedAndTsUpdated(DataGroup updatedGroup,
@@ -69,7 +67,7 @@ public class DivaFedoraToCoraPersonConverterTestHelper {
 	private static void assertCorrectNamePartUsingNameGroupAndAttributeNameAndValue(DataGroup name,
 			String attributeName, String nameValue) {
 		Collection<DataGroup> givenNames = name.getAllGroupsWithNameInDataAndAttributes("namePart",
-				DataAttribute.withNameInDataAndValue("type", attributeName));
+				new DataAttributeSpy("type", attributeName));
 		if (nameValue == null) {
 			assertEquals(givenNames.size(), 0);
 		} else {

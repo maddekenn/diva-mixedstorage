@@ -16,21 +16,30 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.diva.mixedstorage.fedora;
+package se.uu.ub.cora.diva.mixedstorage;
 
-import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
+import java.util.ArrayList;
+import java.util.List;
 
-public class DivaFedoraToCoraConverterSpy implements DivaFedoraToCoraConverter {
+import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataAtomicFactory;
 
-	public String xml;
-	public DataGroup convertedDataGroup;
+public class DataAtomicFactorySpy implements DataAtomicFactory {
+
+	public DataAtomicSpy factoredDataAtomic;
+	public List<DataAtomicSpy> factoredDataAtomics = new ArrayList<>();
 
 	@Override
-	public DataGroup fromXML(String xml) {
-		this.xml = xml;
-		convertedDataGroup = new DataGroupSpy("Converted xml");
-		return convertedDataGroup;
+	public DataAtomic factorUsingNameInDataAndValue(String nameInData, String value) {
+		factoredDataAtomic = new DataAtomicSpy(nameInData, value);
+		factoredDataAtomics.add(factoredDataAtomic);
+		return factoredDataAtomic;
+	}
+
+	@Override
+	public DataAtomic factorUsingNameInDataAndValueAndRepeatId(String nameInData, String value,
+			String repeatId) {
+		return null;
 	}
 
 }

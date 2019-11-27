@@ -21,6 +21,7 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 import java.util.Map;
 
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupProvider;
 
 public class DivaDbToCoraOrganisationParentConverter
 		extends DivaDbToCoraOrganisationAncestryConverter implements DivaDbToCoraConverter {
@@ -47,7 +48,7 @@ public class DivaDbToCoraOrganisationParentConverter
 	}
 
 	private DataGroup createDataGroup() {
-		DataGroup parent = DataGroup.withNameInData("parentOrganisation");
+		DataGroup parent = DataGroupProvider.getDataGroupUsingNameInData("parentOrganisation");
 		addParentLink(parent);
 		return parent;
 	}

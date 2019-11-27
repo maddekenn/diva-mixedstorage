@@ -131,7 +131,7 @@ public class DivaMixedRecordStorageTest {
 
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "someType";
-		expectedData.filter = DataGroup.withNameInData("filter");
+		expectedData.filter = new DataGroupSpy("filter");
 		expectedData.answer = divaMixedRecordStorage.readList(expectedData.type,
 				expectedData.filter).listOfDataGroups;
 
@@ -147,7 +147,7 @@ public class DivaMixedRecordStorageTest {
 
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "person";
-		expectedData.filter = DataGroup.withNameInData("filter");
+		expectedData.filter = new DataGroupSpy("filter");
 		expectedData.answer = divaMixedRecordStorage.readList(expectedData.type,
 				expectedData.filter).listOfDataGroups;
 
@@ -164,7 +164,7 @@ public class DivaMixedRecordStorageTest {
 
 		RecordStorageSpyData data = new RecordStorageSpyData();
 		data.type = "divaOrganisation";
-		data.filter = DataGroup.withNameInData("filter");
+		data.filter = new DataGroupSpy("filter");
 		data.answer = divaMixedRecordStorage.readList(data.type, data.filter).listOfDataGroups;
 
 		data.calledMethod = "readList";
@@ -181,9 +181,9 @@ public class DivaMixedRecordStorageTest {
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "someType";
 		expectedData.id = "someId";
-		expectedData.record = DataGroup.withNameInData("dummyRecord");
-		expectedData.collectedTerms = DataGroup.withNameInData("collectedTerms");
-		expectedData.linkList = DataGroup.withNameInData("linkList");
+		expectedData.record = new DataGroupSpy("dummyRecord");
+		expectedData.collectedTerms = new DataGroupSpy("collectedTerms");
+		expectedData.linkList = new DataGroupSpy("linkList");
 		expectedData.dataDivider = "someDataDivider";
 		divaMixedRecordStorage.create(expectedData.type, expectedData.id, expectedData.record,
 				expectedData.collectedTerms, expectedData.linkList, expectedData.dataDivider);
@@ -233,9 +233,9 @@ public class DivaMixedRecordStorageTest {
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "someType";
 		expectedData.id = "someId";
-		expectedData.record = DataGroup.withNameInData("dummyRecord");
-		expectedData.collectedTerms = DataGroup.withNameInData("collectedTerms");
-		expectedData.linkList = DataGroup.withNameInData("linkList");
+		expectedData.record = new DataGroupSpy("dummyRecord");
+		expectedData.collectedTerms = new DataGroupSpy("collectedTerms");
+		expectedData.linkList = new DataGroupSpy("linkList");
 		expectedData.dataDivider = "someDataDivider";
 		divaMixedRecordStorage.update(expectedData.type, expectedData.id, expectedData.record,
 				expectedData.collectedTerms, expectedData.linkList, expectedData.dataDivider);
@@ -254,9 +254,9 @@ public class DivaMixedRecordStorageTest {
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "person";
 		expectedData.id = "someId";
-		expectedData.record = DataGroup.withNameInData("dummyRecord");
-		expectedData.collectedTerms = DataGroup.withNameInData("collectedTerms");
-		expectedData.linkList = DataGroup.withNameInData("linkList");
+		expectedData.record = new DataGroupSpy("dummyRecord");
+		expectedData.collectedTerms = new DataGroupSpy("collectedTerms");
+		expectedData.linkList = new DataGroupSpy("linkList");
 		expectedData.dataDivider = "someDataDivider";
 		divaMixedRecordStorage.update(expectedData.type, expectedData.id, expectedData.record,
 				expectedData.collectedTerms, expectedData.linkList, expectedData.dataDivider);
@@ -280,9 +280,9 @@ public class DivaMixedRecordStorageTest {
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "divaOrganisation";
 		expectedData.id = "someId";
-		expectedData.record = DataGroup.withNameInData("dummyRecord");
-		expectedData.collectedTerms = DataGroup.withNameInData("collectedTerms");
-		expectedData.linkList = DataGroup.withNameInData("linkList");
+		expectedData.record = new DataGroupSpy("dummyRecord");
+		expectedData.collectedTerms = new DataGroupSpy("collectedTerms");
+		expectedData.linkList = new DataGroupSpy("linkList");
 		expectedData.dataDivider = "someDataDivider";
 		expectedData.calledMethod = "create";
 
@@ -303,7 +303,7 @@ public class DivaMixedRecordStorageTest {
 
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "someType";
-		expectedData.filter = DataGroup.withNameInData("filter");
+		expectedData.filter = new DataGroupSpy("filter");
 		expectedData.answer = divaMixedRecordStorage.readAbstractList(expectedData.type,
 				expectedData.filter).listOfDataGroups;
 

@@ -24,6 +24,8 @@ import org.testng.annotations.Test;
 
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.diva.mixedstorage.DataAtomicSpy;
+import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.diva.mixedstorage.resource.ResourceReader;
 
 public class DivaCoraToFedoraPersonConverterTest {
@@ -51,18 +53,18 @@ public class DivaCoraToFedoraPersonConverterTest {
 	}
 
 	private DataGroup createPerson11685DataGroup() {
-		DataGroup record = DataGroup.withNameInData("authorityPerson");
-		DataGroup recordInfo = DataGroup.withNameInData("recordInfo");
+		DataGroup record = new DataGroupSpy("authorityPerson");
+		DataGroup recordInfo = new DataGroupSpy("recordInfo");
 		record.addChild(recordInfo);
-		recordInfo.addChild(DataAtomic.withNameInDataAndValue("id", "authority-person:11685"));
+		recordInfo.addChild(new DataAtomicSpy("id", "authority-person:11685"));
 
-		DataGroup authorizedNameGroup = DataGroup.withNameInData("authorizedName");
+		DataGroup authorizedNameGroup = new DataGroupSpy("authorizedName");
 		record.addChild(authorizedNameGroup);
 
-		DataAtomic familyName = DataAtomic.withNameInDataAndValue("familyName", "Andersson");
+		DataAtomic familyName = new DataAtomicSpy("familyName", "Andersson");
 		authorizedNameGroup.addChild(familyName);
 
-		DataAtomic givenName = DataAtomic.withNameInDataAndValue("givenName", "Karl");
+		DataAtomic givenName = new DataAtomicSpy("givenName", "Karl");
 		authorizedNameGroup.addChild(givenName);
 
 		return record;

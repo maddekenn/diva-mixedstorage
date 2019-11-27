@@ -21,8 +21,9 @@ package se.uu.ub.cora.diva.mixedstorage.fedora;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.diva.mixedstorage.ParseException;
 
 public class DivaFedoraToCoraPersonConverter implements DivaFedoraToCoraConverter {
@@ -41,7 +42,7 @@ public class DivaFedoraToCoraPersonConverter implements DivaFedoraToCoraConverte
 	}
 
 	private DataGroup tryToCreateDataGroupFromDocument() {
-		DataGroup person = DataGroup.withNameInData("authorityPerson");
+		DataGroup person = DataGroupProvider.getDataGroupUsingNameInData("authorityPerson");
 		createRecordInfoAndAddToPerson(person);
 
 		createDefaultNameAndAddToPerson(person);
@@ -60,7 +61,7 @@ public class DivaFedoraToCoraPersonConverter implements DivaFedoraToCoraConverte
 	}
 
 	private void createDefaultNameAndAddToPerson(DataGroup person) {
-		DataGroup defaultName = DataGroup.withNameInData("authorizedName");
+		DataGroup defaultName = DataGroupProvider.getDataGroupUsingNameInData("authorizedName");
 		createName(defaultName);
 		if (dataGroupHasChildren(defaultName)) {
 			person.addChild(defaultName);
@@ -81,7 +82,8 @@ public class DivaFedoraToCoraPersonConverter implements DivaFedoraToCoraConverte
 	private void possiblyAddChildToGroupUsingNameInDataAndValue(DataGroup nameGroup,
 			String childNameInData, String value) {
 		if (valueContainsData(value)) {
-			nameGroup.addChild(DataAtomic.withNameInDataAndValue(childNameInData, value));
+			nameGroup.addChild(DataAtomicProvider
+					.getDataAtomicUsingNameInDataAndValue(childNameInData, value));
 		}
 	}
 
@@ -111,7 +113,8 @@ public class DivaFedoraToCoraPersonConverter implements DivaFedoraToCoraConverte
 
 	private void addAlternativeNameToPersonUsingNodeAndPersonAndRepeatId(Node nameForm,
 			DataGroup person, String repeatId) {
-		DataGroup alternativeName = DataGroup.withNameInData("alternativeName");
+		DataGroup alternativeName = DataGroupProvider
+				.getDataGroupUsingNameInData("alternativeName");
 		addChildrenToAlternativeName(nameForm, alternativeName);
 
 		if (dataGroupHasChildren(alternativeName)) {
@@ -139,6 +142,7 @@ public class DivaFedoraToCoraPersonConverter implements DivaFedoraToCoraConverte
 	private void createAndAddPublicRecord(DataGroup person) {
 		String publicRecord = getStringFromDocumentUsingXPath("/authorityPerson/publicRecord");
 		String publicValue = "true".equals(publicRecord) ? "yes" : "no";
-		person.addChild(DataAtomic.withNameInDataAndValue("public", publicValue));
+		person.addChild(
+				DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("public", publicValue));
 	}
 }

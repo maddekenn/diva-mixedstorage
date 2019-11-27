@@ -18,19 +18,31 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.fedora;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupFactory;
 import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
 
-public class DivaFedoraToCoraConverterSpy implements DivaFedoraToCoraConverter {
+public class DataGroupFactorySpy implements DataGroupFactory {
 
-	public String xml;
-	public DataGroup convertedDataGroup;
+	public DataGroupSpy factoredDataGroup;
+	public List<DataGroupSpy> factoredDataGroups = new ArrayList<>();
 
 	@Override
-	public DataGroup fromXML(String xml) {
-		this.xml = xml;
-		convertedDataGroup = new DataGroupSpy("Converted xml");
-		return convertedDataGroup;
+	public DataGroup factorUsingNameInData(String nameInData) {
+		factoredDataGroup = new DataGroupSpy(nameInData);
+		factoredDataGroups.add(factoredDataGroup);
+		return factoredDataGroup;
+	}
+
+	@Override
+	public DataGroup factorAsLinkWithNameInDataTypeAndId(String nameInData, String recordType,
+			String recordId) {
+		factoredDataGroup = new DataGroupSpy(nameInData, recordType, recordId);
+		factoredDataGroups.add(factoredDataGroup);
+		return factoredDataGroup;
 	}
 
 }

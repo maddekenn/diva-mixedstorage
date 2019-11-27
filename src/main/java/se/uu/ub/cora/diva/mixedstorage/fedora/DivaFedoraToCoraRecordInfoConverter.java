@@ -21,8 +21,9 @@ package se.uu.ub.cora.diva.mixedstorage.fedora;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupProvider;
 
 public class DivaFedoraToCoraRecordInfoConverter {
 	private XMLXPathParser parser;
@@ -39,7 +40,7 @@ public class DivaFedoraToCoraRecordInfoConverter {
 	}
 
 	private DataGroup createRecordInfoAsDataGroup() {
-		recordInfo = DataGroup.withNameInData("recordInfo");
+		recordInfo = DataGroupProvider.getDataGroupUsingNameInData("recordInfo");
 		addType();
 		parseAndAddId();
 		addDataDivider();
@@ -56,15 +57,17 @@ public class DivaFedoraToCoraRecordInfoConverter {
 
 	private static DataGroup createLinkWithNameInDataAndTypeAndId(String nameInData,
 			String linkedRecordType, String linkedRecordId) {
-		DataGroup type = DataGroup.withNameInData(nameInData);
-		type.addChild(DataAtomic.withNameInDataAndValue("linkedRecordType", linkedRecordType));
-		type.addChild(DataAtomic.withNameInDataAndValue("linkedRecordId", linkedRecordId));
+		DataGroup type = DataGroupProvider.getDataGroupUsingNameInData(nameInData);
+		type.addChild(DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("linkedRecordType",
+				linkedRecordType));
+		type.addChild(DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("linkedRecordId",
+				linkedRecordId));
 		return type;
 	}
 
 	private void parseAndAddId() {
 		String pid = parser.getStringFromDocumentUsingXPath("/authorityPerson/pid/text()");
-		recordInfo.addChild(DataAtomic.withNameInDataAndValue("id", pid));
+		recordInfo.addChild(DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("id", pid));
 	}
 
 	private void addDataDivider() {
@@ -82,7 +85,8 @@ public class DivaFedoraToCoraRecordInfoConverter {
 		String tsCreatedWithLetters = parser.getStringFromDocumentUsingXPath(
 				"/authorityPerson/recordInfo/events/event/timestamp/text()");
 		String tsCreated = removeTAndZFromTimestamp(tsCreatedWithLetters);
-		recordInfo.addChild(DataAtomic.withNameInDataAndValue("tsCreated", tsCreated));
+		recordInfo.addChild(
+				DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("tsCreated", tsCreated));
 	}
 
 	private String removeTAndZFromTimestamp(String tsCreatedWithLetters) {
@@ -90,7 +94,7 @@ public class DivaFedoraToCoraRecordInfoConverter {
 	}
 
 	private void addUpdated() {
-		DataGroup updatedGroup = DataGroup.withNameInData("updated");
+		DataGroup updatedGroup = DataGroupProvider.getDataGroupUsingNameInData("updated");
 		recordInfo.addChild(updatedGroup);
 		updatedGroup.setRepeatId("0");
 		addUpdatedBy(updatedGroup);
@@ -106,7 +110,8 @@ public class DivaFedoraToCoraRecordInfoConverter {
 		String tsUpdatedWithLetters = getLastTsUpdatedFromDocument();
 		String tsUpdated = removeTAndZFromTimestamp(tsUpdatedWithLetters);
 
-		updatedGroup.addChild(DataAtomic.withNameInDataAndValue("tsUpdated", tsUpdated));
+		updatedGroup.addChild(
+				DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("tsUpdated", tsUpdated));
 	}
 
 	private String getLastTsUpdatedFromDocument() {

@@ -20,8 +20,9 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 
 import java.util.Map;
 
-import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupProvider;
 
 public class DivaDbToCoraOrganisationPredecessorConverter
 		extends DivaDbToCoraOrganisationAncestryConverter implements DivaDbToCoraConverter {
@@ -41,7 +42,7 @@ public class DivaDbToCoraOrganisationPredecessorConverter
 	}
 
 	private DataGroup createDataGroup() {
-		DataGroup formerName = DataGroup.withNameInData("formerName");
+		DataGroup formerName = DataGroupProvider.getDataGroupUsingNameInData("formerName");
 		addPredecessorLink(formerName);
 		possiblyAddDescription(formerName);
 		return formerName;
@@ -55,8 +56,8 @@ public class DivaDbToCoraOrganisationPredecessorConverter
 
 	private void possiblyAddDescription(DataGroup formerName) {
 		if (predecessorHasDescription()) {
-			formerName.addChild(DataAtomic.withNameInDataAndValue("organisationComment",
-					(String) dbRow.get(DESCRIPTION)));
+			formerName.addChild(DataAtomicProvider.getDataAtomicUsingNameInDataAndValue(
+					"organisationComment", (String) dbRow.get(DESCRIPTION)));
 		}
 	}
 

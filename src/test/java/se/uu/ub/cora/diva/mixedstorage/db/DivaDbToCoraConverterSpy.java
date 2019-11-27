@@ -3,6 +3,7 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 import java.util.Map;
 
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
 
 public class DivaDbToCoraConverterSpy implements DivaDbToCoraConverter {
 	public Map<String, Object> mapToConvert;
@@ -12,7 +13,7 @@ public class DivaDbToCoraConverterSpy implements DivaDbToCoraConverter {
 	@Override
 	public DataGroup fromMap(Map<String, Object> map) {
 		mapToConvert = map;
-		convertedDbDataGroup = DataGroup.withNameInData("from Db converter");
+		convertedDbDataGroup = new DataGroupSpy("from Db converter");
 		return convertedDbDataGroup;
 	}
 }

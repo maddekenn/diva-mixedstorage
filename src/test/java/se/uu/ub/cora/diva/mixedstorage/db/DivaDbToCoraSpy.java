@@ -1,6 +1,7 @@
 package se.uu.ub.cora.diva.mixedstorage.db;
 
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
 
 public class DivaDbToCoraSpy implements DivaDbToCora {
 
@@ -12,7 +13,7 @@ public class DivaDbToCoraSpy implements DivaDbToCora {
 	public DataGroup convertOneRowData(String type, String id) {
 		this.type = type;
 		this.id = id;
-		dataGroup = DataGroup.withNameInData("DataGroupFromSpy");
+		dataGroup = new DataGroupSpy("DataGroupFromSpy");
 		return dataGroup;
 	}
 

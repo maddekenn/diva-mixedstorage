@@ -31,8 +31,9 @@ import java.util.Iterator;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.diva.mixedstorage.DataAtomicSpy;
+import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.diva.mixedstorage.FedoraException;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.storage.RecordStorage;
@@ -116,7 +117,7 @@ public class DivaFedoraRecordStorageTest {
 	@Test
 	public void updateUpdatesNameInRecordStorage() throws Exception {
 		httpHandlerFactory.responseText = "Dummy response text";
-		DataGroup record = DataGroup.withNameInData("authority");
+		DataGroup record = new DataGroupSpy("authority");
 
 		DataGroup collectedTerms = createCollectTermsWithRecordLabel();
 
@@ -146,20 +147,19 @@ public class DivaFedoraRecordStorageTest {
 	}
 
 	private DataGroup createCollectTermsWithRecordLabel() {
-		DataGroup collectedTerms = DataGroup.withNameInData("collectedData");
-		collectedTerms.addChild(DataAtomic.withNameInDataAndValue("type", "person"));
-		collectedTerms.addChild(DataAtomic.withNameInDataAndValue("id", "diva-person:2233"));
+		DataGroup collectedTerms = new DataGroupSpy("collectedData");
+		collectedTerms.addChild(new DataAtomicSpy("type", "person"));
+		collectedTerms.addChild(new DataAtomicSpy("id", "diva-person:2233"));
 
-		DataGroup storageTerms = DataGroup.withNameInData("storage");
+		DataGroup storageTerms = new DataGroupSpy("storage");
 		collectedTerms.addChild(storageTerms);
 
-		DataGroup collectedRecordLabel = DataGroup.withNameInData("collectedDataTerm");
+		DataGroup collectedRecordLabel = new DataGroupSpy("collectedDataTerm");
 		storageTerms.addChild(collectedRecordLabel);
 		collectedRecordLabel.setRepeatId("someRepeatId");
-		collectedRecordLabel.addChild(
-				DataAtomic.withNameInDataAndValue("collectTermId", "recordLabelStorageTerm"));
-		collectedRecordLabel.addChild(DataAtomic.withNameInDataAndValue("collectTermValue",
-				"Some Person Collected Name åäö"));
+		collectedRecordLabel.addChild(new DataAtomicSpy("collectTermId", "recordLabelStorageTerm"));
+		collectedRecordLabel
+				.addChild(new DataAtomicSpy("collectTermValue", "Some Person Collected Name åäö"));
 		return collectedTerms;
 	}
 
@@ -169,7 +169,7 @@ public class DivaFedoraRecordStorageTest {
 		httpHandlerFactory.responseText = "Dummy response text";
 		httpHandlerFactory.responseCode = 505;
 
-		DataGroup record = DataGroup.withNameInData("authority");
+		DataGroup record = new DataGroupSpy("authority");
 		DataGroup collectedTerms = createCollectTermsWithRecordLabel();
 
 		divaToCoraRecordStorage.update("person", "diva-person:77", record, collectedTerms, null,
@@ -182,7 +182,7 @@ public class DivaFedoraRecordStorageTest {
 		httpHandlerFactory.responseText = "Dummy response text";
 		httpHandlerFactory.responseCode = 500;
 
-		DataGroup record = DataGroup.withNameInData("authority");
+		DataGroup record = new DataGroupSpy("authority");
 		DataGroup collectedTerms = createCollectTermsWithRecordLabel();
 
 		divaToCoraRecordStorage.update("person", "diva-person:23", record, collectedTerms, null,
@@ -200,14 +200,14 @@ public class DivaFedoraRecordStorageTest {
 			+ "The element type \"someTag\" must be terminated by the matching end-tag \"</someTag>\".")
 	public void readListThrowsParseExceptionOnBrokenXML() throws Exception {
 		httpHandlerFactory.responseText = "<someTag></notSameTag>";
-		divaToCoraRecordStorage.readList("person", DataGroup.withNameInData("filter"));
+		divaToCoraRecordStorage.readList("person", new DataGroupSpy("filter"));
 	}
 
 	@Test
 	public void readPersonListCallsFedoraAndReturnsConvertedResult() throws Exception {
 		httpHandlerFactory.responseText = createXMLForPersonList();
 		Collection<DataGroup> readPersonList = divaToCoraRecordStorage.readList("person",
-				DataGroup.withNameInData("filter")).listOfDataGroups;
+				new DataGroupSpy("filter")).listOfDataGroups;
 		assertEquals(httpHandlerFactory.urls.get(0), baseURL
 				+ "objects?pid=true&maxResults=100&resultFormat=xml&query=pid%7Eauthority-person:*");
 		assertEquals(httpHandlerFactory.factoredHttpHandlers.size(), 4);
