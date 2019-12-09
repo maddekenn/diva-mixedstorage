@@ -18,6 +18,9 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import java.sql.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -60,7 +63,7 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 		possiblyCreateAndAddOrganisationNumber();
 		possiblyCreateAndAddOrganisationCode();
 		possiblyCreateAndAddURL();
-
+		possiblyCreateAndAddClosedDate();
 		return organisation;
 	}
 
@@ -227,6 +230,24 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 
 	private void possiblyCreateAndAddURL() {
 		possiblyAddAtomicValueUsingKeyAndNameInData("organisation_homepage", "URL");
+	}
+
+	private void possiblyCreateAndAddClosedDate() {
+		if (valueExistsForKey("closed_date")) {
+			createAndAddClosedDate();
+		}
+	}
+
+	private void createAndAddClosedDate() {
+		String closedDate = getDateAsString();
+		organisation.addChild(
+				DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("closedDate", closedDate));
+	}
+
+	private String getDateAsString() {
+		Date dbClosedDate = (Date) dbRow.get("closed_date");
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		return dateFormat.format(dbClosedDate);
 	}
 
 }

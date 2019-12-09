@@ -28,14 +28,26 @@ import java.util.Map;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.data.DataAtomicFactory;
+import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupFactory;
+import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.diva.mixedstorage.DataAtomicFactorySpy;
+import se.uu.ub.cora.diva.mixedstorage.fedora.DataGroupFactorySpy;
 
 public class DivaDbToCoraOrganisationSuccessorConverterTest {
 	private DivaDbToCoraOrganisationSuccessorConverter converter;
 	private Map<String, Object> rowFromDb;
+	private DataGroupFactory dataGroupFactory;
+	private DataAtomicFactory dataAtomicFactory;
 
 	@BeforeMethod
 	public void beforeMethod() {
+		dataGroupFactory = new DataGroupFactorySpy();
+		DataGroupProvider.setDataGroupFactory(dataGroupFactory);
+		dataAtomicFactory = new DataAtomicFactorySpy();
+		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactory);
 		rowFromDb = new HashMap<>();
 		rowFromDb.put("organisation_id", "someOrgId");
 		rowFromDb.put("predecessor_id", "somePredecessorId");
@@ -77,46 +89,15 @@ public class DivaDbToCoraOrganisationSuccessorConverterTest {
 	}
 
 	@Test
-	public void testMinimalValuesReturnsDataGroupWithCorrectStructure() {
-		DataGroup successor = converter.fromMap(rowFromDb);
-		assertEquals(successor.getNameInData(), "closed");
-		DataGroup linkedOrganisation = successor.getFirstGroupWithNameInData("organisationLink");
-
-		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordType"),
-				"divaOrganisation");
-		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				"someOrgId");
-		assertFalse(successor.containsChildWithNameInData("closedDate"));
-	}
-
-	@Test
-	public void testMinimalValuesWithEmptyValueForDescriptionReturnsDataGroupWithCorrectStructure() {
-		rowFromDb.put("closed_date", "");
-		DataGroup predecessor = converter.fromMap(rowFromDb);
-		assertEquals(predecessor.getNameInData(), "closed");
-		DataGroup linkedOrganisation = predecessor.getFirstGroupWithNameInData("organisationLink");
-
-		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordType"),
-				"divaOrganisation");
-		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				"someOrgId");
-		assertFalse(predecessor.containsChildWithNameInData("closedDate"));
-	}
-
-	@Test
 	public void testCompleteValuesReturnsDataGroupWithCorrectStructure() {
-		rowFromDb.put("closed_date", "2018-12-31");
-		DataGroup predecessor = converter.fromMap(rowFromDb);
-		assertEquals(predecessor.getNameInData(), "closed");
-		DataGroup linkedOrganisation = predecessor.getFirstGroupWithNameInData("organisationLink");
+		DataGroup linkedOrganisation = converter.fromMap(rowFromDb);
+		assertEquals(linkedOrganisation.getNameInData(), "organisationLink");
 
 		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordType"),
 				"divaOrganisation");
 		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordId"),
 				"someOrgId");
-
-		assertEquals(predecessor.getFirstAtomicValueWithNameInData("closedDate"), "2018-12-31");
-
+		assertFalse(linkedOrganisation.containsChildWithNameInData("closedDate"));
 	}
 
 }
