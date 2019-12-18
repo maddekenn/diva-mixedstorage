@@ -26,16 +26,16 @@
 	</parent>
 
 	<artifactId>divamixedstorage</artifactId>
-	<version>3.2-SNAPSHOT</version>
+	<version>3.3-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Diva Mixed Storage</name>
 
 	<properties>
 		<logger.version>2.0.0</logger.version>
-		<storage.version>3.1.0</storage.version>
-		<searchstorage.version>3.1.0</searchstorage.version>
-		<basicstorage.version>3.1.0</basicstorage.version>
+		<storage.version>3.3.0</storage.version>
+		<searchstorage.version>3.3.0</searchstorage.version>
+		<basicstorage.version>3.4.0</basicstorage.version>
 		<sqldatabase.version>2.2.0</sqldatabase.version>
 		<httphandler.version>2.0.0</httphandler.version>
 	</properties>
