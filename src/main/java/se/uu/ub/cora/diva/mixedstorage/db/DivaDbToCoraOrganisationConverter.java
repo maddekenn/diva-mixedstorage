@@ -21,8 +21,6 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 import java.sql.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 import se.uu.ub.cora.data.DataAtomicProvider;
@@ -129,15 +127,8 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 
 	private void addPredefinedTimestampToDataGroupUsingNameInData(DataGroup recordInfo,
 			String nameInData) {
-		LocalDateTime tsCreated = LocalDateTime.of(2017, 01, 01, 00, 00, 00, 0);
-		String dateTimeString = getLocalTimeDateAsString(tsCreated);
 		recordInfo.addChild(DataAtomicProvider.getDataAtomicUsingNameInDataAndValue(nameInData,
-				dateTimeString));
-	}
-
-	private String getLocalTimeDateAsString(LocalDateTime localDateTime) {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
-		return localDateTime.format(formatter);
+				"2017-01-01T00:00:00.000000Z"));
 	}
 
 	private void createAndAddName() {
