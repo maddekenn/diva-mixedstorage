@@ -135,8 +135,49 @@ public class DivaDbToCoraRecordStorageTest {
 		RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
 		assertEquals(factoredUpdater.tableName, "organisation");
 		assertEquals(factoredUpdater.conditions.get("organisation_id"), 56);
+	}
+
+	@Test
+	public void testUpdateAllAtomicChildrenInOrganisation() throws Exception {
+		DataGroup record = new DataGroupSpy("organisation");
+		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
+		record.addChild(new DataAtomicSpy("closedDate", "2017-10-31"));
+		record.addChild(new DataAtomicSpy("organisationCode", "1235"));
+		record.addChild(new DataAtomicSpy("organisationNumber", "78979-45654"));
+
+		String dataDivider = "";
+		divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
+
+		RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
+		assertEquals(factoredUpdater.tableName, "organisation");
+		assertEquals(factoredUpdater.conditions.get("organisation_id"), 56);
 
 		assertEquals(factoredUpdater.values.get("organisation_name"), "someChangedName");
+		assertEquals(factoredUpdater.values.get("closed_date"), "2017-10-31");
+		assertEquals(factoredUpdater.values.get("organisation_code"), "1235");
+		assertEquals(factoredUpdater.values.get("orgnumber"), "78979-45654");
+	}
+
+	@Test
+	public void testUpdateEmptyDataAtomicsAreSetToNullInQuery() throws Exception {
+		DataGroup record = new DataGroupSpy("organisation");
+
+		String dataDivider = "";
+		divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
+
+		RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
+		assertEquals(factoredUpdater.tableName, "organisation");
+		assertEquals(factoredUpdater.conditions.get("organisation_id"), 56);
+
+		assertTrue(factoredUpdater.values.containsKey("organisation_name"));
+		assertTrue(factoredUpdater.values.containsKey("closed_date"));
+		assertTrue(factoredUpdater.values.containsKey("organisation_code"));
+		assertTrue(factoredUpdater.values.containsKey("orgnumber"));
+
+		assertEquals(factoredUpdater.values.get("organisation_name"), null);
+		assertEquals(factoredUpdater.values.get("closed_date"), null);
+		assertEquals(factoredUpdater.values.get("organisation_code"), null);
+		assertEquals(factoredUpdater.values.get("orgnumber"), null);
 
 	}
 

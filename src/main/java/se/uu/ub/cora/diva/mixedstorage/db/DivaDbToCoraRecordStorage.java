@@ -98,15 +98,29 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 		RecordUpdater recordUpdater = recordUpdaterFactory.factor();
 		Map<String, Object> columnsWithValues = createColumnsWithValuesForUpdateQuery(record);
 		Map<String, Object> conditions = createConditionsAddingOrganisationId(id);
-		recordUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions("organisation", columnsWithValues,
-				conditions);
+		recordUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions("organisation",
+				columnsWithValues, conditions);
 	}
 
 	private Map<String, Object> createColumnsWithValuesForUpdateQuery(DataGroup record) {
-		String organisationName = record.getFirstAtomicValueWithNameInData("organisationName");
-		Map<String, Object> columnsWithValues = new HashMap<>(1);
-		columnsWithValues.put("organisation_name", organisationName);
+		Map<String, Object> columnsWithValues = new HashMap<>();
+		addAtomicValuesToColumns(record, columnsWithValues);
 		return columnsWithValues;
+
+	}
+
+	private void addAtomicValuesToColumns(DataGroup record, Map<String, Object> columnsWithValues) {
+		for (OrganisationColumns column : OrganisationColumns.values()) {
+			String coraName = column.coraName;
+			String dbName = column.dbName;
+			if (record.containsChildWithNameInData(coraName)) {
+				String organisationName = record.getFirstAtomicValueWithNameInData(coraName);
+				columnsWithValues.put(dbName, organisationName);
+			} else {
+				columnsWithValues.put(dbName, null);
+
+			}
+		}
 	}
 
 	private Map<String, Object> createConditionsAddingOrganisationId(String id) {
