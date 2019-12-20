@@ -6,6 +6,7 @@ module se.uu.ub.cora.diva.mixedstorage {
 	requires se.uu.ub.cora.basicstorage;
 	requires transitive se.uu.ub.cora.storage;
 	requires se.uu.ub.cora.searchstorage;
+	requires java.sql;
 
 	exports se.uu.ub.cora.diva.mixedstorage.db;
 	exports se.uu.ub.cora.diva.mixedstorage.fedora;

@@ -28,6 +28,8 @@ import se.uu.ub.cora.basicstorage.RecordStorageInstance;
 import se.uu.ub.cora.basicstorage.RecordStorageOnDisk;
 import se.uu.ub.cora.connection.ContextConnectionProviderImp;
 import se.uu.ub.cora.connection.SqlConnectionProvider;
+import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslaterFactory;
+import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslaterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraRecordStorage;
@@ -124,10 +126,12 @@ public class DivaMixedRecordStorageProvider
 		DivaDbToCoraFactoryImp divaDbToCoraFactory = new DivaDbToCoraFactoryImp(recordReaderFactory,
 				divaDbToCoraConverterFactory);
 
+		DataToDbTranslaterFactory dataToDbTranslaterFactory = new DataToDbTranslaterFactoryImp();
+
 		return DivaDbToCoraRecordStorage
 				.usingRecordReaderFactoryAndRecordUpdaterFactoryConverterFactoryAndDbToCoraFactory(
 						recordReaderFactory, divaDbToCoraConverterFactory, divaDbToCoraFactory,
-						recordUpdaterFactory, null);
+						recordUpdaterFactory, dataToDbTranslaterFactory);
 	}
 
 	private RecordUpdaterFactory createRecordUpdaterFactory() {

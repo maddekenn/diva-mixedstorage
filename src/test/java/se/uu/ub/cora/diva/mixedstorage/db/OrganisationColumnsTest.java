@@ -11,12 +11,16 @@ public class OrganisationColumnsTest {
 		OrganisationColumns.valueOf(OrganisationColumns.NAME.toString());
 		assertEquals(OrganisationColumns.NAME.dbName, "organisation_name");
 		assertEquals(OrganisationColumns.NAME.coraName, "organisationName");
+		assertEquals(OrganisationColumns.NAME.type, "string");
 		assertEquals(OrganisationColumns.ORGANISATION_CODE.dbName, "organisation_code");
 		assertEquals(OrganisationColumns.ORGANISATION_CODE.coraName, "organisationCode");
+		assertEquals(OrganisationColumns.ORGANISATION_CODE.type, "string");
 		assertEquals(OrganisationColumns.ORGANISATION_NUMBER.dbName, "orgnumber");
 		assertEquals(OrganisationColumns.ORGANISATION_NUMBER.coraName, "organisationNumber");
+		assertEquals(OrganisationColumns.ORGANISATION_NUMBER.type, "string");
 		assertEquals(OrganisationColumns.CLOSED_DATE.dbName, "closed_date");
 		assertEquals(OrganisationColumns.CLOSED_DATE.coraName, "closedDate");
+		assertEquals(OrganisationColumns.CLOSED_DATE.type, "date");
 
 	}
 }

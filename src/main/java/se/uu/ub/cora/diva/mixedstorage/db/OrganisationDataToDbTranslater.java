@@ -18,6 +18,7 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import java.sql.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -72,15 +73,32 @@ public class OrganisationDataToDbTranslater implements DataToDbTranslater {
 
 	private void addAtomicValueOrNullToColumn(OrganisationColumns column) {
 		String coraName = column.coraName;
-		String dbName = column.dbName;
-		String organisationName = dataGroupHasValue(coraName) ? extractValueForName(coraName)
-				: null;
-		values.put(dbName, organisationName);
+		String dbColumnName = column.dbName;
+		String type = column.type;
+		if (!dataGroupHasValue(coraName)) {
+			values.put(dbColumnName, null);
+		} else {
+			String value = dataGroup.getFirstAtomicValueWithNameInData(coraName);
+			if ("date".equals(type)) {
+				Date valueAsDate = Date.valueOf(value);
+				values.put(dbColumnName, valueAsDate);
+			} else {
+				values.put(dbColumnName, value);
+
+			}
+
+		}
+
+		// Object columnValue = getAtomicValueOrNull(coraName, type);
 	}
 
-	private String extractValueForName(String coraName) {
-		String organisationName = dataGroup.getFirstAtomicValueWithNameInData(coraName);
-		return organisationName;
+	private Object getAtomicValueOrNull(String coraName, String type) {
+		return dataGroupHasValue(coraName) ? extractValueForName(coraName) : null;
+	}
+
+	private Object extractValueForName(String coraName) {
+		// Object value = dataGroup.getFirstAtomicValueWithNameInData(coraName);
+		return dataGroup.getFirstAtomicValueWithNameInData(coraName);
 	}
 
 	private boolean dataGroupHasValue(String coraName) {

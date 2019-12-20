@@ -20,6 +20,8 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 
 import static org.testng.Assert.assertEquals;
 
+import java.sql.Date;
+
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.data.DataGroup;
@@ -70,7 +72,8 @@ public class OrganisationDataToDbTranslaterTest {
 		assertEquals(translater.getConditions().get("organisation_id"), 45);
 
 		assertEquals(translater.getValues().get("organisation_name"), "someChangedName");
-		assertEquals(translater.getValues().get("closed_date"), "2017-10-31");
+		Date closedDate = (Date) translater.getValues().get("closed_date");
+		assertEquals(closedDate, Date.valueOf("2017-10-31"));
 		assertEquals(translater.getValues().get("organisation_code"), "1235");
 		assertEquals(translater.getValues().get("orgnumber"), "78979-45654");
 	}
@@ -112,6 +115,11 @@ public class OrganisationDataToDbTranslaterTest {
 		assertEquals(translater.getValues().get("organisation_name"), "someOtherChangedName");
 	}
 
-	// // TODO: kolla att mapparna töms när nytt anrop till translate görs
-	//
+	@Test(expectedExceptions = DbException.class)
+	public void testUpdateOrganisationIdNotAnInt() throws Exception {
+		DataGroup dataGroup = createDataGroupWithId("notAnInt");
+		DataToDbTranslater translater = new OrganisationDataToDbTranslater();
+		translater.translate(dataGroup);
+
+	}
 }
