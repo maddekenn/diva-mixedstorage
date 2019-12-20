@@ -43,6 +43,7 @@ public class DivaDbToCoraRecordStorageTest {
 	private RecordReaderFactorySpy recordReaderFactory;
 	private DivaDbToCoraFactorySpy divaDbToCoraFactory;
 	private RecordUpdaterFactorySpy recordUpdaterFactory;
+	private DataToDbTranslaterFactorySpy dataToDbTranslaterFactory;
 
 	@BeforeMethod
 	public void BeforeMethod() {
@@ -50,11 +51,12 @@ public class DivaDbToCoraRecordStorageTest {
 		recordReaderFactory = new RecordReaderFactorySpy();
 		recordUpdaterFactory = new RecordUpdaterFactorySpy();
 		divaDbToCoraFactory = new DivaDbToCoraFactorySpy();
+		dataToDbTranslaterFactory = new DataToDbTranslaterFactorySpy();
 
 		divaToCoraRecordStorage = DivaDbToCoraRecordStorage
 				.usingRecordReaderFactoryAndRecordUpdaterFactoryConverterFactoryAndDbToCoraFactory(
 						recordReaderFactory, converterFactory, divaDbToCoraFactory,
-						recordUpdaterFactory);
+						recordUpdaterFactory, dataToDbTranslaterFactory);
 	}
 
 	@Test
@@ -114,6 +116,17 @@ public class DivaDbToCoraRecordStorageTest {
 	}
 
 	@Test
+	public void testUpdateOrganisationFactorOrganisationTranslater() throws Exception {
+		DataGroup record = new DataGroupSpy("organisation");
+		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
+
+		String dataDivider = "";
+		divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
+		assertTrue(dataToDbTranslaterFactory.factorWasCalled);
+
+	}
+
+	@Test
 	public void testUpdateOrganisationFactorDbReader() throws Exception {
 		DataGroup record = new DataGroupSpy("organisation");
 		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
@@ -126,15 +139,19 @@ public class DivaDbToCoraRecordStorageTest {
 
 	@Test
 	public void testUpdateNameInOrganisation() throws Exception {
-		DataGroup record = new DataGroupSpy("organisation");
-		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
+		DataGroup organisation = new DataGroupSpy("organisation");
+		organisation.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 
 		String dataDivider = "";
-		divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
+		divaToCoraRecordStorage.update("divaOrganisation", "56", organisation, null, null, dataDivider);
+
+		DataToDbTranslaterSpy toDbTranslater = dataToDbTranslaterFactory.factoredTranslater;
+		assertEquals(toDbTranslater.dataGroup, organisation);
 
 		RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
 		assertEquals(factoredUpdater.tableName, "organisation");
 		assertEquals(factoredUpdater.conditions.get("organisation_id"), 56);
+		assertEquals(factoredUpdater.values.get("organisation_name"), "someChangedName");
 	}
 
 	@Test

@@ -42,21 +42,24 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	private DivaDbToCoraConverterFactory converterFactory;
 	private DivaDbToCoraFactory divaDbToCoraFactory;
 	private static RecordUpdaterFactory recordUpdaterFactory;
+	private DataToDbTranslaterFactory dataToDbTranslaterFactory;
 
 	private DivaDbToCoraRecordStorage(RecordReaderFactory recordReaderFactory,
-			DivaDbToCoraConverterFactory converterFactory,
-			DivaDbToCoraFactory divaDbToCoraFactory) {
+			DivaDbToCoraConverterFactory converterFactory, DivaDbToCoraFactory divaDbToCoraFactory,
+			DataToDbTranslaterFactory dataToDbTranslaterFactory) {
 		this.recordReaderFactory = recordReaderFactory;
 		this.converterFactory = converterFactory;
 		this.divaDbToCoraFactory = divaDbToCoraFactory;
+		this.dataToDbTranslaterFactory = dataToDbTranslaterFactory;
 	}
 
 	public static DivaDbToCoraRecordStorage usingRecordReaderFactoryAndRecordUpdaterFactoryConverterFactoryAndDbToCoraFactory(
 			RecordReaderFactory recordReaderFactory, DivaDbToCoraConverterFactory converterFactory,
-			DivaDbToCoraFactory divaDbToCoraFactory, RecordUpdaterFactory recordUpdaterFactory) {
+			DivaDbToCoraFactory divaDbToCoraFactory, RecordUpdaterFactory recordUpdaterFactory,
+			DataToDbTranslaterFactory dataToDbTranslaterFactory) {
 		DivaDbToCoraRecordStorage.recordUpdaterFactory = recordUpdaterFactory;
 		return new DivaDbToCoraRecordStorage(recordReaderFactory, converterFactory,
-				divaDbToCoraFactory);
+				divaDbToCoraFactory, dataToDbTranslaterFactory);
 	}
 
 	@Override
@@ -94,17 +97,20 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 		}
 	}
 
-	private void updateOrganisation(String id, DataGroup record) {
+	private void updateOrganisation(String id, DataGroup dataGroup) {
 		RecordUpdater recordUpdater = recordUpdaterFactory.factor();
-		Map<String, Object> columnsWithValues = createColumnsWithValuesForUpdateQuery(record);
+		DataToDbTranslater dataToDbTranslater = dataToDbTranslaterFactory
+				.factorForTableName("organisation");
+		dataToDbTranslater.translate(dataGroup);
+		Map<String, Object> columnsWithValues = createColumnsWithValuesForUpdateQuery(dataGroup);
 		Map<String, Object> conditions = createConditionsAddingOrganisationId(id);
 		recordUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions("organisation",
 				columnsWithValues, conditions);
 	}
 
-	private Map<String, Object> createColumnsWithValuesForUpdateQuery(DataGroup record) {
+	private Map<String, Object> createColumnsWithValuesForUpdateQuery(DataGroup dataGroup) {
 		Map<String, Object> columnsWithValues = new HashMap<>();
-		addAtomicValuesToColumns(record, columnsWithValues);
+		addAtomicValuesToColumns(dataGroup, columnsWithValues);
 		return columnsWithValues;
 
 	}
