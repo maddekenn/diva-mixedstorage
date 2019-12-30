@@ -37,6 +37,7 @@ import se.uu.ub.cora.storage.StorageReadResult;
 
 public class DivaDbToCoraRecordStorage implements RecordStorage {
 
+	private static final String ORGANISATION = "organisation";
 	private static final String DIVA_ORGANISATION = "divaOrganisation";
 	private RecordReaderFactory recordReaderFactory;
 	private DivaDbToCoraConverterFactory converterFactory;
@@ -53,7 +54,7 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 		this.dataToDbTranslaterFactory = dataToDbTranslaterFactory;
 	}
 
-	public static DivaDbToCoraRecordStorage usingRecordReaderFactoryAndRecordUpdaterFactoryConverterFactoryAndDbToCoraFactory(
+	public static DivaDbToCoraRecordStorage usingRecordReaderFactoryConverterFactoryDbToCoraFactoryRecordUpdaterFactoryAndTranslaterFactory(
 			RecordReaderFactory recordReaderFactory, DivaDbToCoraConverterFactory converterFactory,
 			DivaDbToCoraFactory divaDbToCoraFactory, RecordUpdaterFactory recordUpdaterFactory,
 			DataToDbTranslaterFactory dataToDbTranslaterFactory) {
@@ -91,42 +92,19 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	public void update(String type, String id, DataGroup record, DataGroup collectedTerms,
 			DataGroup linkList, String dataDivider) {
 		if (DIVA_ORGANISATION.equals(type)) {
-			updateOrganisation(id, record);
+			updateOrganisation(record);
 		} else {
 			throw NotImplementedException.withMessage("update is not implemented");
 		}
 	}
 
-	private void updateOrganisation(String id, DataGroup dataGroup) {
+	private void updateOrganisation(DataGroup dataGroup) {
 		RecordUpdater recordUpdater = recordUpdaterFactory.factor();
 		DataToDbTranslater dataToDbTranslater = dataToDbTranslaterFactory
-				.factorForTableName("organisation");
+				.factorForTableName(ORGANISATION);
 		dataToDbTranslater.translate(dataGroup);
-		Map<String, Object> columnsWithValues = createColumnsWithValuesForUpdateQuery(dataGroup);
-		Map<String, Object> conditions = createConditionsAddingOrganisationId(id);
-		recordUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions("organisation",
-				columnsWithValues, conditions);
-	}
-
-	private Map<String, Object> createColumnsWithValuesForUpdateQuery(DataGroup dataGroup) {
-		Map<String, Object> columnsWithValues = new HashMap<>();
-		addAtomicValuesToColumns(dataGroup, columnsWithValues);
-		return columnsWithValues;
-
-	}
-
-	private void addAtomicValuesToColumns(DataGroup record, Map<String, Object> columnsWithValues) {
-		for (OrganisationColumns column : OrganisationColumns.values()) {
-			String coraName = column.coraName;
-			String dbName = column.dbName;
-			if (record.containsChildWithNameInData(coraName)) {
-				String organisationName = record.getFirstAtomicValueWithNameInData(coraName);
-				columnsWithValues.put(dbName, organisationName);
-			} else {
-				columnsWithValues.put(dbName, null);
-
-			}
-		}
+		recordUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions(ORGANISATION,
+				dataToDbTranslater.getValues(), dataToDbTranslater.getConditions());
 	}
 
 	private Map<String, Object> createConditionsAddingOrganisationId(String id) {
@@ -224,7 +202,7 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 		try {
 			RecordReader recordReader = recordReaderFactory.factor();
 			Map<String, Object> conditions = createConditionsAddingOrganisationId(id);
-			return recordReader.readOneRowFromDbUsingTableAndConditions("organisation", conditions);
+			return recordReader.readOneRowFromDbUsingTableAndConditions(ORGANISATION, conditions);
 		} catch (SqlStorageException | DbException e) {
 			throw new RecordNotFoundException("Organisation not found: " + id);
 		}
@@ -248,6 +226,11 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	public RecordUpdaterFactory getRecordUpdaterFactory() {
 		// needed for test
 		return recordUpdaterFactory;
+	}
+
+	public DataToDbTranslaterFactory getDataToDbTranslaterFactory() {
+		// needed for test
+		return dataToDbTranslaterFactory;
 	}
 
 }

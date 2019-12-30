@@ -18,6 +18,7 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import se.uu.ub.cora.data.DataGroup;
@@ -25,23 +26,27 @@ import se.uu.ub.cora.data.DataGroup;
 public class DataToDbTranslaterSpy implements DataToDbTranslater {
 
 	public DataGroup dataGroup;
+	public Map<String, Object> conditions;
+	public Map<String, Object> values;
 
 	@Override
 	public void translate(DataGroup dataGroup) {
 		this.dataGroup = dataGroup;
+		conditions = new HashMap<>();
+		conditions.put("someConditionKeyFromSpy", "someConditionValueFromSpy");
+		values = new HashMap<>();
+		values.put("someValuesKeyFromSpy", "someValuesValueFromSpy");
 
 	}
 
 	@Override
 	public Map<String, Object> getConditions() {
-		// TODO Auto-generated method stub
-		return null;
+		return conditions;
 	}
 
 	@Override
 	public Map<String, Object> getValues() {
-		// TODO Auto-generated method stub
-		return null;
+		return values;
 	}
 
 }

@@ -42,9 +42,13 @@ import se.uu.ub.cora.basicstorage.RecordStorageInMemoryReadFromDisk;
 import se.uu.ub.cora.basicstorage.RecordStorageInstance;
 import se.uu.ub.cora.basicstorage.RecordStorageOnDisk;
 import se.uu.ub.cora.connection.ContextConnectionProviderImp;
+import se.uu.ub.cora.data.DataGroupFactory;
+import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslaterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraRecordStorage;
+import se.uu.ub.cora.diva.mixedstorage.fedora.DataGroupFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraConverterFactory;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraConverterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraRecordStorage;
@@ -63,11 +67,14 @@ public class DivaMixedRecordStorageProviderTest {
 	private LoggerFactorySpy loggerFactorySpy;
 	private String testedClassName = "DivaMixedRecordStorageProvider";
 	private DivaMixedRecordStorageProvider recordStorageOnDiskProvider;
+	private DataGroupFactory dataGroupFactory;
 
 	@BeforeMethod
 	public void beforeMethod() throws Exception {
 		loggerFactorySpy = new LoggerFactorySpy();
 		LoggerProvider.setLoggerFactory(loggerFactorySpy);
+		dataGroupFactory = new DataGroupFactorySpy();
+		DataGroupProvider.setDataGroupFactory(dataGroupFactory);
 		initInfo = new HashMap<>();
 		initInfo.put("storageType", "memory");
 		initInfo.put("storageOnDiskBasePath", basePath);
@@ -186,6 +193,8 @@ public class DivaMixedRecordStorageProviderTest {
 		assertCorrectRecordUpdaterFactory(dbStorage);
 
 		assertTrue(dbStorage.getConverterFactory() instanceof DivaDbToCoraConverterFactoryImp);
+		assertTrue(
+				dbStorage.getDataToDbTranslaterFactory() instanceof DataToDbTranslaterFactoryImp);
 
 		DivaDbToCoraFactoryImp divaDbToCoraFactory = (DivaDbToCoraFactoryImp) dbStorage
 				.getDivaDbToCoraFactory();

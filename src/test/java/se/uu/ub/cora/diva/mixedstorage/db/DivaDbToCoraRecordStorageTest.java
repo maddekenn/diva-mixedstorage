@@ -21,6 +21,7 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
 import java.util.List;
@@ -54,7 +55,7 @@ public class DivaDbToCoraRecordStorageTest {
 		dataToDbTranslaterFactory = new DataToDbTranslaterFactorySpy();
 
 		divaToCoraRecordStorage = DivaDbToCoraRecordStorage
-				.usingRecordReaderFactoryAndRecordUpdaterFactoryConverterFactoryAndDbToCoraFactory(
+				.usingRecordReaderFactoryConverterFactoryDbToCoraFactoryRecordUpdaterFactoryAndTranslaterFactory(
 						recordReaderFactory, converterFactory, divaDbToCoraFactory,
 						recordUpdaterFactory, dataToDbTranslaterFactory);
 	}
@@ -138,88 +139,21 @@ public class DivaDbToCoraRecordStorageTest {
 	}
 
 	@Test
-	public void testUpdateNameInOrganisation() throws Exception {
+	public void testUpdateOrganisation() throws Exception {
 		DataGroup organisation = new DataGroupSpy("organisation");
 		organisation.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 
 		String dataDivider = "";
-		divaToCoraRecordStorage.update("divaOrganisation", "56", organisation, null, null, dataDivider);
+		divaToCoraRecordStorage.update("divaOrganisation", "56", organisation, null, null,
+				dataDivider);
 
 		DataToDbTranslaterSpy toDbTranslater = dataToDbTranslaterFactory.factoredTranslater;
 		assertEquals(toDbTranslater.dataGroup, organisation);
 
 		RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
+		assertSame(factoredUpdater.conditions, toDbTranslater.conditions);
+		assertSame(factoredUpdater.values, toDbTranslater.values);
 		assertEquals(factoredUpdater.tableName, "organisation");
-		assertEquals(factoredUpdater.conditions.get("organisation_id"), 56);
-		assertEquals(factoredUpdater.values.get("organisation_name"), "someChangedName");
-	}
-
-	@Test
-	public void testUpdateAllAtomicChildrenInOrganisation() throws Exception {
-		DataGroup record = new DataGroupSpy("organisation");
-		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
-		record.addChild(new DataAtomicSpy("closedDate", "2017-10-31"));
-		record.addChild(new DataAtomicSpy("organisationCode", "1235"));
-		record.addChild(new DataAtomicSpy("organisationNumber", "78979-45654"));
-
-		String dataDivider = "";
-		divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
-
-		RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
-		assertEquals(factoredUpdater.tableName, "organisation");
-		assertEquals(factoredUpdater.conditions.get("organisation_id"), 56);
-
-		assertEquals(factoredUpdater.values.get("organisation_name"), "someChangedName");
-		assertEquals(factoredUpdater.values.get("closed_date"), "2017-10-31");
-		assertEquals(factoredUpdater.values.get("organisation_code"), "1235");
-		assertEquals(factoredUpdater.values.get("orgnumber"), "78979-45654");
-	}
-
-	@Test
-	public void testUpdateEmptyDataAtomicsAreSetToNullInQuery() throws Exception {
-		DataGroup record = new DataGroupSpy("organisation");
-
-		String dataDivider = "";
-		divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
-
-		RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
-		assertEquals(factoredUpdater.tableName, "organisation");
-		assertEquals(factoredUpdater.conditions.get("organisation_id"), 56);
-
-		assertTrue(factoredUpdater.values.containsKey("organisation_name"));
-		assertTrue(factoredUpdater.values.containsKey("closed_date"));
-		assertTrue(factoredUpdater.values.containsKey("organisation_code"));
-		assertTrue(factoredUpdater.values.containsKey("orgnumber"));
-
-		assertEquals(factoredUpdater.values.get("organisation_name"), null);
-		assertEquals(factoredUpdater.values.get("closed_date"), null);
-		assertEquals(factoredUpdater.values.get("organisation_code"), null);
-		assertEquals(factoredUpdater.values.get("orgnumber"), null);
-
-	}
-
-	@Test(expectedExceptions = DbException.class)
-	public void testUpdateOrganisationIdNotAnInt() throws Exception {
-		DataGroup record = new DataGroupSpy("organisation");
-		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
-
-		String dataDivider = "";
-		divaToCoraRecordStorage.update("divaOrganisation", "notAnInt", record, null, null,
-				dataDivider);
-
-	}
-
-	@Test
-	public void testUpdateOrganisationIdNotAnIntSendsAlongInitalException() throws Exception {
-		DataGroup record = new DataGroupSpy("organisation");
-		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
-
-		try {
-			divaToCoraRecordStorage.update("divaOrganisation", "notAnInt", record, null, null, "");
-		} catch (Exception e) {
-			assertTrue(e.getCause() instanceof NumberFormatException);
-		}
-
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
