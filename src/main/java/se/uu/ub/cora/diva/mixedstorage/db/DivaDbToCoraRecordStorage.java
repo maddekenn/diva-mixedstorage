@@ -54,7 +54,7 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 		this.dataToDbTranslaterFactory = dataToDbTranslaterFactory;
 	}
 
-	public static DivaDbToCoraRecordStorage usingRecordReaderFactoryAndRecordUpdaterFactoryConverterFactoryAndDbToCoraFactory(
+	public static DivaDbToCoraRecordStorage usingRecordReaderFactoryConverterFactoryDbToCoraFactoryRecordUpdaterFactoryAndTranslaterFactory(
 			RecordReaderFactory recordReaderFactory, DivaDbToCoraConverterFactory converterFactory,
 			DivaDbToCoraFactory divaDbToCoraFactory, RecordUpdaterFactory recordUpdaterFactory,
 			DataToDbTranslaterFactory dataToDbTranslaterFactory) {
@@ -103,10 +103,8 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 		DataToDbTranslater dataToDbTranslater = dataToDbTranslaterFactory
 				.factorForTableName(ORGANISATION);
 		dataToDbTranslater.translate(dataGroup);
-		Map<String, Object> conditions = dataToDbTranslater.getConditions();
-		Map<String, Object> columnsWithValues = dataToDbTranslater.getValues();
 		recordUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions(ORGANISATION,
-				columnsWithValues, conditions);
+				dataToDbTranslater.getValues(), dataToDbTranslater.getConditions());
 	}
 
 	private Map<String, Object> createConditionsAddingOrganisationId(String id) {
