@@ -101,7 +101,7 @@ public class OrganisationDataToDbTranslaterTest {
 		DataToDbTranslater translater = new OrganisationDataToDbTranslater();
 		translater.translate(dataGroup);
 		assertEquals(translater.getConditions().size(), 1);
-		assertEquals(translater.getValues().size(), 4);
+		assertEquals(translater.getValues().size(), 5);
 		assertEquals(translater.getConditions().get("organisation_id"), 45);
 		assertEquals(translater.getValues().get("organisation_name"), "someChangedName");
 
@@ -109,7 +109,7 @@ public class OrganisationDataToDbTranslaterTest {
 		dataGroup2.addChild(new DataAtomicSpy("organisationName", "someOtherChangedName"));
 		translater.translate(dataGroup2);
 		assertEquals(translater.getConditions().size(), 1);
-		assertEquals(translater.getValues().size(), 4);
+		assertEquals(translater.getValues().size(), 5);
 
 		assertEquals(translater.getConditions().get("organisation_id"), 4500);
 		assertEquals(translater.getValues().get("organisation_name"), "someOtherChangedName");
@@ -121,5 +121,18 @@ public class OrganisationDataToDbTranslaterTest {
 		DataToDbTranslater translater = new OrganisationDataToDbTranslater();
 		translater.translate(dataGroup);
 
+	}
+
+	@Test
+	public void testOrganisationNotEligable() {
+		DataGroup dataGroup = createDataGroupWithId("45");
+		dataGroup.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
+		dataGroup.addChild(new DataAtomicSpy("eligible", "no"));
+
+		DataToDbTranslater translater = new OrganisationDataToDbTranslater();
+		translater.translate(dataGroup);
+		assertEquals(translater.getConditions().get("organisation_id"), 45);
+		assertEquals(translater.getValues().get("organisation_name"), "someChangedName");
+		assertEquals(translater.getValues().get("not_eligible"), true);
 	}
 }

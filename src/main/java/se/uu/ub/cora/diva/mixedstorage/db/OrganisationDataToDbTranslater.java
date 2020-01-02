@@ -62,47 +62,58 @@ public class OrganisationDataToDbTranslater implements DataToDbTranslater {
 
 	private Map<String, Object> createColumnsWithValuesForUpdateQuery() {
 		addAtomicValuesToColumns();
+		addEligible();
 		return values;
 	}
 
+	private void addEligible() {
+		boolean notEligible = false;
+		if (eligibleIsNoOrMissing()) {
+			notEligible = true;
+		}
+		values.put("not_eligible", notEligible);
+	}
+
+	private boolean eligibleIsNoOrMissing() {
+		return !dataGroup.containsChildWithNameInData("eligible")
+				|| "no".equals(dataGroup.getFirstAtomicValueWithNameInData("eligible"));
+	}
+
 	private void addAtomicValuesToColumns() {
-		for (OrganisationColumns column : OrganisationColumns.values()) {
+		for (OrganisationAtomicColumns column : OrganisationAtomicColumns.values()) {
 			addAtomicValueOrNullToColumn(column);
 		}
 	}
 
-	private void addAtomicValueOrNullToColumn(OrganisationColumns column) {
+	private void addAtomicValueOrNullToColumn(OrganisationAtomicColumns column) {
 		String coraName = column.coraName;
 		String dbColumnName = column.dbName;
-		String type = column.type;
 		if (!dataGroupHasValue(coraName)) {
 			values.put(dbColumnName, null);
 		} else {
-			String value = dataGroup.getFirstAtomicValueWithNameInData(coraName);
-			if ("date".equals(type)) {
-				Date valueAsDate = Date.valueOf(value);
-				values.put(dbColumnName, valueAsDate);
-			} else {
-				values.put(dbColumnName, value);
-
-			}
-
+			handleAndAddValue(coraName, dbColumnName, column);
 		}
 
-		// Object columnValue = getAtomicValueOrNull(coraName, type);
-	}
-
-	private Object getAtomicValueOrNull(String coraName, String type) {
-		return dataGroupHasValue(coraName) ? extractValueForName(coraName) : null;
-	}
-
-	private Object extractValueForName(String coraName) {
-		// Object value = dataGroup.getFirstAtomicValueWithNameInData(coraName);
-		return dataGroup.getFirstAtomicValueWithNameInData(coraName);
 	}
 
 	private boolean dataGroupHasValue(String coraName) {
 		return dataGroup.containsChildWithNameInData(coraName);
+	}
+
+	private void handleAndAddValue(String coraName, String dbColumnName,
+			OrganisationAtomicColumns column) {
+		String type = column.type;
+		String value = dataGroup.getFirstAtomicValueWithNameInData(coraName);
+		if ("date".equals(type)) {
+			addDataValue(dbColumnName, value);
+		} else {
+			values.put(dbColumnName, value);
+		}
+	}
+
+	private void addDataValue(String dbColumnName, String value) {
+		Date valueAsDate = Date.valueOf(value);
+		values.put(dbColumnName, valueAsDate);
 	}
 
 	@Override
