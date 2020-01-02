@@ -4,7 +4,7 @@ import static org.testng.Assert.assertEquals;
 
 import org.testng.annotations.Test;
 
-public class OrganisationColumnsTest {
+public class OrganisationAtomicColumnsTest {
 	@Test
 	public void testEnum() {
 		// small hack to get 100% coverage on enum
@@ -21,6 +21,9 @@ public class OrganisationColumnsTest {
 		assertEquals(OrganisationAtomicColumns.CLOSED_DATE.dbName, "closed_date");
 		assertEquals(OrganisationAtomicColumns.CLOSED_DATE.coraName, "closedDate");
 		assertEquals(OrganisationAtomicColumns.CLOSED_DATE.type, "date");
+		assertEquals(OrganisationAtomicColumns.URL.dbName, "organisation_homepage");
+		assertEquals(OrganisationAtomicColumns.URL.coraName, "URL");
+		assertEquals(OrganisationAtomicColumns.URL.type, "string");
 
 	}
 }

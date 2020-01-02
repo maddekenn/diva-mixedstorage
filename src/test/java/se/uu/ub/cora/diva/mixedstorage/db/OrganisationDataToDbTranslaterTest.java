@@ -65,6 +65,7 @@ public class OrganisationDataToDbTranslaterTest {
 		dataGroup.addChild(new DataAtomicSpy("closedDate", "2017-10-31"));
 		dataGroup.addChild(new DataAtomicSpy("organisationCode", "1235"));
 		dataGroup.addChild(new DataAtomicSpy("organisationNumber", "78979-45654"));
+		dataGroup.addChild(new DataAtomicSpy("URL", "www.someaddress.se"));
 
 		DataToDbTranslater translater = new OrganisationDataToDbTranslater();
 		translater.translate(dataGroup);
@@ -76,6 +77,7 @@ public class OrganisationDataToDbTranslaterTest {
 		assertEquals(closedDate, Date.valueOf("2017-10-31"));
 		assertEquals(translater.getValues().get("organisation_code"), "1235");
 		assertEquals(translater.getValues().get("orgnumber"), "78979-45654");
+		assertEquals(translater.getValues().get("organisation_homepage"), "www.someaddress.se");
 	}
 
 	@Test
@@ -91,6 +93,7 @@ public class OrganisationDataToDbTranslaterTest {
 		assertEquals(translater.getValues().get("closed_date"), null);
 		assertEquals(translater.getValues().get("organisation_code"), null);
 		assertEquals(translater.getValues().get("orgnumber"), null);
+		assertEquals(translater.getValues().get("organisation_homepage"), null);
 	}
 
 	@Test
@@ -101,7 +104,7 @@ public class OrganisationDataToDbTranslaterTest {
 		DataToDbTranslater translater = new OrganisationDataToDbTranslater();
 		translater.translate(dataGroup);
 		assertEquals(translater.getConditions().size(), 1);
-		assertEquals(translater.getValues().size(), 5);
+		assertEquals(translater.getValues().size(), 6);
 		assertEquals(translater.getConditions().get("organisation_id"), 45);
 		assertEquals(translater.getValues().get("organisation_name"), "someChangedName");
 
@@ -109,7 +112,7 @@ public class OrganisationDataToDbTranslaterTest {
 		dataGroup2.addChild(new DataAtomicSpy("organisationName", "someOtherChangedName"));
 		translater.translate(dataGroup2);
 		assertEquals(translater.getConditions().size(), 1);
-		assertEquals(translater.getValues().size(), 5);
+		assertEquals(translater.getValues().size(), 6);
 
 		assertEquals(translater.getConditions().get("organisation_id"), 4500);
 		assertEquals(translater.getValues().get("organisation_name"), "someOtherChangedName");
