@@ -27,6 +27,9 @@ public class DataToDbTranslaterFactoryImp implements DataToDbTranslaterFactory {
 		if ("organisation".contentEquals(tableName)) {
 			return new OrganisationDataToDbTranslater();
 		}
+		if ("organisation_name".equals(tableName)) {
+			return new OrganisationAlternativeNameDataToDbTranslater();
+		}
 		throw NotImplementedException.withMessage("No translater implemented for: " + tableName);
 	}
 

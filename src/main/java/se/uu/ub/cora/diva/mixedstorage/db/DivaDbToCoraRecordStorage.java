@@ -105,6 +105,10 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 		dataToDbTranslater.translate(dataGroup);
 		recordUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions(ORGANISATION,
 				dataToDbTranslater.getValues(), dataToDbTranslater.getConditions());
+		// TODO: uppdatera alternativt namn om det är ändrat
+		// TODO:uppdatera organisation type om ändrat
+		// TODO:uppdatera parent om ändrat
+		// TODO: uppdatera preecessor om ändrat
 	}
 
 	private Map<String, Object> createConditionsAddingOrganisationId(String id) {

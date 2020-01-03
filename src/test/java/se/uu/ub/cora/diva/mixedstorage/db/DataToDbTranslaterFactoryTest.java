@@ -45,4 +45,12 @@ public class DataToDbTranslaterFactoryTest {
 		assertTrue(translater instanceof OrganisationDataToDbTranslater);
 
 	}
+
+	@Test
+	public void testFactorForOrganisationName() {
+		DataToDbTranslaterFactory factory = new DataToDbTranslaterFactoryImp();
+		DataToDbTranslater translater = factory.factorForTableName("organisation_name");
+		assertTrue(translater instanceof OrganisationAlternativeNameDataToDbTranslater);
+
+	}
 }
