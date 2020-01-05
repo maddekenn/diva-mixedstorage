@@ -41,23 +41,10 @@ public class OrganisationDataToDbTranslater implements DataToDbTranslater {
 	}
 
 	private Map<String, Object> createConditionsAddingOrganisationId() {
-		String id = extractIdFromDataGroup();
-		throwDbExceptionIfIdNotAnIntegerValue(id);
+		String id = DataToDbHelper.extractIdFromDataGroup(dataGroup);
+		DataToDbHelper.throwDbExceptionIfIdNotAnIntegerValue(id);
 		conditions.put("organisation_id", Integer.valueOf(id));
 		return conditions;
-	}
-
-	private String extractIdFromDataGroup() {
-		DataGroup recordInfo = dataGroup.getFirstGroupWithNameInData("recordInfo");
-		return recordInfo.getFirstAtomicValueWithNameInData("id");
-	}
-
-	private void throwDbExceptionIfIdNotAnIntegerValue(String id) {
-		try {
-			Integer.valueOf(id);
-		} catch (NumberFormatException ne) {
-			throw DbException.withMessageAndException("Record not found: " + id, ne);
-		}
 	}
 
 	private Map<String, Object> createColumnsWithValuesForUpdateQuery() {

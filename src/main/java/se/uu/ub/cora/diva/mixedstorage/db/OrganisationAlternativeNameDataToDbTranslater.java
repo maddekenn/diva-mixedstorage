@@ -43,22 +43,9 @@ public class OrganisationAlternativeNameDataToDbTranslater implements DataToDbTr
 	}
 
 	private void addIntegerIdToValues() {
-		String id = extractIdFromDataGroup();
-		throwDbExceptionIfIdNotAnIntegerValue(id);
+		String id = DataToDbHelper.extractIdFromDataGroup(dataGroup);
+		DataToDbHelper.throwDbExceptionIfIdNotAnIntegerValue(id);
 		values.put("organisation_id", Integer.valueOf(id));
-	}
-
-	private String extractIdFromDataGroup() {
-		DataGroup recordInfo = dataGroup.getFirstGroupWithNameInData("recordInfo");
-		return recordInfo.getFirstAtomicValueWithNameInData("id");
-	}
-
-	private void throwDbExceptionIfIdNotAnIntegerValue(String id) {
-		try {
-			Integer.valueOf(id);
-		} catch (NumberFormatException ne) {
-			throw DbException.withMessageAndException("Record not found: " + id, ne);
-		}
 	}
 
 	private void addOrganisationNameToValues(DataGroup alternativeName) {
