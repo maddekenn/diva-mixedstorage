@@ -18,7 +18,7 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +28,7 @@ public class RecordReaderAlternativeNameSpy implements RecordReader {
 
 	public String usedTableName;
 	public Map<String, Object> usedConditions;
-	public List<Map<String, Object>> namesToReturn = new ArrayList<>();
+	public Map<String, Object> nameToReturn = new HashMap<>();
 
 	@Override
 	public List<Map<String, Object>> readAllFromTable(String tableName) {
@@ -41,14 +41,15 @@ public class RecordReaderAlternativeNameSpy implements RecordReader {
 			Map<String, Object> conditions) {
 		usedTableName = tableName;
 		usedConditions = conditions;
-		return namesToReturn;
+		return null;
 	}
 
 	@Override
 	public Map<String, Object> readOneRowFromDbUsingTableAndConditions(String tableName,
 			Map<String, Object> conditions) {
-		// TODO Auto-generated method stub
-		return null;
+		usedTableName = tableName;
+		usedConditions = conditions;
+		return nameToReturn;
 	}
 
 }

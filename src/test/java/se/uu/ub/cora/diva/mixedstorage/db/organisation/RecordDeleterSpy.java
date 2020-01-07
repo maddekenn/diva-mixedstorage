@@ -27,9 +27,11 @@ public class RecordDeleterSpy implements RecordDeleter {
 
 	public boolean deleteWasCalled = false;
 	public Map<String, Object> usedConditions;
+	public String usedTableName;
 
 	@Override
 	public void deleteFromTableUsingConditions(String tableName, Map<String, Object> conditions) {
+		usedTableName = tableName;
 		usedConditions = conditions;
 		deleteWasCalled = true;
 

@@ -26,10 +26,14 @@ import se.uu.ub.cora.sqldatabase.RecordCreator;
 public class RecordCreatorSpy implements RecordCreator {
 
 	public boolean insertWasCalled = false;
+	public Map<String, Object> values;
+	public String usedTableName;
 
 	@Override
 	public void insertIntoTableUsingNameAndColumnsWithValues(String tableName,
 			Map<String, Object> values) {
+		usedTableName = tableName;
+		this.values = values;
 		insertWasCalled = true;
 
 	}

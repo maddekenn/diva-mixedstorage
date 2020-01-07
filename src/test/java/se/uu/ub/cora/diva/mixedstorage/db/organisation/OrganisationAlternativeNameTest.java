@@ -22,7 +22,6 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.testng.annotations.BeforeMethod;
@@ -44,7 +43,8 @@ public class OrganisationAlternativeNameTest {
 		recordReader = new RecordReaderAlternativeNameSpy();
 		recordDeleter = new RecordDeleterSpy();
 		recordCreator = new RecordCreatorSpy();
-		alternativeName = new OrganisationAlternativeName(recordReader, recordDeleter);
+		alternativeName = new OrganisationAlternativeName(recordReader, recordDeleter,
+				recordCreator);
 
 	}
 
@@ -77,13 +77,24 @@ public class OrganisationAlternativeNameTest {
 	}
 
 	@Test
+	public void testNoNameInDbIncompleteNameInDataGroup() {
+		DataGroup organisation = createDataGroupWithId("678");
+		DataGroupSpy alternativeNameGroup = new DataGroupSpy("alternativeName");
+		organisation.addChild(alternativeNameGroup);
+
+		alternativeName.handleDbForDataGroup(organisation);
+		assertEquals(recordReader.usedTableName, "organisation_name");
+		assertEquals(recordReader.usedConditions.get("locale"), "en");
+		assertEquals(recordReader.usedConditions.get("organisation_id"), 678);
+		assertFalse(recordDeleter.deleteWasCalled);
+		assertFalse(recordCreator.insertWasCalled);
+	}
+
+	@Test
 	public void testOneNameInDbButNoNameInDataGroup() {
 		DataGroup organisation = createDataGroupWithId("678");
 
-		Map<String, Object> nameToReturn = new HashMap<>();
-		nameToReturn.put("organisation_name_id", 234);
-		nameToReturn.put("organisation_id", 678);
-		recordReader.namesToReturn.add(nameToReturn);
+		addNameToReturnFromSpy(234, 678);
 
 		alternativeName.handleDbForDataGroup(organisation);
 		assertEquals(recordReader.usedTableName, "organisation_name");
@@ -91,9 +102,90 @@ public class OrganisationAlternativeNameTest {
 		assertEquals(recordReader.usedConditions.get("organisation_id"), 678);
 		assertTrue(recordDeleter.deleteWasCalled);
 
+		assertEquals(recordDeleter.usedTableName, "organisation_name");
 		assertEquals(recordDeleter.usedConditions.get("organisation_name_id"), 234);
 
 		assertFalse(recordCreator.insertWasCalled);
+
+	}
+
+	private void addNameToReturnFromSpy(int nameId, int organisationId) {
+		Map<String, Object> nameToReturn = recordReader.nameToReturn;
+		nameToReturn.put("organisation_name_id", nameId);
+		nameToReturn.put("organisation_id", organisationId);
+		nameToReturn.put("organisation_name", "some english name");
+		nameToReturn.put("locale", "en");
+	}
+
+	@Test
+	public void testOneNameInDbSameNameInDataGroup() {
+		DataGroup organisation = createDataGroupWithId("678");
+		DataGroupSpy alternativeNameGroup = new DataGroupSpy("alternativeName");
+		alternativeNameGroup.addChild(new DataAtomicSpy("organisationName", "some english name"));
+		alternativeNameGroup.addChild(new DataAtomicSpy("language", "en"));
+		organisation.addChild(alternativeNameGroup);
+
+		addNameToReturnFromSpy(234, 678);
+
+		alternativeName.handleDbForDataGroup(organisation);
+		assertEquals(recordReader.usedTableName, "organisation_name");
+		assertEquals(recordReader.usedConditions.get("locale"), "en");
+		assertEquals(recordReader.usedConditions.get("organisation_id"), 678);
+		assertFalse(recordDeleter.deleteWasCalled);
+
+		assertFalse(recordCreator.insertWasCalled);
+
+	}
+
+	@Test
+	public void testOneNameInDbDifferentNameInDataGroup() {
+		DataGroup organisation = createDataGroupWithId("678");
+		DataGroupSpy alternativeNameGroup = new DataGroupSpy("alternativeName");
+		alternativeNameGroup
+				.addChild(new DataAtomicSpy("organisationName", "some other english name"));
+		alternativeNameGroup.addChild(new DataAtomicSpy("language", "en"));
+		organisation.addChild(alternativeNameGroup);
+
+		addNameToReturnFromSpy(234, 678);
+
+		alternativeName.handleDbForDataGroup(organisation);
+		assertEquals(recordReader.usedTableName, "organisation_name");
+		assertEquals(recordReader.usedConditions.get("locale"), "en");
+		assertEquals(recordReader.usedConditions.get("organisation_id"), 678);
+		assertTrue(recordDeleter.deleteWasCalled);
+
+		assertTrue(recordCreator.insertWasCalled);
+		assertEquals(recordCreator.usedTableName, "organisation_name");
+		assertEquals((String) recordCreator.values.get("organisation_name_id"),
+				"NEXTVAL('name_sequence')");
+		assertEquals(recordCreator.values.get("locale"), "en");
+		assertEquals(recordCreator.values.get("organisation_name"), "some other english name");
+		assertEquals(recordCreator.values.get("organisation_id"), 678);
+
+	}
+
+	@Test
+	public void testNoNameInDbButNameInDataGroup() {
+		DataGroup organisation = createDataGroupWithId("678");
+		DataGroupSpy alternativeNameGroup = new DataGroupSpy("alternativeName");
+		alternativeNameGroup.addChild(new DataAtomicSpy("organisationName", "some english name"));
+		alternativeNameGroup.addChild(new DataAtomicSpy("language", "en"));
+		organisation.addChild(alternativeNameGroup);
+
+		alternativeName.handleDbForDataGroup(organisation);
+		assertEquals(recordReader.usedTableName, "organisation_name");
+		assertEquals(recordReader.usedConditions.get("locale"), "en");
+		assertEquals(recordReader.usedConditions.get("organisation_id"), 678);
+		assertFalse(recordDeleter.deleteWasCalled);
+
+		assertTrue(recordCreator.insertWasCalled);
+		assertEquals(recordCreator.usedTableName, "organisation_name");
+		assertEquals((String) recordCreator.values.get("organisation_name_id"),
+				"NEXTVAL('name_sequence')");
+		assertEquals(recordCreator.values.get("locale"), "en");
+		assertEquals(recordCreator.values.get("organisation_name"), "some english name");
+		assertEquals(recordCreator.values.get("organisation_id"), 678);
+		// TODO:kolla last updated
 
 	}
 }
