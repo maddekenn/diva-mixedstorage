@@ -29,7 +29,6 @@ import se.uu.ub.cora.diva.mixedstorage.DataAtomicSpy;
 import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbRepeatableTranslater;
 import se.uu.ub.cora.diva.mixedstorage.db.DbException;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.OrganisationParentDataToDbTranslater;
 
 public class OrganisationParentDataToDbTranslaterTest {
 
@@ -68,7 +67,7 @@ public class OrganisationParentDataToDbTranslaterTest {
 	public void testOrganisationParentMultipleParents() {
 		DataGroup organisation = createDataGroupWithId("45");
 		addParent(organisation, "1100");
-		addParent(organisation, "1100");
+		addParent(organisation, "2200");
 
 		OrganisationParentDataToDbTranslater translater = new OrganisationParentDataToDbTranslater();
 		translater.translate(organisation);

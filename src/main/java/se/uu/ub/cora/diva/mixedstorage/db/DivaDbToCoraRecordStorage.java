@@ -103,6 +103,7 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 		DataToDbTranslater dataToDbTranslater = dataToDbTranslaterFactory
 				.factorForTableName(ORGANISATION);
 		dataToDbTranslater.translate(dataGroup);
+		// TODO: hantera transaktioner??
 		recordUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions(ORGANISATION,
 				dataToDbTranslater.getValues(), dataToDbTranslater.getConditions());
 		// Läs alternativt namn
