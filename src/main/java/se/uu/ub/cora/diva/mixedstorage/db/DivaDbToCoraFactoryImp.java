@@ -19,6 +19,7 @@
 package se.uu.ub.cora.diva.mixedstorage.db;
 
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbToCoraOrganisation;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
 public class DivaDbToCoraFactoryImp implements DivaDbToCoraFactory {

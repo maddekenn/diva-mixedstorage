@@ -1,8 +1,10 @@
-package se.uu.ub.cora.diva.mixedstorage.db;
+package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import static org.testng.Assert.assertEquals;
 
 import org.testng.annotations.Test;
+
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.OrganisationAtomicColumns;
 
 public class OrganisationAtomicColumnsTest {
 	@Test

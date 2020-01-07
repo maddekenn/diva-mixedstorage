@@ -23,6 +23,8 @@ import static org.testng.Assert.assertTrue;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.OrganisationAlternativeNameDataToDbTranslater;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.OrganisationDataToDbTranslater;
 
 public class DataToDbTranslaterFactoryTest {
 

@@ -16,14 +16,15 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.diva.mixedstorage.db;
+package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import java.util.Map;
 
 import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.diva.mixedstorage.db.ConversionException;
+import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverter;
 
-public class DivaDbToCoraOrganisationParentConverter
+public class DivaDbToCoraOrganisationSuccessorConverter
 		extends DivaDbToCoraOrganisationAncestryConverter implements DivaDbToCoraConverter {
 
 	@Override
@@ -31,31 +32,16 @@ public class DivaDbToCoraOrganisationParentConverter
 		this.dbRow = dbRow;
 		if (mandatoryValuesAreMissing()) {
 			throw ConversionException.withMessageAndException(
-					"Error converting organisation parent to Cora organisation parent: Map does not "
-							+ "contain mandatory values for organisation id and parent id",
+					"Error converting organisation successor to Cora organisation successor: Map does not "
+							+ "contain mandatory values for organisation id and prdecessor id",
 					null);
 		}
 		return createDataGroup();
 	}
 
-	@Override
-	protected boolean mandatoryValuesAreMissing() {
-		return organisationIdIsMissing() || parentIdIsMissing();
-	}
-
-	protected boolean parentIdIsMissing() {
-		return !dbRowHasValueForKey("organisation_parent_id");
-	}
-
 	private DataGroup createDataGroup() {
-		DataGroup parent = DataGroupProvider.getDataGroupUsingNameInData("parentOrganisation");
-		addParentLink(parent);
-		return parent;
+		String id = (String) dbRow.get(ORGANISATION_ID);
+		return createOrganisationLinkUsingLinkedRecordId(id);
 	}
 
-	private void addParentLink(DataGroup formerName) {
-		String predecessorId = String.valueOf(dbRow.get("organisation_parent_id"));
-		DataGroup predecessor = createOrganisationLinkUsingLinkedRecordId(predecessorId);
-		formerName.addChild(predecessor);
-	}
 }

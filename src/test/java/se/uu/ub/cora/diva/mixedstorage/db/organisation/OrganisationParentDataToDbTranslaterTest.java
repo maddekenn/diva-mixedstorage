@@ -16,7 +16,7 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.diva.mixedstorage.db;
+package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import static org.testng.Assert.assertEquals;
 
@@ -27,6 +27,9 @@ import org.testng.annotations.Test;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.DataAtomicSpy;
 import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
+import se.uu.ub.cora.diva.mixedstorage.db.DataToDbRepeatableTranslater;
+import se.uu.ub.cora.diva.mixedstorage.db.DbException;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.OrganisationParentDataToDbTranslater;
 
 public class OrganisationParentDataToDbTranslaterTest {
 

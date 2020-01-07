@@ -16,7 +16,7 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.diva.mixedstorage.db;
+package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
@@ -33,6 +33,8 @@ import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupFactory;
 import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.diva.mixedstorage.DataAtomicFactorySpy;
+import se.uu.ub.cora.diva.mixedstorage.db.ConversionException;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbToCoraOrganisationParentConverter;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DataGroupFactorySpy;
 
 public class DivaDbToCoraOrganisationParentConverterTest {
