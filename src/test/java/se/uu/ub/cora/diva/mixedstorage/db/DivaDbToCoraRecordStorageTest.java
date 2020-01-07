@@ -139,7 +139,7 @@ public class DivaDbToCoraRecordStorageTest {
 	}
 
 	@Test
-	public void testUpdateNameInOrganisation() throws Exception {
+	public void testUpdateOrganisationUsesTranslaterFromFactory() throws Exception {
 		DataGroup organisation = new DataGroupSpy("organisation");
 		organisation.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 
@@ -154,6 +154,18 @@ public class DivaDbToCoraRecordStorageTest {
 		assertSame(factoredUpdater.conditions, toDbTranslater.conditions);
 		assertSame(factoredUpdater.values, toDbTranslater.values);
 		assertEquals(factoredUpdater.tableName, "organisation");
+	}
+
+	@Test
+	public void testUpdateOrganisationUsesOrganisationAlternativeName() throws Exception {
+		// TODO: kolla att OrganisationAlternativeName används
+		DataGroup record = new DataGroupSpy("organisation");
+		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
+
+		String dataDivider = "";
+		divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
+		assertTrue(recordUpdaterFactory.factorWasCalled);
+
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""

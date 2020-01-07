@@ -19,18 +19,23 @@
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbHelper;
+import se.uu.ub.cora.sqldatabase.RecordDeleter;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 
 public class OrganisationAlternativeName {
 
 	private RecordReader recordReader;
+	private RecordDeleter recordDeleter;
 
-	public OrganisationAlternativeName(RecordReader recordReader) {
+	public OrganisationAlternativeName(RecordReader recordReader, RecordDeleter recordDeleter) {
 		this.recordReader = recordReader;
+		this.recordDeleter = recordDeleter;
+
 	}
 
 	public void handleDbForDataGroup(DataGroup organisation) {
@@ -39,7 +44,14 @@ public class OrganisationAlternativeName {
 		Map<String, Object> conditions = new HashMap<>();
 		conditions.put("locale", "en");
 		conditions.put("organisation_id", Integer.valueOf(id));
-		recordReader.readFromTableUsingConditions("organisation_name", conditions);
+		List<Map<String, Object>> readRows = recordReader
+				.readFromTableUsingConditions("organisation_name", conditions);
+		for (Map<String, Object> readRow : readRows) {
+			Map<String, Object> deleteConditions = new HashMap<>();
+			int nameId = (int) readRow.get("organisation_name_id");
+			deleteConditions.put("organisation_name_id", nameId);
+			recordDeleter.deleteFromTableUsingConditions("", deleteConditions);
+		}
 
 	}
 
