@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2020 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -27,7 +27,7 @@ import se.uu.ub.cora.sqldatabase.RecordCreator;
 import se.uu.ub.cora.sqldatabase.RecordDeleter;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 
-public class OrganisationAlternativeName {
+public class OrganisationAlternativeNameRelatedTable implements RelatedTable {
 
 	private static final String ORGANISATION_NAME_ID = "organisation_name_id";
 	private static final String ORGANISATION_NAME = "organisation_name";
@@ -36,13 +36,14 @@ public class OrganisationAlternativeName {
 	private RecordDeleter recordDeleter;
 	private RecordCreator recordCreator;
 
-	public OrganisationAlternativeName(RecordReader recordReader, RecordDeleter recordDeleter,
-			RecordCreator recordCreator) {
+	public OrganisationAlternativeNameRelatedTable(RecordReader recordReader,
+			RecordDeleter recordDeleter, RecordCreator recordCreator) {
 		this.recordReader = recordReader;
 		this.recordDeleter = recordDeleter;
 		this.recordCreator = recordCreator;
 	}
 
+	@Override
 	public void handleDbForDataGroup(DataGroup organisation) {
 		String organisationId = DataToDbHelper.extractIdFromDataGroup(organisation);
 		DataToDbHelper.throwDbExceptionIfIdNotAnIntegerValue(organisationId);
@@ -56,6 +57,11 @@ public class OrganisationAlternativeName {
 			Map<String, Object> conditions) {
 		Map<String, Object> readRow = recordReader
 				.readOneRowFromDbUsingTableAndConditions(ORGANISATION_NAME, conditions);
+		handleAlternativeName(organisation, organisationId, readRow);
+	}
+
+	private void handleAlternativeName(DataGroup organisation, String organisationId,
+			Map<String, Object> readRow) {
 		boolean organisationContainsAlternativeName = organisationContainsAlternativeName(
 				organisation);
 
@@ -63,9 +69,15 @@ public class OrganisationAlternativeName {
 			handleDeleteAndPossibleInsert(organisation, organisationId, readRow,
 					organisationContainsAlternativeName);
 		} else {
-			if (organisationContainsAlternativeName) {
-				insertNewAlternativeName(organisation, organisationId);
-			}
+			possiblyInsertAlternativeName(organisation, organisationId,
+					organisationContainsAlternativeName);
+		}
+	}
+
+	private void possiblyInsertAlternativeName(DataGroup organisation, String organisationId,
+			boolean organisationContainsAlternativeName) {
+		if (organisationContainsAlternativeName) {
+			insertNewAlternativeName(organisation, organisationId);
 		}
 	}
 
@@ -134,6 +146,7 @@ public class OrganisationAlternativeName {
 			String organisationId) {
 		Map<String, Object> values = new HashMap<>();
 		values.put(ORGANISATION_NAME_ID, "NEXTVAL('name_sequence')");
+		values.put("last_updated", "now()");
 		values.put("locale", "en");
 		values.put(ORGANISATION_NAME, getAlternativeNameFromOrganisation(organisation));
 		values.put("organisation_id", Integer.valueOf(organisationId));
@@ -143,6 +156,21 @@ public class OrganisationAlternativeName {
 	private String getAlternativeNameFromOrganisation(DataGroup organisation) {
 		DataGroup alternativeNameGroup = organisation.getFirstGroupWithNameInData(ALTERNATIVE_NAME);
 		return alternativeNameGroup.getFirstAtomicValueWithNameInData("organisationName");
+	}
+
+	public RecordReader getRecordReader() {
+		// needed for test
+		return recordReader;
+	}
+
+	public RecordDeleter getRecordDeleter() {
+		// needed for test
+		return recordDeleter;
+	}
+
+	public RecordCreator getRecordCreator() {
+		// needed for test
+		return recordCreator;
 	}
 
 }

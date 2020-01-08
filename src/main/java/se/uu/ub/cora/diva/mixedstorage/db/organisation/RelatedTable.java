@@ -18,29 +18,10 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
-import java.util.Map;
+import se.uu.ub.cora.data.DataGroup;
 
-import se.uu.ub.cora.sqldatabase.DataUpdater;
-import se.uu.ub.cora.sqldatabase.RecordCreator;
+public interface RelatedTable {
 
-public class RecordCreatorSpy implements RecordCreator {
+	void handleDbForDataGroup(DataGroup organisation);
 
-	public boolean insertWasCalled = false;
-	public Map<String, Object> values;
-	public String usedTableName;
-
-	@Override
-	public void insertIntoTableUsingNameAndColumnsWithValues(String tableName,
-			Map<String, Object> values) {
-		usedTableName = tableName;
-		this.values = values;
-		insertWasCalled = true;
-
-	}
-
-	@Override
-	public DataUpdater getDataUpdater() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }
