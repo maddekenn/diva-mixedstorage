@@ -151,9 +151,10 @@ public class OrganisationAlternativeNameRelatedTableTest {
 	}
 
 	private void assertCorrectValuesSentToInsert(String name) {
+		assertEquals(recordReader.sequenceName, "name_sequence");
 		assertEquals(recordCreator.usedTableName, "organisation_name");
-		assertEquals((String) recordCreator.values.get("organisation_name_id"),
-				"NEXTVAL('name_sequence')");
+		assertEquals(recordCreator.values.get("organisation_name_id"),
+				recordReader.nextVal.get("nextval"));
 		assertEquals(recordCreator.values.get("locale"), "en");
 		assertEquals(recordCreator.values.get("organisation_id"), 678);
 		assertEquals(recordCreator.values.get("last_updated"), "now()");

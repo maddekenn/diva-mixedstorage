@@ -146,7 +146,8 @@ public class OrganisationAlternativeNameRelatedTable implements RelatedTable {
 	private Map<String, Object> createValuesForInsert(DataGroup organisation,
 			String organisationId) {
 		Map<String, Object> values = new HashMap<>();
-		values.put(ORGANISATION_NAME_ID, "NEXTVAL('name_sequence')");
+		Map<String, Object> nextValue = recordReader.readNextValueFromSequence("name_sequence");
+		values.put(ORGANISATION_NAME_ID, nextValue.get("nextval"));
 		values.put("last_updated", "now()");
 		values.put("locale", "en");
 		values.put(ORGANISATION_NAME, getAlternativeNameFromOrganisation(organisation));

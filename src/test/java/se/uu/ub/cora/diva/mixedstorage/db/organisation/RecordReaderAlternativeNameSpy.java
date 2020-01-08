@@ -29,6 +29,8 @@ public class RecordReaderAlternativeNameSpy implements RecordReader {
 	public String usedTableName;
 	public Map<String, Object> usedConditions;
 	public Map<String, Object> nameToReturn = new HashMap<>();
+	public String sequenceName;
+	public Map<String, Object> nextVal;
 
 	@Override
 	public List<Map<String, Object>> readAllFromTable(String tableName) {
@@ -50,6 +52,14 @@ public class RecordReaderAlternativeNameSpy implements RecordReader {
 		usedTableName = tableName;
 		usedConditions = conditions;
 		return nameToReturn;
+	}
+
+	@Override
+	public Map<String, Object> readNextValueFromSequence(String sequenceName) {
+		this.sequenceName = sequenceName;
+		nextVal = new HashMap<>();
+		nextVal.put("nextval", 3);
+		return nextVal;
 	}
 
 }
