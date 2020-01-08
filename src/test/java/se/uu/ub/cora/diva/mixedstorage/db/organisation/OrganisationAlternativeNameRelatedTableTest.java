@@ -110,6 +110,7 @@ public class OrganisationAlternativeNameRelatedTableTest {
 		nameToReturn.put("organisation_id", organisationId);
 		nameToReturn.put("organisation_name", "some english name");
 		nameToReturn.put("locale", "en");
+		recordReader.namesToReturn.add(nameToReturn);
 	}
 
 	@Test

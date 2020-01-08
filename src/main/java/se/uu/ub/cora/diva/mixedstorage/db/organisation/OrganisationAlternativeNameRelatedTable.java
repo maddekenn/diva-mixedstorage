@@ -18,7 +18,9 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import se.uu.ub.cora.data.DataGroup;
@@ -56,9 +58,15 @@ public class OrganisationAlternativeNameRelatedTable implements RelatedTable {
 
 	private void readAndHandleAlternativeName(DataGroup organisation, String organisationId,
 			Map<String, Object> conditions) {
-		Map<String, Object> readRow = recordReader
-				.readOneRowFromDbUsingTableAndConditions(ORGANISATION_NAME, conditions);
+		List<Map<String, Object>> readRows = recordReader
+				.readFromTableUsingConditions(ORGANISATION_NAME, conditions);
+		Map<String, Object> readRow = getRowIfOnlyOneOrEmptyMap(readRows);
 		handleAlternativeName(organisation, organisationId, readRow);
+	}
+
+	private Map<String, Object> getRowIfOnlyOneOrEmptyMap(List<Map<String, Object>> readRows) {
+		return readRows.size() == 1 ? readRows.get(0)
+				: Collections.emptyMap();
 	}
 
 	private void handleAlternativeName(DataGroup organisation, String organisationId,

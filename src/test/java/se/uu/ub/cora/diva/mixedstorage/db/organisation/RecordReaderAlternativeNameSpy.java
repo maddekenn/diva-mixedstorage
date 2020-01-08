@@ -18,6 +18,7 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ public class RecordReaderAlternativeNameSpy implements RecordReader {
 	public String usedTableName;
 	public Map<String, Object> usedConditions;
 	public Map<String, Object> nameToReturn = new HashMap<>();
+	public List<Map<String, Object>> namesToReturn = new ArrayList<>();
 	public String sequenceName;
 	public Map<String, Object> nextVal;
 
@@ -43,7 +45,7 @@ public class RecordReaderAlternativeNameSpy implements RecordReader {
 			Map<String, Object> conditions) {
 		usedTableName = tableName;
 		usedConditions = conditions;
-		return null;
+		return namesToReturn;
 	}
 
 	@Override
