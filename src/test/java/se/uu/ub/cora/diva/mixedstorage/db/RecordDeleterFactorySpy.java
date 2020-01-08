@@ -16,26 +16,26 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.diva.mixedstorage.db.organisation;
+package se.uu.ub.cora.diva.mixedstorage.db;
 
-import java.util.ArrayList;
-import java.util.List;
+import se.uu.ub.cora.connection.SqlConnectionProvider;
+import se.uu.ub.cora.sqldatabase.RecordDeleter;
+import se.uu.ub.cora.sqldatabase.RecordDeleterFactory;
 
-import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
-import se.uu.ub.cora.diva.mixedstorage.db.RelatedTableFactory;
-import se.uu.ub.cora.diva.mixedstorage.db.RelatedTableSpy;
+public class RecordDeleterFactorySpy implements RecordDeleterFactory {
 
-public class RelatedTableFactorySpy implements RelatedTableFactory {
-
-	public List<RelatedTable> factoredRelatedTables = new ArrayList<>();
-	public List<String> relatedTableNames = new ArrayList<>();
+	public RecordDeleter factored;
 
 	@Override
-	public RelatedTable factor(String relatedTableName) {
-		relatedTableNames.add(relatedTableName);
-		RelatedTable factoredRelatedTable = new RelatedTableSpy();
-		factoredRelatedTables.add(factoredRelatedTable);
-		return factoredRelatedTable;
+	public SqlConnectionProvider getSqlConnectionProvider() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public RecordDeleter factor() {
+		factored = new RecordDeleterSpy();
+		return factored;
 	}
 
 }

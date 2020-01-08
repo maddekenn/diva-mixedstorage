@@ -16,26 +16,26 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.diva.mixedstorage.db.organisation;
+package se.uu.ub.cora.diva.mixedstorage.db;
 
-import java.util.ArrayList;
-import java.util.List;
+import se.uu.ub.cora.connection.SqlConnectionProvider;
+import se.uu.ub.cora.sqldatabase.RecordCreator;
+import se.uu.ub.cora.sqldatabase.RecordCreatorFactory;
 
-import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
-import se.uu.ub.cora.diva.mixedstorage.db.RelatedTableFactory;
-import se.uu.ub.cora.diva.mixedstorage.db.RelatedTableSpy;
+public class RecordCreatorFactorySpy implements RecordCreatorFactory {
 
-public class RelatedTableFactorySpy implements RelatedTableFactory {
-
-	public List<RelatedTable> factoredRelatedTables = new ArrayList<>();
-	public List<String> relatedTableNames = new ArrayList<>();
+	public RecordCreator factored;
 
 	@Override
-	public RelatedTable factor(String relatedTableName) {
-		relatedTableNames.add(relatedTableName);
-		RelatedTable factoredRelatedTable = new RelatedTableSpy();
-		factoredRelatedTables.add(factoredRelatedTable);
-		return factoredRelatedTable;
+	public SqlConnectionProvider getSqlConnectionProvider() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public RecordCreator factor() {
+		factored = new RecordCreatorSpy();
+		return factored;
 	}
 
 }

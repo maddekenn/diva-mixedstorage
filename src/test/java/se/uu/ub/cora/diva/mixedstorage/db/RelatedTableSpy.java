@@ -19,7 +19,6 @@
 package se.uu.ub.cora.diva.mixedstorage.db;
 
 import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.RelatedTable;
 
 public class RelatedTableSpy implements RelatedTable {
 

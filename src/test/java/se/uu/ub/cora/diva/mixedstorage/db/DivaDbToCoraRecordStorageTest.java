@@ -21,7 +21,6 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
 import java.util.List;
@@ -45,6 +44,7 @@ public class DivaDbToCoraRecordStorageTest {
 	private DivaDbToCoraFactorySpy divaDbToCoraFactory;
 	private RecordUpdaterFactorySpy recordUpdaterFactory;
 	private DataToDbTranslaterFactorySpy dataToDbTranslaterFactory;
+	private DbMainTableFactorySpy dbMainTableFactory;
 
 	@BeforeMethod
 	public void BeforeMethod() {
@@ -53,11 +53,11 @@ public class DivaDbToCoraRecordStorageTest {
 		recordUpdaterFactory = new RecordUpdaterFactorySpy();
 		divaDbToCoraFactory = new DivaDbToCoraFactorySpy();
 		dataToDbTranslaterFactory = new DataToDbTranslaterFactorySpy();
-
+		dbMainTableFactory = new DbMainTableFactorySpy();
 		divaToCoraRecordStorage = DivaDbToCoraRecordStorage
-				.usingRecordReaderFactoryConverterFactoryDbToCoraFactoryRecordUpdaterFactoryAndTranslaterFactory(
+				.usingRecordReaderFactoryConverterFactoryDbToCoraFactoryRecordUpdaterFactoryAndMainTableFactory(
 						recordReaderFactory, converterFactory, divaDbToCoraFactory,
-						recordUpdaterFactory, dataToDbTranslaterFactory);
+						recordUpdaterFactory, dbMainTableFactory);
 	}
 
 	@Test
@@ -116,19 +116,30 @@ public class DivaDbToCoraRecordStorageTest {
 		divaToCoraRecordStorage.linksExistForRecord(null, null);
 	}
 
+	// @Test
+	// public void testUpdateOrganisationFactorOrganisationTranslater() throws Exception {
+	// DataGroup record = new DataGroupSpy("organisation");
+	// record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
+	//
+	// String dataDivider = "";
+	// divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
+	// assertTrue(dataToDbTranslaterFactory.factorWasCalled);
+	//
+	// }
+
 	@Test
-	public void testUpdateOrganisationFactorOrganisationTranslater() throws Exception {
+	public void testUpdateOrganisationFactorOrganisationMainTable() throws Exception {
 		DataGroup record = new DataGroupSpy("organisation");
 		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 
 		String dataDivider = "";
 		divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
-		assertTrue(dataToDbTranslaterFactory.factorWasCalled);
+		assertTrue(dbMainTableFactory.factorWasCalled);
 
 	}
 
 	@Test
-	public void testUpdateOrganisationFactorDbReader() throws Exception {
+	public void testUpdateOrganisationFactorDbUpdater() throws Exception {
 		DataGroup record = new DataGroupSpy("organisation");
 		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 
@@ -138,8 +149,25 @@ public class DivaDbToCoraRecordStorageTest {
 
 	}
 
+	// @Test
+	// public void testUpdateOrganisationUsesTranslaterFromFactory() throws Exception {
+	// DataGroup organisation = new DataGroupSpy("organisation");
+	// organisation.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
+	//
+	// String dataDivider = "";
+	// divaToCoraRecordStorage.update("divaOrganisation", "56", organisation, null, null,
+	// dataDivider);
+	//
+	// DataToDbTranslaterSpy toDbTranslater = dataToDbTranslaterFactory.factoredTranslater;
+	// assertEquals(toDbTranslater.dataGroup, organisation);
+	//
+	// RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
+	// assertSame(factoredUpdater.conditions, toDbTranslater.conditions);
+	// assertSame(factoredUpdater.values, toDbTranslater.values);
+	// assertEquals(factoredUpdater.tableName, "organisation");
+	// }
 	@Test
-	public void testUpdateOrganisationUsesTranslaterFromFactory() throws Exception {
+	public void testUpdateOrganisationUsesMainTableFromFactory() throws Exception {
 		DataGroup organisation = new DataGroupSpy("organisation");
 		organisation.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 
@@ -147,26 +175,26 @@ public class DivaDbToCoraRecordStorageTest {
 		divaToCoraRecordStorage.update("divaOrganisation", "56", organisation, null, null,
 				dataDivider);
 
-		DataToDbTranslaterSpy toDbTranslater = dataToDbTranslaterFactory.factoredTranslater;
-		assertEquals(toDbTranslater.dataGroup, organisation);
+		DbMainTableSpy mainTable = (DbMainTableSpy) dbMainTableFactory.mainTables.get(0);
+		assertEquals(mainTable.dataGroup, organisation);
 
-		RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
-		assertSame(factoredUpdater.conditions, toDbTranslater.conditions);
-		assertSame(factoredUpdater.values, toDbTranslater.values);
-		assertEquals(factoredUpdater.tableName, "organisation");
+		// RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
+		// assertSame(factoredUpdater.conditions, mainTable.conditions);
+		// assertSame(factoredUpdater.values, mainTable.values);
+		// assertEquals(factoredUpdater.tableName, "organisation");
 	}
 
-	@Test
-	public void testUpdateOrganisationUsesOrganisationAlternativeName() throws Exception {
-		// TODO: kolla att OrganisationAlternativeName används
-		DataGroup record = new DataGroupSpy("organisation");
-		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
-
-		String dataDivider = "";
-		divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
-		assertTrue(recordUpdaterFactory.factorWasCalled);
-
-	}
+	// @Test
+	// public void testUpdateOrganisationUsesOrganisationAlternativeName() throws Exception {
+	// // TODO: kolla att OrganisationAlternativeName används
+	// DataGroup record = new DataGroupSpy("organisation");
+	// record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
+	//
+	// String dataDivider = "";
+	// divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
+	// assertTrue(recordUpdaterFactory.factorWasCalled);
+	//
+	// }
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
 			+ "update is not implemented")

@@ -16,12 +16,10 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.diva.mixedstorage.db.organisation;
+package se.uu.ub.cora.diva.mixedstorage.db;
 
-import se.uu.ub.cora.data.DataGroup;
+public interface RelatedTableFactory {
 
-public interface RelatedTable {
-
-	void handleDbForDataGroup(DataGroup organisation);
+	RelatedTable factor(String relatedTableName);
 
 }

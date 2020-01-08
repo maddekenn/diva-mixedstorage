@@ -43,24 +43,25 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	private DivaDbToCoraConverterFactory converterFactory;
 	private DivaDbToCoraFactory divaDbToCoraFactory;
 	private static RecordUpdaterFactory recordUpdaterFactory;
-	private DataToDbTranslaterFactory dataToDbTranslaterFactory;
+	private DbMainTableFactory dbMainTableFactory;
 
 	private DivaDbToCoraRecordStorage(RecordReaderFactory recordReaderFactory,
 			DivaDbToCoraConverterFactory converterFactory, DivaDbToCoraFactory divaDbToCoraFactory,
-			DataToDbTranslaterFactory dataToDbTranslaterFactory) {
+			DbMainTableFactory dbMainTableFactory) {
 		this.recordReaderFactory = recordReaderFactory;
 		this.converterFactory = converterFactory;
 		this.divaDbToCoraFactory = divaDbToCoraFactory;
-		this.dataToDbTranslaterFactory = dataToDbTranslaterFactory;
+		this.dbMainTableFactory = dbMainTableFactory;
+
 	}
 
-	public static DivaDbToCoraRecordStorage usingRecordReaderFactoryConverterFactoryDbToCoraFactoryRecordUpdaterFactoryAndTranslaterFactory(
+	public static DivaDbToCoraRecordStorage usingRecordReaderFactoryConverterFactoryDbToCoraFactoryRecordUpdaterFactoryAndMainTableFactory(
 			RecordReaderFactory recordReaderFactory, DivaDbToCoraConverterFactory converterFactory,
 			DivaDbToCoraFactory divaDbToCoraFactory, RecordUpdaterFactory recordUpdaterFactory,
-			DataToDbTranslaterFactory dataToDbTranslaterFactory) {
+			DbMainTableFactory dbMainTableFactory) {
 		DivaDbToCoraRecordStorage.recordUpdaterFactory = recordUpdaterFactory;
 		return new DivaDbToCoraRecordStorage(recordReaderFactory, converterFactory,
-				divaDbToCoraFactory, dataToDbTranslaterFactory);
+				divaDbToCoraFactory, dbMainTableFactory);
 	}
 
 	@Override
@@ -100,12 +101,16 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 
 	private void updateOrganisation(DataGroup dataGroup) {
 		RecordUpdater recordUpdater = recordUpdaterFactory.factor();
-		DataToDbTranslater dataToDbTranslater = dataToDbTranslaterFactory
-				.factorForTableName(ORGANISATION);
-		dataToDbTranslater.translate(dataGroup);
+
+		DbMainTable mainTable = dbMainTableFactory.factor("organisation");
+		mainTable.update(dataGroup);
+
+		// DataToDbTranslater dataToDbTranslater = dataToDbTranslaterFactory
+		// .factorForTableName(ORGANISATION);
+		// dataToDbTranslater.translate(dataGroup);
 		// TODO: hantera transaktioner??
-		recordUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions(ORGANISATION,
-				dataToDbTranslater.getValues(), dataToDbTranslater.getConditions());
+		// recordUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions(ORGANISATION,
+		// dataToDbTranslater.getValues(), dataToDbTranslater.getConditions());
 		// Läs alternativt namn
 		// finns det ett med samma locale?
 		// har det samma värde? gör inget
@@ -239,9 +244,9 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 		return recordUpdaterFactory;
 	}
 
-	public DataToDbTranslaterFactory getDataToDbTranslaterFactory() {
+	public DbMainTableFactory getDbMainTableFactory() {
 		// needed for test
-		return dataToDbTranslaterFactory;
+		return dbMainTableFactory;
 	}
 
 }

@@ -45,9 +45,11 @@ import se.uu.ub.cora.connection.ContextConnectionProviderImp;
 import se.uu.ub.cora.data.DataGroupFactory;
 import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslaterFactoryImp;
+import se.uu.ub.cora.diva.mixedstorage.db.DbMainTableFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraRecordStorage;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.RelatedTableFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DataGroupFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraConverterFactory;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraConverterFactoryImp;
@@ -55,6 +57,8 @@ import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraRecordStorage;
 import se.uu.ub.cora.diva.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.httphandler.HttpHandlerFactoryImp;
 import se.uu.ub.cora.logger.LoggerProvider;
+import se.uu.ub.cora.sqldatabase.RecordCreatorFactoryImp;
+import se.uu.ub.cora.sqldatabase.RecordDeleterFactoryImp;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactoryImp;
 import se.uu.ub.cora.sqldatabase.RecordUpdaterFactoryImp;
 import se.uu.ub.cora.storage.MetadataStorage;
@@ -193,14 +197,31 @@ public class DivaMixedRecordStorageProviderTest {
 		assertCorrectRecordUpdaterFactory(dbStorage);
 
 		assertTrue(dbStorage.getConverterFactory() instanceof DivaDbToCoraConverterFactoryImp);
-		assertTrue(
-				dbStorage.getDataToDbTranslaterFactory() instanceof DataToDbTranslaterFactoryImp);
+		assertCorrectDbMainTableFactory(dbStorage);
 
 		DivaDbToCoraFactoryImp divaDbToCoraFactory = (DivaDbToCoraFactoryImp) dbStorage
 				.getDivaDbToCoraFactory();
 		assertSame(divaDbToCoraFactory.getReaderFactory(), recordReaderFactory);
 		assertSame(divaDbToCoraFactory.getConverterFactory(), dbStorage.getConverterFactory());
 
+	}
+
+	private void assertCorrectDbMainTableFactory(DivaDbToCoraRecordStorage dbStorage) {
+		DbMainTableFactoryImp dbMainTableFactory = (DbMainTableFactoryImp) dbStorage
+				.getDbMainTableFactory();
+		assertTrue(dbMainTableFactory instanceof DbMainTableFactoryImp);
+		assertSame(dbMainTableFactory.getRecordUpdaterFactory(),
+				dbStorage.getRecordUpdaterFactory());
+		assertTrue(
+				dbMainTableFactory.getTranslaterFactory() instanceof DataToDbTranslaterFactoryImp);
+		RelatedTableFactoryImp relatedTableFactory = (RelatedTableFactoryImp) dbMainTableFactory
+				.getRelatedTableFactory();
+
+		assertTrue(relatedTableFactory.getRecordReaderFactory() instanceof RecordReaderFactoryImp);
+		assertTrue(
+				relatedTableFactory.getRecordDeleterFactory() instanceof RecordDeleterFactoryImp);
+		assertTrue(
+				relatedTableFactory.getRecordCreatorFactory() instanceof RecordCreatorFactoryImp);
 	}
 
 	private RecordReaderFactoryImp assertCorrectRecordReaderFactory(
@@ -262,8 +283,12 @@ public class DivaMixedRecordStorageProviderTest {
 		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 5),
 				"Found java:/comp/env/jdbc/postgres as databaseLookupName");
 		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 6),
+				"Found java:/comp/env/jdbc/postgres as databaseLookupName");
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 7),
+				"Found java:/comp/env/jdbc/postgres as databaseLookupName");
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 8),
 				"DivaMixedRecordStorageProvider started DivaMixedRecordStorage");
-		assertEquals(loggerFactorySpy.getNoOfInfoLogMessagesUsingClassName(testedClassName), 7);
+		assertEquals(loggerFactorySpy.getNoOfInfoLogMessagesUsingClassName(testedClassName), 9);
 	}
 
 	@Test

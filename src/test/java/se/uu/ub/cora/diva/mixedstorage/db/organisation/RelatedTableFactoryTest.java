@@ -24,27 +24,25 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.diva.mixedstorage.db.RecordCreatorSpy;
-import se.uu.ub.cora.diva.mixedstorage.db.RecordDeleterSpy;
-import se.uu.ub.cora.diva.mixedstorage.db.RecordReaderSpy;
-import se.uu.ub.cora.sqldatabase.RecordCreator;
-import se.uu.ub.cora.sqldatabase.RecordDeleter;
-import se.uu.ub.cora.sqldatabase.RecordReader;
+import se.uu.ub.cora.diva.mixedstorage.db.RecordCreatorFactorySpy;
+import se.uu.ub.cora.diva.mixedstorage.db.RecordDeleterFactorySpy;
+import se.uu.ub.cora.diva.mixedstorage.db.RecordReaderFactorySpy;
+import se.uu.ub.cora.diva.mixedstorage.db.RelatedTableFactory;
 
 public class RelatedTableFactoryTest {
 
-	private RecordReader recordReader;
-	private RecordDeleter recordDeleter;
-	private RecordCreator recordCreator;
+	private RecordReaderFactorySpy recordReaderFactory;
+	private RecordDeleterFactorySpy recordDeleterFactory;
+	private RecordCreatorFactorySpy recordCreatorFactory;
 	private RelatedTableFactory factory;
 
 	@BeforeMethod
 	public void setUp() {
-		recordReader = new RecordReaderSpy();
-		recordDeleter = new RecordDeleterSpy();
-		recordCreator = new RecordCreatorSpy();
-		factory = RelatedTableFactoryImp.usingReaderUpdaterAndCreator(recordReader, recordDeleter,
-				recordCreator);
+		recordReaderFactory = new RecordReaderFactorySpy();
+		recordDeleterFactory = new RecordDeleterFactorySpy();
+		recordCreatorFactory = new RecordCreatorFactorySpy();
+		factory = RelatedTableFactoryImp.usingReaderDeleterAndCreator(recordReaderFactory,
+				recordDeleterFactory, recordCreatorFactory);
 
 	}
 
@@ -52,9 +50,9 @@ public class RelatedTableFactoryTest {
 	public void testFactorOrganisationAlternativeName() {
 		OrganisationAlternativeNameRelatedTable factoredTable = (OrganisationAlternativeNameRelatedTable) factory
 				.factor("organisationAlternativeName");
-		assertSame(factoredTable.getRecordReader(), recordReader);
-		assertSame(factoredTable.getRecordDeleter(), recordDeleter);
-		assertSame(factoredTable.getRecordCreator(), recordCreator);
+		assertSame(factoredTable.getRecordReader(), recordReaderFactory.factored);
+		assertSame(factoredTable.getRecordDeleter(), recordDeleterFactory.factored);
+		assertSame(factoredTable.getRecordCreator(), recordCreatorFactory.factored);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""

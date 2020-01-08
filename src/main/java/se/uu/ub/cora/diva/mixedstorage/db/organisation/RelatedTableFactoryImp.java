@@ -19,36 +19,58 @@
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
+import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
+import se.uu.ub.cora.diva.mixedstorage.db.RelatedTableFactory;
 import se.uu.ub.cora.sqldatabase.RecordCreator;
+import se.uu.ub.cora.sqldatabase.RecordCreatorFactory;
 import se.uu.ub.cora.sqldatabase.RecordDeleter;
+import se.uu.ub.cora.sqldatabase.RecordDeleterFactory;
 import se.uu.ub.cora.sqldatabase.RecordReader;
+import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
 public class RelatedTableFactoryImp implements RelatedTableFactory {
 
-	private RecordReader recordReader;
-	private RecordDeleter recordDeleter;
-	private RecordCreator recordCreator;
+	private RecordReaderFactory recordReaderFactory;
+	private RecordDeleterFactory recordDeleterFactory;
+	private RecordCreatorFactory recordCreatorFactory;
 
-	public static RelatedTableFactoryImp usingReaderUpdaterAndCreator(RecordReader recordReader,
-			RecordDeleter recordDeleter, RecordCreator recordCreator) {
-		return new RelatedTableFactoryImp(recordReader, recordDeleter, recordCreator);
+	public static RelatedTableFactoryImp usingReaderDeleterAndCreator(
+			RecordReaderFactory recordReaderFactory, RecordDeleterFactory recordDeleterFactory,
+			RecordCreatorFactory recordCreatorFactory) {
+		return new RelatedTableFactoryImp(recordReaderFactory, recordDeleterFactory,
+				recordCreatorFactory);
 	}
 
-	private RelatedTableFactoryImp(RecordReader recordReader, RecordDeleter recordDeleter,
-			RecordCreator recordCreator) {
-		this.recordReader = recordReader;
-		this.recordDeleter = recordDeleter;
-		this.recordCreator = recordCreator;
+	private RelatedTableFactoryImp(RecordReaderFactory recordReader,
+			RecordDeleterFactory recordDeleter, RecordCreatorFactory recordCreator) {
+		this.recordReaderFactory = recordReader;
+		this.recordDeleterFactory = recordDeleter;
+		this.recordCreatorFactory = recordCreator;
 	}
 
 	@Override
 	public RelatedTable factor(String relatedTableName) {
+		RecordReader recordReader = recordReaderFactory.factor();
+		RecordDeleter recordDeleter = recordDeleterFactory.factor();
+		RecordCreator recordCreator = recordCreatorFactory.factor();
 		if ("organisationAlternativeName".equals(relatedTableName)) {
 			return new OrganisationAlternativeNameRelatedTable(recordReader, recordDeleter,
 					recordCreator);
 		}
 		throw NotImplementedException
 				.withMessage("Related table not implemented for " + relatedTableName);
+	}
+
+	public RecordReaderFactory getRecordReaderFactory() {
+		return recordReaderFactory;
+	}
+
+	public RecordDeleterFactory getRecordDeleterFactory() {
+		return recordDeleterFactory;
+	}
+
+	public RecordCreatorFactory getRecordCreatorFactory() {
+		return recordCreatorFactory;
 	}
 
 }

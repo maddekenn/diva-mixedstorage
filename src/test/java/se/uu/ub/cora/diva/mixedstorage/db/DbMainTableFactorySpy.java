@@ -7,7 +7,6 @@
  *     it under the terms of the GNU General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
- *     
  *
  *     Cora is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -17,12 +16,24 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.diva.mixedstorage.db.organisation;
+package se.uu.ub.cora.diva.mixedstorage.db;
 
-import se.uu.ub.cora.data.DataGroup;
+import java.util.ArrayList;
+import java.util.List;
 
-public interface DbMainTable {
+public class DbMainTableFactorySpy implements DbMainTableFactory {
 
-	void update(DataGroup dataGroup);
+	public List<String> tableNames = new ArrayList<>();
+	public List<DbMainTable> mainTables = new ArrayList<>();
+	public boolean factorWasCalled = false;
+
+	@Override
+	public DbMainTable factor(String tableName) {
+		factorWasCalled = true;
+		tableNames.add(tableName);
+		DbMainTable mainTable = new DbMainTableSpy();
+		mainTables.add(mainTable);
+		return mainTable;
+	}
 
 }

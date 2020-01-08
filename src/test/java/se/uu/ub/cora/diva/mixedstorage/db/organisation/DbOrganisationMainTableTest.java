@@ -27,6 +27,7 @@ import org.testng.annotations.Test;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslaterSpy;
+import se.uu.ub.cora.diva.mixedstorage.db.DbMainTable;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordUpdaterSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTableSpy;
 

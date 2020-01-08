@@ -20,6 +20,9 @@ package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslater;
+import se.uu.ub.cora.diva.mixedstorage.db.DbMainTable;
+import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
+import se.uu.ub.cora.diva.mixedstorage.db.RelatedTableFactory;
 import se.uu.ub.cora.sqldatabase.RecordUpdater;
 
 public class DbOrganisationMainTable implements DbMainTable {
@@ -48,6 +51,21 @@ public class DbOrganisationMainTable implements DbMainTable {
 		// TODO: uppdatera preecessor om ändrat
 		// TODO: uppdatera adress om det är ändrat
 		// TODO:uppdatera organisation type om ändrat
+	}
+
+	public DataToDbTranslater getDataToDbTranslater() {
+		// needed for test
+		return dataToDbTranslater;
+	}
+
+	public RecordUpdater getRecordUpdater() {
+		// needed for test
+		return recordUpdater;
+	}
+
+	public RelatedTableFactory getRelatedTableFactory() {
+		// needed for test
+		return relatedTableFactory;
 	}
 
 }

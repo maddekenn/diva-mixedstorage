@@ -29,9 +29,11 @@ import se.uu.ub.cora.basicstorage.RecordStorageOnDisk;
 import se.uu.ub.cora.connection.ContextConnectionProviderImp;
 import se.uu.ub.cora.connection.SqlConnectionProvider;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslaterFactoryImp;
+import se.uu.ub.cora.diva.mixedstorage.db.DbMainTableFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraRecordStorage;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.RelatedTableFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraConverterFactory;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraConverterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraRecordStorage;
@@ -39,6 +41,9 @@ import se.uu.ub.cora.httphandler.HttpHandlerFactory;
 import se.uu.ub.cora.httphandler.HttpHandlerFactoryImp;
 import se.uu.ub.cora.logger.Logger;
 import se.uu.ub.cora.logger.LoggerProvider;
+import se.uu.ub.cora.sqldatabase.RecordCreatorFactoryImp;
+import se.uu.ub.cora.sqldatabase.RecordDeleterFactory;
+import se.uu.ub.cora.sqldatabase.RecordDeleterFactoryImp;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactoryImp;
 import se.uu.ub.cora.sqldatabase.RecordUpdaterFactory;
 import se.uu.ub.cora.sqldatabase.RecordUpdaterFactoryImp;
@@ -124,12 +129,17 @@ public class DivaMixedRecordStorageProvider
 		DivaDbToCoraConverterFactoryImp divaDbToCoraConverterFactory = new DivaDbToCoraConverterFactoryImp();
 		DivaDbToCoraFactoryImp divaDbToCoraFactory = new DivaDbToCoraFactoryImp(recordReaderFactory,
 				divaDbToCoraConverterFactory);
-		DataToDbTranslaterFactoryImp dataToDbTranslaterFactory = new DataToDbTranslaterFactoryImp();
-
+		DbMainTableFactoryImp dbMainTableFactory = createDbMainTableFactory(recordReaderFactory,
+				recordUpdaterFactory);
 		return DivaDbToCoraRecordStorage
-				.usingRecordReaderFactoryConverterFactoryDbToCoraFactoryRecordUpdaterFactoryAndTranslaterFactory(
+				.usingRecordReaderFactoryConverterFactoryDbToCoraFactoryRecordUpdaterFactoryAndMainTableFactory(
 						recordReaderFactory, divaDbToCoraConverterFactory, divaDbToCoraFactory,
-						recordUpdaterFactory, dataToDbTranslaterFactory);
+						recordUpdaterFactory, dbMainTableFactory);
+	}
+
+	private RecordReaderFactoryImp createRecordReaderFactory() {
+		SqlConnectionProvider sqlConnectionProvider = tryToCreateConnectionProvider();
+		return RecordReaderFactoryImp.usingSqlConnectionProvider(sqlConnectionProvider);
 	}
 
 	private RecordUpdaterFactory createRecordUpdaterFactory() {
@@ -137,9 +147,32 @@ public class DivaMixedRecordStorageProvider
 		return RecordUpdaterFactoryImp.usingSqlConnectionProvider(sqlConnectionProvider);
 	}
 
-	private RecordReaderFactoryImp createRecordReaderFactory() {
+	private DbMainTableFactoryImp createDbMainTableFactory(
+			RecordReaderFactoryImp recordReaderFactory, RecordUpdaterFactory recordUpdaterFactory) {
+		DataToDbTranslaterFactoryImp translaterFactory = new DataToDbTranslaterFactoryImp();
+
+		RelatedTableFactoryImp relatedFactory = createRelatedTableFactory(recordReaderFactory);
+
+		return new DbMainTableFactoryImp(translaterFactory, recordUpdaterFactory, relatedFactory);
+	}
+
+	private RelatedTableFactoryImp createRelatedTableFactory(
+			RecordReaderFactoryImp recordReaderFactory) {
+		RecordCreatorFactoryImp recordCreatorFactory = createRecordCreatorFactory();
+		RecordDeleterFactory recordDeleterFactory = createRecordDeleterFactory();
+
+		return RelatedTableFactoryImp.usingReaderDeleterAndCreator(recordReaderFactory,
+				recordDeleterFactory, recordCreatorFactory);
+	}
+
+	private RecordCreatorFactoryImp createRecordCreatorFactory() {
 		SqlConnectionProvider sqlConnectionProvider = tryToCreateConnectionProvider();
-		return RecordReaderFactoryImp.usingSqlConnectionProvider(sqlConnectionProvider);
+		return RecordCreatorFactoryImp.usingSqlConnectionProvider(sqlConnectionProvider);
+	}
+
+	private RecordDeleterFactory createRecordDeleterFactory() {
+		SqlConnectionProvider sqlConnectionProvider = tryToCreateConnectionProvider();
+		return RecordDeleterFactoryImp.usingSqlConnectionProvider(sqlConnectionProvider);
 	}
 
 	private SqlConnectionProvider tryToCreateConnectionProvider() {

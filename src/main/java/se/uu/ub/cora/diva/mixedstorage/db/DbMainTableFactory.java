@@ -16,10 +16,10 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.diva.mixedstorage.db.organisation;
+package se.uu.ub.cora.diva.mixedstorage.db;
 
-public interface RelatedTableFactory {
+public interface DbMainTableFactory {
 
-	RelatedTable factor(String relatedTableName);
+	DbMainTable factor(String tableName);
 
 }
