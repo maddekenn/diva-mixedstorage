@@ -18,7 +18,9 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
+import java.sql.Timestamp;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,8 +67,7 @@ public class OrganisationAlternativeNameRelatedTable implements RelatedTable {
 	}
 
 	private Map<String, Object> getRowIfOnlyOneOrEmptyMap(List<Map<String, Object>> readRows) {
-		return readRows.size() == 1 ? readRows.get(0)
-				: Collections.emptyMap();
+		return readRows.size() == 1 ? readRows.get(0) : Collections.emptyMap();
 	}
 
 	private void handleAlternativeName(DataGroup organisation, String organisationId,
@@ -156,11 +157,22 @@ public class OrganisationAlternativeNameRelatedTable implements RelatedTable {
 		Map<String, Object> values = new HashMap<>();
 		Map<String, Object> nextValue = recordReader.readNextValueFromSequence("name_sequence");
 		values.put(ORGANISATION_NAME_ID, nextValue.get("nextval"));
-		values.put("last_updated", "now()");
+		values.put("last_updated", getLastUpdated());
 		values.put("locale", "en");
 		values.put(ORGANISATION_NAME, getAlternativeNameFromOrganisation(organisation));
 		values.put("organisation_id", Integer.valueOf(organisationId));
 		return values;
+	}
+
+	private String getLastUpdated() {
+		return "timestamp '" + getCurrentTimeStamp() + "'";
+	}
+
+	private Timestamp getCurrentTimeStamp() {
+		Date today = new Date();
+		long time = today.getTime();
+		return new Timestamp(time);
+
 	}
 
 	private String getAlternativeNameFromOrganisation(DataGroup organisation) {

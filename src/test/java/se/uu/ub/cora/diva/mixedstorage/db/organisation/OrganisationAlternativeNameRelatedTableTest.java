@@ -158,7 +158,11 @@ public class OrganisationAlternativeNameRelatedTableTest {
 				recordReader.nextVal.get("nextval"));
 		assertEquals(recordCreator.values.get("locale"), "en");
 		assertEquals(recordCreator.values.get("organisation_id"), 678);
-		assertEquals(recordCreator.values.get("last_updated"), "now()");
+
+		String lastUpdated = (String) recordCreator.values.get("last_updated");
+		assertTrue(lastUpdated
+				.matches("timestamp '\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{1,3}'"));
+
 		assertEquals(recordCreator.values.get("organisation_name"), name);
 	}
 
