@@ -52,6 +52,7 @@ public class OrganisationDataToDbTranslater implements DataToDbTranslater {
 	private Map<String, Object> createColumnsWithValuesForUpdateQuery() {
 		addAtomicValuesToColumns();
 		addEligible();
+		// TODO:add last updated, som i OrganisationAlternativeNameRelatedTable
 		return values;
 	}
 

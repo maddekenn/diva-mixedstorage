@@ -46,6 +46,14 @@ public class OrganisationParentDataToDbTranslaterTest {
 		assertEquals(firstParent.get("organisation_id"), 45);
 	}
 
+	private DataGroup createDataGroupWithId(String id) {
+		DataGroup dataGroup = new DataGroupSpy("organisation");
+		DataGroupSpy recordInfo = new DataGroupSpy("recordInfo");
+		recordInfo.addChild(new DataAtomicSpy("id", id));
+		dataGroup.addChild(recordInfo);
+		return dataGroup;
+	}
+
 	private void addParent(DataGroup organisation, String parentId) {
 		DataGroup parent = new DataGroupSpy("parentOrganisation");
 		DataGroupSpy parentLink = new DataGroupSpy("organisationLink");
@@ -53,14 +61,6 @@ public class OrganisationParentDataToDbTranslaterTest {
 		parentLink.addChild(new DataAtomicSpy("linkedRecordId", parentId));
 		parent.addChild(parentLink);
 		organisation.addChild(parent);
-	}
-
-	private DataGroup createDataGroupWithId(String id) {
-		DataGroup dataGroup = new DataGroupSpy("organisation");
-		DataGroupSpy recordInfo = new DataGroupSpy("recordInfo");
-		recordInfo.addChild(new DataAtomicSpy("id", id));
-		dataGroup.addChild(recordInfo);
-		return dataGroup;
 	}
 
 	@Test

@@ -36,14 +36,14 @@ import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
 
 public class OrganisationAlternativeNameRelatedTableTest {
 
-	private RecordReaderAlternativeNameSpy recordReader;
+	private RecordReaderRelatedTableSpy recordReader;
 	private RecordDeleterSpy recordDeleter;
 	private RecordCreatorSpy recordCreator;
 	private RelatedTable alternativeName;
 
 	@BeforeMethod
 	public void setUp() {
-		recordReader = new RecordReaderAlternativeNameSpy();
+		recordReader = new RecordReaderRelatedTableSpy();
 		recordDeleter = new RecordDeleterSpy();
 		recordCreator = new RecordCreatorSpy();
 		alternativeName = new OrganisationAlternativeNameRelatedTable(recordReader, recordDeleter,
@@ -110,7 +110,7 @@ public class OrganisationAlternativeNameRelatedTableTest {
 		nameToReturn.put("organisation_id", organisationId);
 		nameToReturn.put("organisation_name", "some english name");
 		nameToReturn.put("locale", "en");
-		recordReader.namesToReturn.add(nameToReturn);
+		recordReader.rowsToReturn.add(nameToReturn);
 	}
 
 	@Test

@@ -28,7 +28,6 @@ import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
-import se.uu.ub.cora.sqldatabase.RecordUpdater;
 import se.uu.ub.cora.sqldatabase.RecordUpdaterFactory;
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
 import se.uu.ub.cora.storage.RecordNotFoundException;
@@ -100,7 +99,7 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	}
 
 	private void updateOrganisation(DataGroup dataGroup) {
-		RecordUpdater recordUpdater = recordUpdaterFactory.factor();
+		// RecordUpdater recordUpdater = recordUpdaterFactory.factor();
 
 		DbMainTable mainTable = dbMainTableFactory.factor("organisation");
 		mainTable.update(dataGroup);

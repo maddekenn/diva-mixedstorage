@@ -25,12 +25,12 @@ import java.util.Map;
 
 import se.uu.ub.cora.sqldatabase.RecordReader;
 
-public class RecordReaderAlternativeNameSpy implements RecordReader {
+public class RecordReaderRelatedTableSpy implements RecordReader {
 
 	public String usedTableName;
 	public Map<String, Object> usedConditions;
 	public Map<String, Object> nameToReturn = new HashMap<>();
-	public List<Map<String, Object>> namesToReturn = new ArrayList<>();
+	public List<Map<String, Object>> rowsToReturn = new ArrayList<>();
 	public String sequenceName;
 	public Map<String, Object> nextVal;
 
@@ -45,7 +45,7 @@ public class RecordReaderAlternativeNameSpy implements RecordReader {
 			Map<String, Object> conditions) {
 		usedTableName = tableName;
 		usedConditions = conditions;
-		return namesToReturn;
+		return rowsToReturn;
 	}
 
 	@Override
