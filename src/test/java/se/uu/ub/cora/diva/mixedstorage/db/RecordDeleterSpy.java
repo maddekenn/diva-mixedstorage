@@ -18,6 +18,8 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import se.uu.ub.cora.sqldatabase.DataUpdater;
@@ -27,12 +29,16 @@ public class RecordDeleterSpy implements RecordDeleter {
 
 	public boolean deleteWasCalled = false;
 	public Map<String, Object> usedConditions;
+	public List<Map<String, Object>> listOfUsedConditions = new ArrayList<>();
 	public String usedTableName;
+	public List<String> usedTableNames = new ArrayList<>();
 
 	@Override
 	public void deleteFromTableUsingConditions(String tableName, Map<String, Object> conditions) {
 		usedTableName = tableName;
+		usedTableNames.add(tableName);
 		usedConditions = conditions;
+		listOfUsedConditions.add(usedConditions);
 		deleteWasCalled = true;
 
 	}

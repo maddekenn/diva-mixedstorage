@@ -18,6 +18,8 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import se.uu.ub.cora.sqldatabase.DataUpdater;
@@ -28,12 +30,16 @@ public class RecordCreatorSpy implements RecordCreator {
 	public boolean insertWasCalled = false;
 	public Map<String, Object> values;
 	public String usedTableName;
+	public List<String> usedTableNames = new ArrayList<>();
+	public List<Map<String, Object>> listOfValues = new ArrayList<>();
 
 	@Override
 	public void insertIntoTableUsingNameAndColumnsWithValues(String tableName,
 			Map<String, Object> values) {
 		usedTableName = tableName;
+		usedTableNames.add(tableName);
 		this.values = values;
+		listOfValues.add(values);
 		insertWasCalled = true;
 
 	}

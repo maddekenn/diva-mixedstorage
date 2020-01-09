@@ -33,10 +33,13 @@ import se.uu.ub.cora.sqldatabase.RecordReader;
 
 public class OrganisationParentRelatedTable implements RelatedTable {
 
+	private static final String ORGANISATION_PARENT = "organisation_parent";
+	private static final String ORGANISATION_PARENT_ID = "organisation_parent_id";
 	private static final String ORGANISATION_ID = "organisation_id";
 	private RecordReader recordReader;
 	private RecordDeleter recordDeleter;
 	private RecordCreator recordCreator;
+	private int organisationId;
 
 	public OrganisationParentRelatedTable(RecordReader recordReader, RecordDeleter recordDeleter,
 			RecordCreator recordCreator) {
@@ -47,88 +50,114 @@ public class OrganisationParentRelatedTable implements RelatedTable {
 
 	@Override
 	public void handleDbForDataGroup(DataGroup organisation) {
-		String organisationId = DataToDbHelper.extractIdFromDataGroup(organisation);
-		DataToDbHelper.throwDbExceptionIfIdNotAnIntegerValue(organisationId);
-		Map<String, Object> conditions = createConditionsWithOrganisationIdAndDefaultLocale(
-				organisationId);
-		List<Map<String, Object>> readRows = recordReader
-				.readFromTableUsingConditions("organisation_parent", conditions);
-		// Set<String> setA = new HashSet<>();
-		// setA.add("A");
-		// setA.add("B");
-		// setA.add("C");
-		// setA.add("D");
-		// Set<String> setB = new HashSet<>();
-		// setB.add("B");
-		// setB.add("C");
-		// setB.add("E");
-		//
-		// setA.removeAll(setB);
-		Set<String> parentIdsInDataGroup = getParentIdsInDataGroup(organisation);
-		if (parentIdsInDataGroup.isEmpty()) {
-			deleteAllParents(readRows);
-		} else {
-			Set<String> parentIdsInDatabase = new HashSet<>();
-			for (Map<String, Object> readRow : readRows) {
-				parentIdsInDatabase.add(String.valueOf(readRow.get("organisation_parent_id")));
-			}
-			if (parentIdsInDatabase.isEmpty()) {
-				addAllParents(organisationId, parentIdsInDataGroup);
-			} else {
-				Set<String> originalParentsInDb = Set.copyOf(parentIdsInDatabase);
-				parentIdsInDatabase.removeAll(parentIdsInDataGroup);
-				addAllParents(organisationId, parentIdsInDatabase);
-				// de som finns i datagroup men inte db ska göras insert på
-				parentIdsInDatabase.removeAll(parentIdsInDataGroup);
-				// gör insert på alla som är kvar
-				// de som finns i db men inte i datagroup ska det göras delete på
+		setIdAsInt(organisation);
 
-			}
-			// deleteParent(readRow);
+		List<Map<String, Object>> allCurrentParentsInDb = readCurrentParentsFromDatabase();
+		Set<String> parentIdsInDataGroup = getParentIdsInDataGroup(organisation);
+
+		if (parentIdsInDataGroup.isEmpty()) {
+			deleteParents(allCurrentParentsInDb);
+		} else {
+			handleDeleteAndCreate(allCurrentParentsInDb, parentIdsInDataGroup);
 		}
 
 	}
 
-	private void addAllParents(String organisationId, Set<String> parentIdsInDataGroup) {
-		for (String parentId : parentIdsInDataGroup) {
-			Map<String, Object> values = new HashMap<>();
-			values.put("organisation_id", Integer.valueOf(organisationId));
-			values.put("organisation_parent_id", Integer.valueOf(parentId));
-			recordCreator.insertIntoTableUsingNameAndColumnsWithValues("organisation_parent",
-					values);
-		}
+	private void setIdAsInt(DataGroup organisation) {
+		String organisationIdAsString = DataToDbHelper.extractIdFromDataGroup(organisation);
+		DataToDbHelper.throwDbExceptionIfIdNotAnIntegerValue(organisationIdAsString);
+		organisationId = Integer.valueOf(organisationIdAsString);
+	}
+
+	private List<Map<String, Object>> readCurrentParentsFromDatabase() {
+		Map<String, Object> conditions = createConditionsFoReadingCurrentParents();
+		return recordReader.readFromTableUsingConditions(ORGANISATION_PARENT, conditions);
+	}
+
+	private Map<String, Object> createConditionsFoReadingCurrentParents() {
+		Map<String, Object> conditions = new HashMap<>();
+		conditions.put(ORGANISATION_ID, organisationId);
+		return conditions;
 	}
 
 	private Set<String> getParentIdsInDataGroup(DataGroup organisation) {
-		List<DataGroup> parents = organisation.getAllGroupsWithNameInData("parentOrganisation");
 		Set<String> parentIds = new HashSet<>();
-
+		List<DataGroup> parents = organisation.getAllGroupsWithNameInData("parentOrganisation");
 		for (DataGroup parent : parents) {
-			DataGroup organisationLink = parent.getFirstGroupWithNameInData("organisationLink");
-			String parentId = organisationLink.getFirstAtomicValueWithNameInData("linkedRecordId");
+			String parentId = extractParentId(parent);
 			parentIds.add(parentId);
 		}
 		return parentIds;
 	}
 
-	private void deleteAllParents(List<Map<String, Object>> parents) {
+	private String extractParentId(DataGroup parent) {
+		DataGroup organisationLink = parent.getFirstGroupWithNameInData("organisationLink");
+		return organisationLink.getFirstAtomicValueWithNameInData("linkedRecordId");
+	}
+
+	private void deleteParents(List<Map<String, Object>> parents) {
 		for (Map<String, Object> readRow : parents) {
-			deleteParent(readRow);
+			int parentId = (int) readRow.get(ORGANISATION_PARENT_ID);
+			deleteParent(organisationId, parentId);
 		}
 	}
 
-	private void deleteParent(Map<String, Object> readRow) {
+	private void deleteParent(int organisationId, int parentId) {
 		Map<String, Object> deleteConditions = new HashMap<>();
-		deleteConditions.put(ORGANISATION_ID, (int) readRow.get(ORGANISATION_ID));
-		deleteConditions.put("organisation_parent_id", (int) readRow.get("organisation_parent_id"));
-		recordDeleter.deleteFromTableUsingConditions("organisation_parent", readRow);
+		deleteConditions.put(ORGANISATION_ID, organisationId);
+		deleteConditions.put(ORGANISATION_PARENT_ID, parentId);
+		recordDeleter.deleteFromTableUsingConditions(ORGANISATION_PARENT, deleteConditions);
 	}
 
-	private Map<String, Object> createConditionsWithOrganisationIdAndDefaultLocale(
-			String organisationId) {
-		Map<String, Object> conditions = new HashMap<>();
-		conditions.put(ORGANISATION_ID, Integer.valueOf(organisationId));
-		return conditions;
+	private void handleDeleteAndCreate(List<Map<String, Object>> allCurrentParentsInDb,
+			Set<String> parentIdsInDataGroup) {
+		Set<String> parentIdsInDatabase = getIdsForCurrentParentsInDatabase(allCurrentParentsInDb);
+
+		if (parentIdsInDatabase.isEmpty()) {
+			addParents(parentIdsInDataGroup);
+		} else {
+			Set<String> originalParentsInDataGroup = Set.copyOf(parentIdsInDataGroup);
+			addParentsFromDataGroupNotAlreadyInDb(parentIdsInDataGroup, parentIdsInDatabase);
+			removeParentsNoLongerPresentInDataGroup(parentIdsInDatabase,
+					originalParentsInDataGroup);
+
+		}
 	}
 
+	private Set<String> getIdsForCurrentParentsInDatabase(
+			List<Map<String, Object>> allCurrentParentsInDb) {
+		Set<String> parentIdsInDatabase = new HashSet<>();
+		for (Map<String, Object> readRow : allCurrentParentsInDb) {
+			parentIdsInDatabase.add(String.valueOf(readRow.get(ORGANISATION_PARENT_ID)));
+		}
+		return parentIdsInDatabase;
+	}
+
+	private void addParents(Set<String> parentIdsInDataGroup) {
+		for (String parentId : parentIdsInDataGroup) {
+			Map<String, Object> values = createValuesForParentInsert(parentId);
+			recordCreator.insertIntoTableUsingNameAndColumnsWithValues(ORGANISATION_PARENT, values);
+		}
+	}
+
+	private Map<String, Object> createValuesForParentInsert(String parentId) {
+		Map<String, Object> values = new HashMap<>();
+		values.put(ORGANISATION_ID, organisationId);
+		values.put(ORGANISATION_PARENT_ID, Integer.valueOf(parentId));
+		return values;
+	}
+
+	private void addParentsFromDataGroupNotAlreadyInDb(Set<String> parentIdsInDataGroup,
+			Set<String> parentIdsInDatabase) {
+		parentIdsInDataGroup.removeAll(parentIdsInDatabase);
+		addParents(parentIdsInDataGroup);
+	}
+
+	private void removeParentsNoLongerPresentInDataGroup(Set<String> parentIdsInDatabase,
+			Set<String> originalParentsInDataGroup) {
+		parentIdsInDatabase.removeAll(originalParentsInDataGroup);
+		for (String parentId : parentIdsInDatabase) {
+			deleteParent(organisationId, Integer.valueOf(parentId));
+		}
+	}
 }

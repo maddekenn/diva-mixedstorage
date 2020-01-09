@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2020 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -22,6 +22,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.testng.annotations.BeforeMethod;
@@ -79,18 +80,6 @@ public class OrganisationParentRelatedTableTest {
 		assertFalse(recordCreator.insertWasCalled);
 	}
 
-	// @Test
-	// public void testNoParentInDbIncompleteParentInDataGroup() {
-	// DataGroup organisation = createDataGroupWithId("678");
-	// DataGroupSpy parentGroup = new DataGroupSpy("parentOrganisation");
-	// organisation.addChild(parentGroup);
-	//
-	// parent.handleDbForDataGroup(organisation);
-	// assertCorrectDataSentToRecordReader();
-	// assertFalse(recordDeleter.deleteWasCalled);
-	// assertFalse(recordCreator.insertWasCalled);
-	// }
-
 	private void addParent(DataGroup organisation, String parentId, String repeatId) {
 		DataGroup parent = new DataGroupSpy("parentOrganisation");
 		parent.setRepeatId(repeatId);
@@ -120,7 +109,7 @@ public class OrganisationParentRelatedTableTest {
 	}
 
 	private void addRowToReturnFromSpy(int organisationId, int parentId) {
-		Map<String, Object> rowToReturn = recordReader.nameToReturn;
+		Map<String, Object> rowToReturn = new HashMap<>();
 		rowToReturn.put("organisation_id", organisationId);
 		rowToReturn.put("organisation_parent_id", parentId);
 		recordReader.rowsToReturn.add(rowToReturn);
@@ -151,10 +140,18 @@ public class OrganisationParentRelatedTableTest {
 		parent.handleDbForDataGroup(organisation);
 		assertCorrectDataSentToRecordReader();
 
-		// assertTrue(recordDeleter.deleteWasCalled);
+		assertTrue(recordDeleter.deleteWasCalled);
+		Map<String, Object> conditionsForFirstDelete = recordDeleter.listOfUsedConditions.get(0);
+		assertEquals(recordDeleter.usedTableNames.get(0), "organisation_parent");
+		assertEquals(conditionsForFirstDelete.get("organisation_id"), 678);
+		assertEquals(conditionsForFirstDelete.get("organisation_parent_id"), 234);
 
 		assertTrue(recordCreator.insertWasCalled);
-		// assertCorrectValuesSentToInsert("some other english name");
+		Map<String, Object> conditionsForFirstCreate = recordCreator.listOfValues.get(0);
+
+		assertEquals(recordCreator.usedTableNames.get(0), "organisation_parent");
+		assertEquals(conditionsForFirstCreate.get("organisation_id"), 678);
+		assertEquals(conditionsForFirstCreate.get("organisation_parent_id"), 22234);
 
 	}
 
@@ -175,5 +172,48 @@ public class OrganisationParentRelatedTableTest {
 
 		assertTrue(recordCreator.insertWasCalled);
 		assertCorrectValuesSentToInsert(234);
+	}
+
+	@Test
+	public void testMultipleNamesInDbDifferentAndSameNamesInDataGroup() {
+		DataGroup organisation = createDataGroupWithId("678");
+		addParent(organisation, "23", "0");
+		addParent(organisation, "234", "1");
+		addParent(organisation, "22234", "2");
+		addParent(organisation, "44444", "2");
+
+		addRowToReturnFromSpy(678, 234);
+		addRowToReturnFromSpy(678, 22234);
+		addRowToReturnFromSpy(678, 2444);
+		addRowToReturnFromSpy(678, 2222);
+
+		parent.handleDbForDataGroup(organisation);
+		assertCorrectDataSentToRecordReader();
+
+		assertTrue(recordDeleter.deleteWasCalled);
+		assertEquals(recordDeleter.listOfUsedConditions.size(), 2);
+		Map<String, Object> conditionsForFirstDelete = recordDeleter.listOfUsedConditions.get(0);
+		assertEquals(recordDeleter.usedTableNames.get(0), "organisation_parent");
+		assertEquals(conditionsForFirstDelete.get("organisation_id"), 678);
+		assertEquals(conditionsForFirstDelete.get("organisation_parent_id"), 2444);
+
+		Map<String, Object> conditionsForSecondDelete = recordDeleter.listOfUsedConditions.get(1);
+		assertEquals(recordDeleter.usedTableNames.get(1), "organisation_parent");
+		assertEquals(conditionsForSecondDelete.get("organisation_id"), 678);
+		assertEquals(conditionsForSecondDelete.get("organisation_parent_id"), 2222);
+
+		assertTrue(recordCreator.insertWasCalled);
+		assertEquals(recordCreator.listOfValues.size(), 2);
+
+		Map<String, Object> conditionsForFirstCreate = recordCreator.listOfValues.get(0);
+		assertEquals(recordCreator.usedTableNames.get(0), "organisation_parent");
+		assertEquals(conditionsForFirstCreate.get("organisation_id"), 678);
+		assertEquals(conditionsForFirstCreate.get("organisation_parent_id"), 23);
+
+		Map<String, Object> conditionsForSecondCreate = recordCreator.listOfValues.get(1);
+		assertEquals(recordCreator.usedTableNames.get(1), "organisation_parent");
+		assertEquals(conditionsForSecondCreate.get("organisation_id"), 678);
+		assertEquals(conditionsForSecondCreate.get("organisation_parent_id"), 44444);
+
 	}
 }
