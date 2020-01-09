@@ -68,4 +68,15 @@ public class DbOrganisationMainTableTest {
 
 	}
 
+	@Test
+	public void testParent() {
+		DataGroup dataGroup = new DataGroupSpy("organisation");
+		mainTable.update(dataGroup);
+		assertEquals(relatedTableFactory.relatedTableNames.get(1), "organisationParent");
+		RelatedTableSpy secondRelatedTable = (RelatedTableSpy) relatedTableFactory.factoredRelatedTables
+				.get(1);
+		assertSame(secondRelatedTable.dataGroup, dataGroup);
+
+	}
+
 }

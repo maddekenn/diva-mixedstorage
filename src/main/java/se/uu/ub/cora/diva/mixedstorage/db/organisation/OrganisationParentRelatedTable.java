@@ -160,4 +160,19 @@ public class OrganisationParentRelatedTable implements RelatedTable {
 			deleteParent(organisationId, Integer.valueOf(parentId));
 		}
 	}
+
+	public RecordReader getRecordReader() {
+		// needed for test
+		return recordReader;
+	}
+
+	public RecordDeleter getRecordDeleter() {
+		// needed for test
+		return recordDeleter;
+	}
+
+	public RecordCreator getRecordCreator() {
+		// needed for test
+		return recordCreator;
+	}
 }

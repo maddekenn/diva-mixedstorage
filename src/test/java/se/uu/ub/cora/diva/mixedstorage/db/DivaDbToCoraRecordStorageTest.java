@@ -138,16 +138,16 @@ public class DivaDbToCoraRecordStorageTest {
 
 	}
 
-	@Test
-	public void testUpdateOrganisationFactorDbUpdater() throws Exception {
-		DataGroup record = new DataGroupSpy("organisation");
-		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
-
-		String dataDivider = "";
-		divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
-		assertTrue(recordUpdaterFactory.factorWasCalled);
-
-	}
+	// @Test
+	// public void testUpdateOrganisationFactorDbUpdater() throws Exception {
+	// DataGroup record = new DataGroupSpy("organisation");
+	// record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
+	//
+	// String dataDivider = "";
+	// divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
+	// assertTrue(recordUpdaterFactory.factorWasCalled);
+	//
+	// }
 
 	// @Test
 	// public void testUpdateOrganisationUsesTranslaterFromFactory() throws Exception {

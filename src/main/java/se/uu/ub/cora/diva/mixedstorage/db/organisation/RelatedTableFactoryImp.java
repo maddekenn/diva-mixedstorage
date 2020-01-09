@@ -57,6 +57,10 @@ public class RelatedTableFactoryImp implements RelatedTableFactory {
 			return new OrganisationAlternativeNameRelatedTable(recordReader, recordDeleter,
 					recordCreator);
 		}
+		if ("organisationParent".equals(relatedTableName)) {
+			return new OrganisationParentRelatedTable(recordReader, recordDeleter, recordCreator);
+		}
+
 		throw NotImplementedException
 				.withMessage("Related table not implemented for " + relatedTableName);
 	}

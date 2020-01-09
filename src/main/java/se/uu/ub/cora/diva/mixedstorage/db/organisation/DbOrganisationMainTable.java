@@ -45,9 +45,13 @@ public class DbOrganisationMainTable implements DbMainTable {
 				dataToDbTranslater.getValues(), dataToDbTranslater.getConditions());
 		RelatedTable alternativeName = relatedTableFactory.factor("organisationAlternativeName");
 		alternativeName.handleDbForDataGroup(dataGroup);
+
+		RelatedTable parent = relatedTableFactory.factor("organisationParent");
+		parent.handleDbForDataGroup(dataGroup);
+		// TODO:uppdatera parent om ändrat -OBS repeateble
+
 		// TODO: hantera transaktioner??
 		// Faktorera OrganisationAlternativeNameRelatedTable
-		// TODO:uppdatera parent om ändrat -OBS repeateble
 		// TODO: uppdatera preecessor om ändrat
 		// TODO: uppdatera adress om det är ändrat
 		// TODO:uppdatera organisation type om ändrat
