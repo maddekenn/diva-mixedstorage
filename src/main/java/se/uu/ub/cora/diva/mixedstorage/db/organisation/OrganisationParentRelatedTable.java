@@ -25,21 +25,19 @@ import java.util.Map;
 import java.util.Set;
 
 import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.diva.mixedstorage.db.DataToDbHelper;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
 import se.uu.ub.cora.sqldatabase.RecordCreator;
 import se.uu.ub.cora.sqldatabase.RecordDeleter;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 
-public class OrganisationParentRelatedTable implements RelatedTable {
+public class OrganisationParentRelatedTable extends OrganisationRelatedTable
+		implements RelatedTable {
 
 	private static final String ORGANISATION_PARENT = "organisation_parent";
 	private static final String ORGANISATION_PARENT_ID = "organisation_parent_id";
 	private static final String ORGANISATION_ID = "organisation_id";
-	private RecordReader recordReader;
 	private RecordDeleter recordDeleter;
 	private RecordCreator recordCreator;
-	private int organisationId;
 
 	public OrganisationParentRelatedTable(RecordReader recordReader, RecordDeleter recordDeleter,
 			RecordCreator recordCreator) {
@@ -52,7 +50,8 @@ public class OrganisationParentRelatedTable implements RelatedTable {
 	public void handleDbForDataGroup(DataGroup organisation) {
 		setIdAsInt(organisation);
 
-		List<Map<String, Object>> allCurrentParentsInDb = readCurrentParentsFromDatabase();
+		List<Map<String, Object>> allCurrentParentsInDb = readCurrentRowsFromDatabaseUsingTableName(
+				ORGANISATION_PARENT);
 		Set<String> parentIdsInDataGroup = getParentIdsInDataGroup(organisation);
 
 		if (parentIdsInDataGroup.isEmpty()) {
@@ -63,18 +62,8 @@ public class OrganisationParentRelatedTable implements RelatedTable {
 
 	}
 
-	private void setIdAsInt(DataGroup organisation) {
-		String organisationIdAsString = DataToDbHelper.extractIdFromDataGroup(organisation);
-		DataToDbHelper.throwDbExceptionIfIdNotAnIntegerValue(organisationIdAsString);
-		organisationId = Integer.valueOf(organisationIdAsString);
-	}
-
-	private List<Map<String, Object>> readCurrentParentsFromDatabase() {
-		Map<String, Object> conditions = createConditionsFoReadingCurrentParents();
-		return recordReader.readFromTableUsingConditions(ORGANISATION_PARENT, conditions);
-	}
-
-	private Map<String, Object> createConditionsFoReadingCurrentParents() {
+	@Override
+	protected Map<String, Object> createConditionsFoReadingCurrentRows() {
 		Map<String, Object> conditions = new HashMap<>();
 		conditions.put(ORGANISATION_ID, organisationId);
 		return conditions;
@@ -109,22 +98,8 @@ public class OrganisationParentRelatedTable implements RelatedTable {
 		recordDeleter.deleteFromTableUsingConditions(ORGANISATION_PARENT, deleteConditions);
 	}
 
-	private void handleDeleteAndCreate(List<Map<String, Object>> allCurrentParentsInDb,
-			Set<String> parentIdsInDataGroup) {
-		Set<String> parentIdsInDatabase = getIdsForCurrentParentsInDatabase(allCurrentParentsInDb);
-
-		if (parentIdsInDatabase.isEmpty()) {
-			addParents(parentIdsInDataGroup);
-		} else {
-			Set<String> originalParentsInDataGroup = Set.copyOf(parentIdsInDataGroup);
-			addParentsFromDataGroupNotAlreadyInDb(parentIdsInDataGroup, parentIdsInDatabase);
-			removeParentsNoLongerPresentInDataGroup(parentIdsInDatabase,
-					originalParentsInDataGroup);
-
-		}
-	}
-
-	private Set<String> getIdsForCurrentParentsInDatabase(
+	@Override
+	protected Set<String> getIdsForCurrentRowsInDatabase(
 			List<Map<String, Object>> allCurrentParentsInDb) {
 		Set<String> parentIdsInDatabase = new HashSet<>();
 		for (Map<String, Object> readRow : allCurrentParentsInDb) {
@@ -133,7 +108,8 @@ public class OrganisationParentRelatedTable implements RelatedTable {
 		return parentIdsInDatabase;
 	}
 
-	private void addParents(Set<String> parentIdsInDataGroup) {
+	@Override
+	protected void addToDb(Set<String> parentIdsInDataGroup) {
 		for (String parentId : parentIdsInDataGroup) {
 			Map<String, Object> values = createValuesForParentInsert(parentId);
 			recordCreator.insertIntoTableUsingNameAndColumnsWithValues(ORGANISATION_PARENT, values);
@@ -147,13 +123,15 @@ public class OrganisationParentRelatedTable implements RelatedTable {
 		return values;
 	}
 
-	private void addParentsFromDataGroupNotAlreadyInDb(Set<String> parentIdsInDataGroup,
+	@Override
+	protected void addDataFromDataGroupNotAlreadyInDb(Set<String> parentIdsInDataGroup,
 			Set<String> parentIdsInDatabase) {
 		parentIdsInDataGroup.removeAll(parentIdsInDatabase);
-		addParents(parentIdsInDataGroup);
+		addToDb(parentIdsInDataGroup);
 	}
 
-	private void removeParentsNoLongerPresentInDataGroup(Set<String> parentIdsInDatabase,
+	@Override
+	protected void removeRowsNoLongerPresentInDataGroup(Set<String> parentIdsInDatabase,
 			Set<String> originalParentsInDataGroup) {
 		parentIdsInDatabase.removeAll(originalParentsInDataGroup);
 		for (String parentId : parentIdsInDatabase) {

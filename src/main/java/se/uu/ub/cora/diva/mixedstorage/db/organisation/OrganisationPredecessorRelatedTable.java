@@ -25,18 +25,19 @@ import java.util.Map;
 import java.util.Set;
 
 import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.diva.mixedstorage.db.DataToDbHelper;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
 import se.uu.ub.cora.sqldatabase.RecordCreator;
 import se.uu.ub.cora.sqldatabase.RecordDeleter;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 
-public class OrganisationPredecessorRelatedTable implements RelatedTable {
+public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTable
+		implements RelatedTable {
 
-	private RecordReader recordReader;
+	private static final String ORGANISATION_PREDECESSOR_ID = "organisation_predecessor_id";
+	private static final String ORGANISATION_ID = "organisation_id";
+	private static final String ORGANISATION_PREDECESSOR = "organisation_predecessor";
 	private RecordDeleter recordDeleter;
 	private RecordCreator recordCreator;
-	private int organisationId;
 
 	public OrganisationPredecessorRelatedTable(RecordReader recordReader,
 			RecordDeleter recordDeleter, RecordCreator recordCreator) {
@@ -49,59 +50,125 @@ public class OrganisationPredecessorRelatedTable implements RelatedTable {
 	public void handleDbForDataGroup(DataGroup organisation) {
 		setIdAsInt(organisation);
 
-		List<Map<String, Object>> allCurrentPredecessorsInDb = readCurrentPredecessorsFromDatabase();
+		List<Map<String, Object>> allCurrentPredecessorsInDb = readCurrentRowsFromDatabaseUsingTableName(
+				ORGANISATION_PREDECESSOR);
 		Set<String> predecessorIdsInDataGroup = getPredecessorIdsInDataGroup(organisation);
 
 		if (predecessorIdsInDataGroup.isEmpty()) {
 			deletePredecessors(allCurrentPredecessorsInDb);
+		} else {
+			handleDeleteAndCreate(allCurrentPredecessorsInDb, predecessorIdsInDataGroup);
+
 		}
 	}
 
-	private void setIdAsInt(DataGroup organisation) {
-		String organisationIdAsString = DataToDbHelper.extractIdFromDataGroup(organisation);
-		DataToDbHelper.throwDbExceptionIfIdNotAnIntegerValue(organisationIdAsString);
-		organisationId = Integer.valueOf(organisationIdAsString);
+	@Override
+	protected void handleDeleteAndCreate(List<Map<String, Object>> allCurrentRowsInDb,
+			Set<String> idsFromDataGroup) {
+		Set<String> idsInDatabase = getIdsForCurrentRowsInDatabase(allCurrentRowsInDb);
+
+		if (idsInDatabase.isEmpty()) {
+			addToDb(idsFromDataGroup);
+		} else {
+			Set<String> originalIdsFromDataGroup = Set.copyOf(idsFromDataGroup);
+			addDataFromDataGroupNotAlreadyInDb(idsFromDataGroup, idsInDatabase);
+			removeRowsNoLongerPresentInDataGroup(idsInDatabase, originalIdsFromDataGroup);
+
+		}
 	}
 
-	private List<Map<String, Object>> readCurrentPredecessorsFromDatabase() {
-		Map<String, Object> conditions = createConditionsFoReadingCurrentPredecessors();
-		return recordReader.readFromTableUsingConditions("organisation_predecessor", conditions);
-	}
-
-	private Map<String, Object> createConditionsFoReadingCurrentPredecessors() {
-		Map<String, Object> conditions = new HashMap<>();
-		conditions.put("organisation_id", organisationId);
-		return conditions;
+	@Override
+	protected Map<String, Object> createConditionsFoReadingCurrentRows() {
+		return createConditionWithOrganisationId();
 	}
 
 	private Set<String> getPredecessorIdsInDataGroup(DataGroup organisation) {
 		Set<String> predecessorIds = new HashSet<>();
-		List<DataGroup> predecessors = organisation
-				.getAllGroupsWithNameInData("parentOrganisation");
+		List<DataGroup> predecessors = organisation.getAllGroupsWithNameInData("formerName");
 		for (DataGroup predecessor : predecessors) {
-			String predecessorId = extractParentId(predecessor);
+			String predecessorId = extractPredecessorId(predecessor);
 			predecessorIds.add(predecessorId);
 		}
 		return predecessorIds;
 	}
 
-	private String extractParentId(DataGroup predecessor) {
+	private String extractPredecessorId(DataGroup predecessor) {
 		DataGroup organisationLink = predecessor.getFirstGroupWithNameInData("organisationLink");
 		return organisationLink.getFirstAtomicValueWithNameInData("linkedRecordId");
 	}
 
 	private void deletePredecessors(List<Map<String, Object>> predecessors) {
 		for (Map<String, Object> readRow : predecessors) {
-			int predecessorId = (int) readRow.get("organisation_predecessor_id");
-			deletePredecessor(organisationId, predecessorId);
+			int predecessorId = (int) readRow.get(ORGANISATION_PREDECESSOR_ID);
+			deletePredecessorDescription(predecessorId);
+			deletePredecessor(predecessorId);
 		}
 	}
 
-	private void deletePredecessor(int organisationId, int predecessorId) {
+	private void deletePredecessorDescription(int predecessorId) {
+		Map<String, Object> deleteConditions = createConditionWithOrganisationId();
+		deleteConditions.put("predecessor_id", predecessorId);
+		recordDeleter.deleteFromTableUsingConditions("organisation_predecessor_description",
+				deleteConditions);
+	}
+
+	private Map<String, Object> createConditionWithOrganisationId() {
 		Map<String, Object> deleteConditions = new HashMap<>();
-		deleteConditions.put("organisation_id", organisationId);
-		deleteConditions.put("organisation_predecessor_id", predecessorId);
-		recordDeleter.deleteFromTableUsingConditions("organisation_predecessor", deleteConditions);
+		deleteConditions.put(ORGANISATION_ID, organisationId);
+		return deleteConditions;
+	}
+
+	private void deletePredecessor(int predecessorId) {
+		Map<String, Object> deleteConditions = createConditionWithOrganisationId();
+		deleteConditions.put(ORGANISATION_PREDECESSOR_ID, predecessorId);
+		recordDeleter.deleteFromTableUsingConditions(ORGANISATION_PREDECESSOR, deleteConditions);
+	}
+
+	@Override
+	protected Set<String> getIdsForCurrentRowsInDatabase(
+			List<Map<String, Object>> allCurrentPredecessorsInDb) {
+		Set<String> predecessorIdsInDatabase = new HashSet<>();
+		for (Map<String, Object> readRow : allCurrentPredecessorsInDb) {
+			predecessorIdsInDatabase.add(String.valueOf(readRow.get(ORGANISATION_PREDECESSOR_ID)));
+		}
+		return predecessorIdsInDatabase;
+	}
+
+	@Override
+	protected void addToDb(Set<String> predecessorIdsInDataGroup) {
+		for (String predecessorId : predecessorIdsInDataGroup) {
+			Map<String, Object> values = createValuesForPredecessorInsert(predecessorId);
+			recordCreator.insertIntoTableUsingNameAndColumnsWithValues(ORGANISATION_PREDECESSOR,
+					values);
+			Map<String, Object> descriptionValues = new HashMap<>();
+			descriptionValues.put(ORGANISATION_ID, organisationId);
+			descriptionValues.put("predecessor_id", Integer.valueOf(predecessorId));
+			// TODO: om predecessor har kommentar så ska det göras en insert på den.
+			recordCreator.insertIntoTableUsingNameAndColumnsWithValues(
+					"organisation_predecessor_description", descriptionValues);
+		}
+	}
+
+	@Override
+	protected void addDataFromDataGroupNotAlreadyInDb(Set<String> predecessorIdsInDataGroup,
+			Set<String> predecessorIdsInDatabase) {
+		predecessorIdsInDataGroup.removeAll(predecessorIdsInDatabase);
+		addToDb(predecessorIdsInDataGroup);
+	}
+
+	@Override
+	protected void removeRowsNoLongerPresentInDataGroup(Set<String> predecessorsIdsInDatabase,
+			Set<String> originalPredecessorsInDataGroup) {
+		predecessorsIdsInDatabase.removeAll(originalPredecessorsInDataGroup);
+		for (String predecessorId : predecessorsIdsInDatabase) {
+			deletePredecessor(Integer.valueOf(predecessorId));
+		}
+	}
+
+	private Map<String, Object> createValuesForPredecessorInsert(String predecessorId) {
+		Map<String, Object> values = createConditionWithOrganisationId();
+		values.put(ORGANISATION_PREDECESSOR_ID, Integer.valueOf(predecessorId));
+		return values;
 	}
 
 	public RecordReader getRecordReader() {
