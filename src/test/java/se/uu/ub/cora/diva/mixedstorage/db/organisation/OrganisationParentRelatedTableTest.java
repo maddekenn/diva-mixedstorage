@@ -80,18 +80,8 @@ public class OrganisationParentRelatedTableTest {
 		assertFalse(recordCreator.insertWasCalled);
 	}
 
-	private void addParent(DataGroup organisation, String parentId, String repeatId) {
-		DataGroup parent = new DataGroupSpy("parentOrganisation");
-		parent.setRepeatId(repeatId);
-		DataGroupSpy parentLink = new DataGroupSpy("organisationLink");
-		parentLink.addChild(new DataAtomicSpy("linkedRecordType", "divaOrganisation"));
-		parentLink.addChild(new DataAtomicSpy("linkedRecordId", parentId));
-		parent.addChild(parentLink);
-		organisation.addChild(parent);
-	}
-
 	@Test
-	public void testOneNameInDbButNoNameInDataGroup() {
+	public void testOneParentInDbButNoParentInDataGroup() {
 		DataGroup organisation = createDataGroupWithId("678");
 
 		addRowToReturnFromSpy(678, 234);
@@ -116,7 +106,7 @@ public class OrganisationParentRelatedTableTest {
 	}
 
 	@Test
-	public void testOneNameInDbSameNameInDataGroup() {
+	public void testOneParentInDbSameParentInDataGroup() {
 		DataGroup organisation = createDataGroupWithId("678");
 		addParent(organisation, "234", "0");
 
@@ -130,8 +120,18 @@ public class OrganisationParentRelatedTableTest {
 
 	}
 
+	private void addParent(DataGroup organisation, String parentId, String repeatId) {
+		DataGroup parent = new DataGroupSpy("parentOrganisation");
+		parent.setRepeatId(repeatId);
+		DataGroupSpy parentLink = new DataGroupSpy("organisationLink");
+		parentLink.addChild(new DataAtomicSpy("linkedRecordType", "divaOrganisation"));
+		parentLink.addChild(new DataAtomicSpy("linkedRecordId", parentId));
+		parent.addChild(parentLink);
+		organisation.addChild(parent);
+	}
+
 	@Test
-	public void testOneNameInDbDifferentNameInDataGroupDeleteAndInsert() {
+	public void testOneParentInDbDifferentParentInDataGroupDeleteAndInsert() {
 		DataGroup organisation = createDataGroupWithId("678");
 		addParent(organisation, "22234", "0");
 
@@ -162,7 +162,7 @@ public class OrganisationParentRelatedTableTest {
 	}
 
 	@Test
-	public void testNoNameInDbButNameInDataGroup() {
+	public void testNoParentInDbButNameInDataGroup() {
 		DataGroup organisation = createDataGroupWithId("678");
 		addParent(organisation, "234", "0");
 
@@ -175,7 +175,7 @@ public class OrganisationParentRelatedTableTest {
 	}
 
 	@Test
-	public void testMultipleNamesInDbDifferentAndSameNamesInDataGroup() {
+	public void testMultipleParentsInDbDifferentAndSameNamesInDataGroup() {
 		DataGroup organisation = createDataGroupWithId("678");
 		addParent(organisation, "23", "0");
 		addParent(organisation, "234", "1");

@@ -41,6 +41,7 @@ public class DbOrganisationMainTable implements DbMainTable {
 	@Override
 	public void update(DataGroup dataGroup) {
 		dataToDbTranslater.translate(dataGroup);
+		// TODO: hantera transaktioner??
 		recordUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions("organisation",
 				dataToDbTranslater.getValues(), dataToDbTranslater.getConditions());
 		RelatedTable alternativeName = relatedTableFactory.factor("organisationAlternativeName");
@@ -48,10 +49,7 @@ public class DbOrganisationMainTable implements DbMainTable {
 
 		RelatedTable parent = relatedTableFactory.factor("organisationParent");
 		parent.handleDbForDataGroup(dataGroup);
-		// TODO:uppdatera parent om ändrat -OBS repeateble
 
-		// TODO: hantera transaktioner??
-		// Faktorera OrganisationAlternativeNameRelatedTable
 		// TODO: uppdatera preecessor om ändrat
 		// TODO: uppdatera adress om det är ändrat
 		// TODO:uppdatera organisation type om ändrat

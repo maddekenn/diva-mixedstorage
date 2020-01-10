@@ -64,6 +64,15 @@ public class RelatedTableFactoryTest {
 		assertSame(factoredTable.getRecordCreator(), recordCreatorFactory.factored);
 	}
 
+	@Test
+	public void testFactorOrganisationPredecessor() {
+		OrganisationPredecessorRelatedTable factoredTable = (OrganisationPredecessorRelatedTable) factory
+				.factor("organisationPredecessor");
+		assertSame(factoredTable.getRecordReader(), recordReaderFactory.factored);
+		assertSame(factoredTable.getRecordDeleter(), recordDeleterFactory.factored);
+		assertSame(factoredTable.getRecordCreator(), recordCreatorFactory.factored);
+	}
+
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
 			+ "Related table not implemented for someNonExistingRelatedTable")
 	public void testNotImplemented() {
