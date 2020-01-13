@@ -38,6 +38,7 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 	private static final String ORGANISATION_PREDECESSOR = "organisation_predecessor";
 	private RecordDeleter recordDeleter;
 	private RecordCreator recordCreator;
+	private Map<String, DataGroup> predecessorsInDataGroup;
 
 	public OrganisationPredecessorRelatedTable(RecordReader recordReader,
 			RecordDeleter recordDeleter, RecordCreator recordCreator) {
@@ -52,7 +53,8 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 
 		List<Map<String, Object>> allCurrentPredecessorsInDb = readCurrentRowsFromDatabaseUsingTableName(
 				ORGANISATION_PREDECESSOR);
-		Set<String> predecessorIdsInDataGroup = getPredecessorIdsInDataGroup(organisation);
+		populateCollectionWithPredecessorsInDataGroup(organisation);
+		Set<String> predecessorIdsInDataGroup = createSetWithPredecessorsInDataGroupIds();
 
 		if (predecessorIdsInDataGroup.isEmpty()) {
 			deletePredecessors(allCurrentPredecessorsInDb);
@@ -60,6 +62,22 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 			handleDeleteAndCreate(allCurrentPredecessorsInDb, predecessorIdsInDataGroup);
 
 		}
+	}
+
+	private void populateCollectionWithPredecessorsInDataGroup(DataGroup organisation) {
+		predecessorsInDataGroup = new HashMap<>();
+
+		List<DataGroup> predecessors = organisation.getAllGroupsWithNameInData("formerName");
+		for (DataGroup predecessor : predecessors) {
+			String predecessorId = extractPredecessorId(predecessor);
+			predecessorsInDataGroup.put(predecessorId, predecessor);
+		}
+	}
+
+	private Set<String> createSetWithPredecessorsInDataGroupIds() {
+		Set<String> predecessorIds = new HashSet<>();
+		predecessorIds.addAll(predecessorsInDataGroup.keySet());
+		return predecessorIds;
 	}
 
 	@Override
@@ -80,16 +98,6 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 	@Override
 	protected Map<String, Object> createConditionsFoReadingCurrentRows() {
 		return createConditionWithOrganisationId();
-	}
-
-	private Set<String> getPredecessorIdsInDataGroup(DataGroup organisation) {
-		Set<String> predecessorIds = new HashSet<>();
-		List<DataGroup> predecessors = organisation.getAllGroupsWithNameInData("formerName");
-		for (DataGroup predecessor : predecessors) {
-			String predecessorId = extractPredecessorId(predecessor);
-			predecessorIds.add(predecessorId);
-		}
-		return predecessorIds;
 	}
 
 	private String extractPredecessorId(DataGroup predecessor) {
@@ -140,13 +148,27 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 			Map<String, Object> values = createValuesForPredecessorInsert(predecessorId);
 			recordCreator.insertIntoTableUsingNameAndColumnsWithValues(ORGANISATION_PREDECESSOR,
 					values);
-			Map<String, Object> descriptionValues = new HashMap<>();
-			descriptionValues.put(ORGANISATION_ID, organisationId);
-			descriptionValues.put("predecessor_id", Integer.valueOf(predecessorId));
-			// TODO: om predecessor har kommentar så ska det göras en insert på den.
-			recordCreator.insertIntoTableUsingNameAndColumnsWithValues(
-					"organisation_predecessor_description", descriptionValues);
+			possiblyAddPredecessorDescription(predecessorId);
+
 		}
+	}
+
+	private void possiblyAddPredecessorDescription(String predecessorId) {
+		DataGroup dataGroup = predecessorsInDataGroup.get(predecessorId);
+		if (dataGroup != null && dataGroup.containsChildWithNameInData("organisationComment")) {
+			Map<String, Object> descriptionValues = new HashMap<>();
+			addPredecessorDecsription(predecessorId, descriptionValues);
+
+		}
+	}
+
+	private void addPredecessorDecsription(String predecessorId,
+			Map<String, Object> descriptionValues) {
+		descriptionValues.put(ORGANISATION_ID, organisationId);
+		descriptionValues.put("predecessor_id", Integer.valueOf(predecessorId));
+
+		recordCreator.insertIntoTableUsingNameAndColumnsWithValues(
+				"organisation_predecessor_description", descriptionValues);
 	}
 
 	@Override

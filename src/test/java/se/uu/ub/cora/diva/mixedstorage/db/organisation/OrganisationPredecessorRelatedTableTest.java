@@ -22,7 +22,9 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.testng.annotations.BeforeMethod;
@@ -85,7 +87,7 @@ public class OrganisationPredecessorRelatedTableTest {
 	public void testOnePredecessorInDbButNoPredecessorInDataGroup() {
 		DataGroup organisation = createDataGroupWithId("678");
 
-		addRowToReturnFromSpy(678, 234);
+		addRowToReturnFromSpy("organisation_predecessor", 678, 234, "organisation_predecessor_id");
 
 		predecessor.handleDbForDataGroup(organisation);
 		assertCorrectDataSentToRecordReader();
@@ -104,12 +106,46 @@ public class OrganisationPredecessorRelatedTableTest {
 		assertFalse(recordCreator.insertWasCalled);
 
 	}
+	// behövs nog inte, täcks in av testet ovan, då delete gör oavsett om description finns eller
+	// inte
+	// @Test
+	// public void testOnePredecessorWithDescriptionInDbButNoPredecessorInDataGroup() {
+	// DataGroup organisation = createDataGroupWithId("678");
+	//
+	// addRowToReturnFromSpy("organisation_predecessor", 678, 234, "organisation_predecessor_id");
+	// addRowToReturnFromSpy("organisation_predecessor_description", 678, 234, "predecessor_id");
+	//
+	// predecessor.handleDbForDataGroup(organisation);
+	// assertCorrectDataSentToRecordReader();
+	// assertTrue(recordDeleter.deleteWasCalled);
+	//
+	// assertEquals(recordDeleter.usedTableNames.size(), 2);
+	// assertEquals(recordDeleter.usedTableNames.get(0), "organisation_predecessor_description");
+	// Map<String, Object> firstConditionsMap = recordDeleter.listOfUsedConditions.get(0);
+	// assertEquals(firstConditionsMap.get("organisation_id"), 678);
+	// assertEquals(firstConditionsMap.get("predecessor_id"), 234);
+	//
+	// assertEquals(recordDeleter.usedTableName, "organisation_predecessor");
+	// assertEquals(recordDeleter.usedConditions.get("organisation_id"), 678);
+	// assertEquals(recordDeleter.usedConditions.get("organisation_predecessor_id"), 234);
+	//
+	// assertFalse(recordCreator.insertWasCalled);
+	//
+	// }
 
-	private void addRowToReturnFromSpy(int organisationId, int predecessorId) {
+	private void addRowToReturnFromSpy(String tableName, int organisationId, int predecessorId,
+			String dbKey) {
+		List<Map<String, Object>> rowsInSpy = new ArrayList<>();
+		if (recordReader.rowsToReturn.containsKey(tableName)) {
+			rowsInSpy = recordReader.rowsToReturn.get(tableName);
+		} else {
+			recordReader.rowsToReturn.put(tableName, rowsInSpy);
+		}
 		Map<String, Object> rowToReturn = new HashMap<>();
 		rowToReturn.put("organisation_id", organisationId);
-		rowToReturn.put("organisation_predecessor_id", predecessorId);
-		recordReader.rowsToReturn.add(rowToReturn);
+		// String dbKey = "organisation_predecessor_id";
+		rowToReturn.put(dbKey, predecessorId);
+		rowsInSpy.add(rowToReturn);
 	}
 
 	@Test
@@ -117,7 +153,7 @@ public class OrganisationPredecessorRelatedTableTest {
 		DataGroup organisation = createDataGroupWithId("678");
 		addPredecessor(organisation, "234", "0");
 
-		addRowToReturnFromSpy(678, 234);
+		addRowToReturnFromSpy("organisation_predecessor", 678, 234, "organisation_predecessor_id");
 
 		predecessor.handleDbForDataGroup(organisation);
 		assertCorrectDataSentToRecordReader();
@@ -156,27 +192,36 @@ public class OrganisationPredecessorRelatedTableTest {
 		organisation.addChild(predecessorGroup);
 	}
 
-	// @Test
-	// public void testOnePredecessorInDbSamePredecessorInDataGroupSameComment() {
-	// DataGroup organisation = createDataGroupWithId("678");
-	// addPredecessor(organisation, "234", "0");
-	//
-	// addRowToReturnFromSpy(678, 234);
-	//
-	// predecessor.handleDbForDataGroup(organisation);
-	// assertCorrectDataSentToRecordReader();
-	// assertFalse(recordDeleter.deleteWasCalled);
-	//
-	// assertFalse(recordCreator.insertWasCalled);
-	//
-	// }
+	@Test
+	public void testOnePredecessorInDbSamePredecessorInDataGroupSameComment() {
+		DataGroup organisation = createDataGroupWithId("678");
+		addPredecessorWithDescription(organisation, "234", "0");
+
+		addRowToReturnFromSpy("organisation_predecessor", 678, 234, "organisation_predecessor_id");
+		addRowToReturnFromSpy("organisation_predecessor_description", 678, 234, "predecessor_id");
+		Map<String, Object> descriptionMapInSpy = recordReader.rowsToReturn
+				.get("organisation_predecessor_description").get(0);
+		descriptionMapInSpy.put("description", "some description");
+
+		predecessor.handleDbForDataGroup(organisation);
+
+		assertEquals(recordReader.usedTableNames.size(), 2);
+		// assertEquals(recordReader.usedTableNames.get(0), "organisation_predecessor");
+		// assertEquals(recordReader.usedTableNames.get(1), "organisation_predecessor_description");
+		assertEquals(recordReader.usedConditions.get("organisation_id"), 678);
+		// assertCorrectDataSentToRecordReader();
+		assertFalse(recordDeleter.deleteWasCalled);
+
+		assertFalse(recordCreator.insertWasCalled);
+
+	}
 
 	@Test
 	public void testOnePredecessorInDbDifferentPredecessorInDataGroupDeleteAndInsert() {
 		DataGroup organisation = createDataGroupWithId("678");
 		addPredecessor(organisation, "22234", "0");
 
-		addRowToReturnFromSpy(678, 234);
+		addRowToReturnFromSpy("organisation_predecessor", 678, 234, "organisation_predecessor_id");
 
 		predecessor.handleDbForDataGroup(organisation);
 		assertCorrectDataSentToRecordReader();
@@ -256,10 +301,11 @@ public class OrganisationPredecessorRelatedTableTest {
 		addPredecessor(organisation, "22234", "2");
 		addPredecessor(organisation, "44444", "2");
 
-		addRowToReturnFromSpy(678, 234);
-		addRowToReturnFromSpy(678, 22234);
-		addRowToReturnFromSpy(678, 2444);
-		addRowToReturnFromSpy(678, 2222);
+		addRowToReturnFromSpy("organisation_predecessor", 678, 234, "organisation_predecessor_id");
+		addRowToReturnFromSpy("organisation_predecessor", 678, 22234,
+				"organisation_predecessor_id");
+		addRowToReturnFromSpy("organisation_predecessor", 678, 2444, "organisation_predecessor_id");
+		addRowToReturnFromSpy("organisation_predecessor", 678, 2222, "organisation_predecessor_id");
 
 		predecessor.handleDbForDataGroup(organisation);
 		assertCorrectDataSentToRecordReader();

@@ -22,6 +22,9 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.testng.annotations.BeforeMethod;
@@ -91,7 +94,7 @@ public class OrganisationAlternativeNameRelatedTableTest {
 	public void testOneNameInDbButNoNameInDataGroup() {
 		DataGroup organisation = createDataGroupWithId("678");
 
-		addNameToReturnFromSpy(234, 678);
+		addNameToReturnFromSpy("organisation_name", 234, 678);
 
 		alternativeName.handleDbForDataGroup(organisation);
 		assertCorrectDataSentToRecordReader();
@@ -104,13 +107,20 @@ public class OrganisationAlternativeNameRelatedTableTest {
 
 	}
 
-	private void addNameToReturnFromSpy(int nameId, int organisationId) {
-		Map<String, Object> nameToReturn = recordReader.nameToReturn;
-		nameToReturn.put("organisation_name_id", nameId);
-		nameToReturn.put("organisation_id", organisationId);
-		nameToReturn.put("organisation_name", "some english name");
-		nameToReturn.put("locale", "en");
-		recordReader.rowsToReturn.add(nameToReturn);
+	private void addNameToReturnFromSpy(String tableName, int nameId, int organisationId) {
+		List<Map<String, Object>> rowsInSpy = new ArrayList<>();
+		if (recordReader.rowsToReturn.containsKey(tableName)) {
+			rowsInSpy = recordReader.rowsToReturn.get(tableName);
+		} else {
+			recordReader.rowsToReturn.put(tableName, rowsInSpy);
+		}
+
+		Map<String, Object> rowToReturn = new HashMap<>();
+		rowToReturn.put("organisation_name_id", nameId);
+		rowToReturn.put("organisation_id", organisationId);
+		rowToReturn.put("organisation_name", "some english name");
+		rowToReturn.put("locale", "en");
+		rowsInSpy.add(rowToReturn);
 	}
 
 	@Test
@@ -118,7 +128,7 @@ public class OrganisationAlternativeNameRelatedTableTest {
 		DataGroup organisation = createDataGroupWithId("678");
 		addAlternativeName(organisation, "some english name");
 
-		addNameToReturnFromSpy(234, 678);
+		addNameToReturnFromSpy("organisation_name", 234, 678);
 
 		alternativeName.handleDbForDataGroup(organisation);
 		assertCorrectDataSentToRecordReader();
@@ -139,7 +149,7 @@ public class OrganisationAlternativeNameRelatedTableTest {
 		DataGroup organisation = createDataGroupWithId("678");
 		addAlternativeName(organisation, "some other english name");
 
-		addNameToReturnFromSpy(234, 678);
+		addNameToReturnFromSpy("organisation_name", 234, 678);
 
 		alternativeName.handleDbForDataGroup(organisation);
 		assertCorrectDataSentToRecordReader();

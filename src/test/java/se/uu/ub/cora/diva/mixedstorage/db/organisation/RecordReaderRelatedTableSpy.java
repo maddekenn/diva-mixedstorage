@@ -19,6 +19,7 @@
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,9 +29,10 @@ import se.uu.ub.cora.sqldatabase.RecordReader;
 public class RecordReaderRelatedTableSpy implements RecordReader {
 
 	public String usedTableName;
+	public List<String> usedTableNames = new ArrayList<>();
 	public Map<String, Object> usedConditions;
 	public Map<String, Object> nameToReturn = new HashMap<>();
-	public List<Map<String, Object>> rowsToReturn = new ArrayList<>();
+	public Map<String, List<Map<String, Object>>> rowsToReturn = new HashMap<>();
 	public String sequenceName;
 	public Map<String, Object> nextVal;
 
@@ -44,14 +46,18 @@ public class RecordReaderRelatedTableSpy implements RecordReader {
 	public List<Map<String, Object>> readFromTableUsingConditions(String tableName,
 			Map<String, Object> conditions) {
 		usedTableName = tableName;
+		usedTableNames.add(tableName);
 		usedConditions = conditions;
-		return rowsToReturn;
+
+		return rowsToReturn.containsKey(tableName) ? rowsToReturn.get(tableName)
+				: Collections.emptyList();
 	}
 
 	@Override
 	public Map<String, Object> readOneRowFromDbUsingTableAndConditions(String tableName,
 			Map<String, Object> conditions) {
 		usedTableName = tableName;
+		usedTableNames.add(tableName);
 		usedConditions = conditions;
 		return nameToReturn;
 	}

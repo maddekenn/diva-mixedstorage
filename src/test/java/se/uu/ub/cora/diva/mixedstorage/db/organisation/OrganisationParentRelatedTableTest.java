@@ -22,7 +22,9 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.testng.annotations.BeforeMethod;
@@ -84,7 +86,7 @@ public class OrganisationParentRelatedTableTest {
 	public void testOneParentInDbButNoParentInDataGroup() {
 		DataGroup organisation = createDataGroupWithId("678");
 
-		addRowToReturnFromSpy(678, 234);
+		addRowToReturnFromSpy("organisation_parent", 678, 234);
 
 		parent.handleDbForDataGroup(organisation);
 		assertCorrectDataSentToRecordReader();
@@ -98,11 +100,17 @@ public class OrganisationParentRelatedTableTest {
 
 	}
 
-	private void addRowToReturnFromSpy(int organisationId, int parentId) {
+	private void addRowToReturnFromSpy(String tableName, int organisationId, int parentId) {
+		List<Map<String, Object>> rowsInSpy = new ArrayList<>();
+		if (recordReader.rowsToReturn.containsKey(tableName)) {
+			rowsInSpy = recordReader.rowsToReturn.get(tableName);
+		} else {
+			recordReader.rowsToReturn.put(tableName, rowsInSpy);
+		}
 		Map<String, Object> rowToReturn = new HashMap<>();
 		rowToReturn.put("organisation_id", organisationId);
 		rowToReturn.put("organisation_parent_id", parentId);
-		recordReader.rowsToReturn.add(rowToReturn);
+		rowsInSpy.add(rowToReturn);
 	}
 
 	@Test
@@ -110,7 +118,7 @@ public class OrganisationParentRelatedTableTest {
 		DataGroup organisation = createDataGroupWithId("678");
 		addParent(organisation, "234", "0");
 
-		addRowToReturnFromSpy(678, 234);
+		addRowToReturnFromSpy("organisation_parent", 678, 234);
 
 		parent.handleDbForDataGroup(organisation);
 		assertCorrectDataSentToRecordReader();
@@ -135,7 +143,7 @@ public class OrganisationParentRelatedTableTest {
 		DataGroup organisation = createDataGroupWithId("678");
 		addParent(organisation, "22234", "0");
 
-		addRowToReturnFromSpy(678, 234);
+		addRowToReturnFromSpy("organisation_parent", 678, 234);
 
 		parent.handleDbForDataGroup(organisation);
 		assertCorrectDataSentToRecordReader();
@@ -182,10 +190,10 @@ public class OrganisationParentRelatedTableTest {
 		addParent(organisation, "22234", "2");
 		addParent(organisation, "44444", "2");
 
-		addRowToReturnFromSpy(678, 234);
-		addRowToReturnFromSpy(678, 22234);
-		addRowToReturnFromSpy(678, 2444);
-		addRowToReturnFromSpy(678, 2222);
+		addRowToReturnFromSpy("organisation_parent", 678, 234);
+		addRowToReturnFromSpy("organisation_parent", 678, 22234);
+		addRowToReturnFromSpy("organisation_parent", 678, 2444);
+		addRowToReturnFromSpy("organisation_parent", 678, 2222);
 
 		parent.handleDbForDataGroup(organisation);
 		assertCorrectDataSentToRecordReader();
