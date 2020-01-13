@@ -361,6 +361,24 @@ public class OrganisationPredecessorRelatedTableTest {
 	}
 
 	@Test
+	public void testOnePredecessorInDbSamePredecessorInDataGroupSameComment() {
+		DataGroup organisation = createDataGroupWithId("678");
+		addPredecessorWithDescription(organisation, "234", "0");
+
+		addRowToReturnFromSpy("organisation_predecessor", 678, 234, "organisation_predecessor_id");
+		addRowToReturnFromSpy("organisation_predecessor_description", 678, 234, "predecessor_id");
+		Map<String, Object> descriptionMapInSpy = recordReader.rowsToReturn
+				.get("organisation_predecessor_description").get(0);
+		descriptionMapInSpy.put("description", "some description");
+
+		predecessor.handleDbForDataGroup(organisation);
+
+		assertPredecessorAndDescriptionWasRead();
+		assertFalse(recordDeleter.deleteWasCalled);
+		assertFalse(recordCreator.insertWasCalled);
+	}
+
+	@Test
 	public void testOnePredecessorInDbSamePredecessorInDataGroupDifferentComment() {
 		DataGroup organisation = createDataGroupWithId("678");
 		addPredecessorWithDescription(organisation, "234", "0");
@@ -375,6 +393,38 @@ public class OrganisationPredecessorRelatedTableTest {
 
 		assertPredecessorAndDescriptionWasRead();
 		assertDescriptionWasDeleted();
+		assertNewDescriptionWasCreated();
+	}
+
+	@Test
+	public void testOnePredecessorInDbSamePredecessorInDataGroupNoCommentInDataGroup() {
+		DataGroup organisation = createDataGroupWithId("678");
+		addPredecessor(organisation, "234", "0");
+
+		addRowToReturnFromSpy("organisation_predecessor", 678, 234, "organisation_predecessor_id");
+		addRowToReturnFromSpy("organisation_predecessor_description", 678, 234, "predecessor_id");
+		Map<String, Object> descriptionMapInSpy = recordReader.rowsToReturn
+				.get("organisation_predecessor_description").get(0);
+		descriptionMapInSpy.put("description", "some OTHER description");
+
+		predecessor.handleDbForDataGroup(organisation);
+
+		assertPredecessorAndDescriptionWasRead();
+		assertDescriptionWasDeleted();
+		assertFalse(recordCreator.insertWasCalled);
+	}
+
+	@Test
+	public void testOnePredecessorInDbSamePredecessorInDataGroupNoCommentInDb() {
+		DataGroup organisation = createDataGroupWithId("678");
+		addPredecessorWithDescription(organisation, "234", "0");
+
+		addRowToReturnFromSpy("organisation_predecessor", 678, 234, "organisation_predecessor_id");
+
+		predecessor.handleDbForDataGroup(organisation);
+
+		assertPredecessorAndDescriptionWasRead();
+		assertFalse(recordDeleter.deleteWasCalled);
 		assertNewDescriptionWasCreated();
 	}
 
