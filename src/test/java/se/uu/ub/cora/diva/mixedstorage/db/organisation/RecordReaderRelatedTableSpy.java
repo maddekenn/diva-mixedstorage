@@ -30,7 +30,7 @@ public class RecordReaderRelatedTableSpy implements RecordReader {
 
 	public String usedTableName;
 	public List<String> usedTableNames = new ArrayList<>();
-	public Map<String, Object> usedConditions;
+	public List<Map<String, Object>> usedConditions = new ArrayList<>();
 	public Map<String, Object> nameToReturn = new HashMap<>();
 	public Map<String, List<Map<String, Object>>> rowsToReturn = new HashMap<>();
 	public String sequenceName;
@@ -47,7 +47,7 @@ public class RecordReaderRelatedTableSpy implements RecordReader {
 			Map<String, Object> conditions) {
 		usedTableName = tableName;
 		usedTableNames.add(tableName);
-		usedConditions = conditions;
+		usedConditions.add(conditions);
 
 		return rowsToReturn.containsKey(tableName) ? rowsToReturn.get(tableName)
 				: Collections.emptyList();
@@ -58,8 +58,10 @@ public class RecordReaderRelatedTableSpy implements RecordReader {
 			Map<String, Object> conditions) {
 		usedTableName = tableName;
 		usedTableNames.add(tableName);
-		usedConditions = conditions;
-		return nameToReturn;
+		usedConditions.add(conditions);
+		return rowsToReturn.containsKey(tableName) ? rowsToReturn.get(tableName).get(0)
+				: Collections.emptyMap();
+		// return nameToReturn;
 	}
 
 	@Override

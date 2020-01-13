@@ -18,6 +18,8 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,6 +59,17 @@ public abstract class OrganisationRelatedTable {
 			removeRowsNoLongerPresentInDataGroup(idsInDatabase, originalIdsFromDataGroup);
 
 		}
+	}
+
+	protected String getCurrentTimestamp() {
+		return "timestamp '" + getCurrentTimeStamp() + "'";
+	}
+
+	private Timestamp getCurrentTimeStamp() {
+		Date today = new Date();
+		long time = today.getTime();
+		return new Timestamp(time);
+
 	}
 
 	protected abstract void removeRowsNoLongerPresentInDataGroup(Set<String> idsInDatabase,

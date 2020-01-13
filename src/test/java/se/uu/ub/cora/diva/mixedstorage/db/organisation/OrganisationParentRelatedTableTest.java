@@ -70,7 +70,7 @@ public class OrganisationParentRelatedTableTest {
 
 	private void assertCorrectDataSentToRecordReader() {
 		assertEquals(recordReader.usedTableName, "organisation_parent");
-		assertEquals(recordReader.usedConditions.get("organisation_id"), 678);
+		assertEquals(recordReader.usedConditions.get(0).get("organisation_id"), 678);
 	}
 
 	@Test
