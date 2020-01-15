@@ -79,4 +79,15 @@ public class DbOrganisationMainTableTest {
 
 	}
 
+	@Test
+	public void testPredecessor() {
+		DataGroup dataGroup = new DataGroupSpy("organisation");
+		mainTable.update(dataGroup);
+		assertEquals(relatedTableFactory.relatedTableNames.get(2), "organisationPredecessor");
+		RelatedTableSpy thirdRelatedTable = (RelatedTableSpy) relatedTableFactory.factoredRelatedTables
+				.get(2);
+		assertSame(thirdRelatedTable.dataGroup, dataGroup);
+
+	}
+
 }

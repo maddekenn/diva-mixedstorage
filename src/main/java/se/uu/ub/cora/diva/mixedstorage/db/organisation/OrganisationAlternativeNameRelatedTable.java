@@ -157,7 +157,7 @@ public class OrganisationAlternativeNameRelatedTable implements RelatedTable {
 		Map<String, Object> values = new HashMap<>();
 		Map<String, Object> nextValue = recordReader.readNextValueFromSequence("name_sequence");
 		values.put(ORGANISATION_NAME_ID, nextValue.get("nextval"));
-		values.put("last_updated", getLastUpdated());
+		values.put("last_updated", getCurrentTimeStamp());
 		values.put("locale", "en");
 		values.put(ORGANISATION_NAME, getAlternativeNameFromOrganisation(organisation));
 		values.put("organisation_id", Integer.valueOf(organisationId));

@@ -41,16 +41,17 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	private RecordReaderFactory recordReaderFactory;
 	private DivaDbToCoraConverterFactory converterFactory;
 	private DivaDbToCoraFactory divaDbToCoraFactory;
-	private static RecordUpdaterFactory recordUpdaterFactory;
 	private DbMainTableFactory dbMainTableFactory;
+	private RecordUpdaterFactory recordUpdaterFactory;
 
 	private DivaDbToCoraRecordStorage(RecordReaderFactory recordReaderFactory,
 			DivaDbToCoraConverterFactory converterFactory, DivaDbToCoraFactory divaDbToCoraFactory,
-			DbMainTableFactory dbMainTableFactory) {
+			DbMainTableFactory dbMainTableFactory, RecordUpdaterFactory recordUpdaterFactory) {
 		this.recordReaderFactory = recordReaderFactory;
 		this.converterFactory = converterFactory;
 		this.divaDbToCoraFactory = divaDbToCoraFactory;
 		this.dbMainTableFactory = dbMainTableFactory;
+		this.recordUpdaterFactory = recordUpdaterFactory;
 
 	}
 
@@ -58,9 +59,8 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 			RecordReaderFactory recordReaderFactory, DivaDbToCoraConverterFactory converterFactory,
 			DivaDbToCoraFactory divaDbToCoraFactory, RecordUpdaterFactory recordUpdaterFactory,
 			DbMainTableFactory dbMainTableFactory) {
-		DivaDbToCoraRecordStorage.recordUpdaterFactory = recordUpdaterFactory;
 		return new DivaDbToCoraRecordStorage(recordReaderFactory, converterFactory,
-				divaDbToCoraFactory, dbMainTableFactory);
+				divaDbToCoraFactory, dbMainTableFactory, recordUpdaterFactory);
 	}
 
 	@Override

@@ -18,6 +18,7 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -263,8 +264,13 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 	}
 
 	private Map<String, Object> readCurrentDescriptionFromDb(Map<String, Object> conditions) {
-		return recordReader.readOneRowFromDbUsingTableAndConditions(
-				ORGANISATION_PREDECESSOR_DESCRIPTION, conditions);
+		List<Map<String, Object>> readRows = recordReader
+				.readFromTableUsingConditions(ORGANISATION_PREDECESSOR_DESCRIPTION, conditions);
+		return getRowIfOnlyOneOrEmptyMap(readRows);
+	}
+
+	private Map<String, Object> getRowIfOnlyOneOrEmptyMap(List<Map<String, Object>> readRows) {
+		return readRows.size() == 1 ? readRows.get(0) : Collections.emptyMap();
 	}
 
 	public RecordReader getRecordReader() {

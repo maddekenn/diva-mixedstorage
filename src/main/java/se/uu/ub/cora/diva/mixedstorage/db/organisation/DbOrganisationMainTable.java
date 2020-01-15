@@ -51,6 +51,9 @@ public class DbOrganisationMainTable implements DbMainTable {
 		parent.handleDbForDataGroup(dataGroup);
 
 		// TODO: uppdatera preecessor om ändrat
+		RelatedTable predecessor = relatedTableFactory.factor("organisationPredecessor");
+		predecessor.handleDbForDataGroup(dataGroup);
+
 		// TODO: uppdatera adress om det är ändrat
 		// TODO:uppdatera organisation type om ändrat
 	}
