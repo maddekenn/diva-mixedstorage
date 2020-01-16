@@ -57,15 +57,10 @@ public abstract class OrganisationRelatedTable {
 			Set<String> originalIdsFromDataGroup = Set.copyOf(idsFromDataGroup);
 			addDataFromDataGroupNotAlreadyInDb(idsFromDataGroup, idsInDatabase);
 			removeRowsNoLongerPresentInDataGroup(idsInDatabase, originalIdsFromDataGroup);
-
 		}
 	}
 
-	protected String getCurrentTimestamp() {
-		return "timestamp '" + getCurrentTimeStamp() + "'";
-	}
-
-	private Timestamp getCurrentTimeStamp() {
+	protected Timestamp getCurrentTimestamp() {
 		Date today = new Date();
 		long time = today.getTime();
 		return new Timestamp(time);

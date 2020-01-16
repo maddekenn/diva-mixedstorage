@@ -162,19 +162,23 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 	private void possiblyAddPredecessorDescription(String predecessorId) {
 		DataGroup dataGroup = predecessorsInDataGroup.get(predecessorId);
 		if (dataGroup.containsChildWithNameInData(ORGANISATION_COMMENT)) {
-			Map<String, Object> descriptionValues = new HashMap<>();
-			addPredecessorDescription(predecessorId, descriptionValues);
+			String comment = dataGroup.getFirstAtomicValueWithNameInData(ORGANISATION_COMMENT);
+			createNewDescriptionInDb(predecessorId, comment);
 
 		}
 	}
 
-	private void addPredecessorDescription(String predecessorId,
-			Map<String, Object> descriptionValues) {
-		descriptionValues.put(ORGANISATION_ID, organisationId);
-		descriptionValues.put(PREDECESSOR_ID, Integer.valueOf(predecessorId));
+	private Map<String, Object> createValuesForDescriptionCreate(String predecessorId,
+			String comment) {
+		Map<String, Object> descriptionValues = createConditionsForPredecessorDescription(
+				predecessorId);
+		Map<String, Object> nextValue = recordReader
+				.readNextValueFromSequence("organisation_predecessor_description_sequence");
 
-		recordCreator.insertIntoTableUsingNameAndColumnsWithValues(
-				ORGANISATION_PREDECESSOR_DESCRIPTION, descriptionValues);
+		descriptionValues.put(ORGANISATION_PREDECESSOR_ID, nextValue.get("nextval"));
+		descriptionValues.put("last_updated", getCurrentTimestamp());
+		descriptionValues.put("description", comment);
+		return descriptionValues;
 	}
 
 	@Override
@@ -245,13 +249,7 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 	}
 
 	private void createNewDescriptionInDb(String id, String descriptionInDataGroup) {
-		Map<String, Object> values = createConditionsForPredecessorDescription(id);
-		Map<String, Object> nextValue = recordReader
-				.readNextValueFromSequence("organisation_predecessor_description_sequence");
-
-		values.put(ORGANISATION_PREDECESSOR_ID, nextValue.get("nextval"));
-		values.put("description", descriptionInDataGroup);
-		values.put("last_updated", getCurrentTimestamp());
+		Map<String, Object> values = createValuesForDescriptionCreate(id, descriptionInDataGroup);
 		recordCreator.insertIntoTableUsingNameAndColumnsWithValues(
 				ORGANISATION_PREDECESSOR_DESCRIPTION, values);
 	}

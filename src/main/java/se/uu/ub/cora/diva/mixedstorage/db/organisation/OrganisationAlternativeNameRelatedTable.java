@@ -157,18 +157,14 @@ public class OrganisationAlternativeNameRelatedTable implements RelatedTable {
 		Map<String, Object> values = new HashMap<>();
 		Map<String, Object> nextValue = recordReader.readNextValueFromSequence("name_sequence");
 		values.put(ORGANISATION_NAME_ID, nextValue.get("nextval"));
-		values.put("last_updated", getCurrentTimeStamp());
+		values.put("last_updated", getCurrentTimestamp());
 		values.put("locale", "en");
 		values.put(ORGANISATION_NAME, getAlternativeNameFromOrganisation(organisation));
 		values.put("organisation_id", Integer.valueOf(organisationId));
 		return values;
 	}
 
-	private String getLastUpdated() {
-		return "timestamp '" + getCurrentTimeStamp() + "'";
-	}
-
-	private Timestamp getCurrentTimeStamp() {
+	private Timestamp getCurrentTimestamp() {
 		Date today = new Date();
 		long time = today.getTime();
 		return new Timestamp(time);
