@@ -28,8 +28,6 @@ import se.uu.ub.cora.diva.mixedstorage.DataAtomicSpy;
 import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslater;
 import se.uu.ub.cora.diva.mixedstorage.db.DbException;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.OrganisationAlternativeNameDataToDbTranslater;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.OrganisationDataToDbTranslater;
 
 public class OrganisationAlternativeNameDataToDbTranslaterTest {
 
@@ -64,7 +62,8 @@ public class OrganisationAlternativeNameDataToDbTranslaterTest {
 	@Test(expectedExceptions = DbException.class)
 	public void testUpdateOrganisationIdNotAnInt() throws Exception {
 		DataGroup organisation = createDataGroupWithId("notAnInt");
-		DataToDbTranslater translater = new OrganisationDataToDbTranslater();
+
+		DataToDbTranslater translater = new OrganisationAlternativeNameDataToDbTranslater();
 		translater.translate(organisation);
 
 	}

@@ -77,6 +77,9 @@ public class RecordReaderSpy implements RecordReader {
 			} else if (conditions.get("id").equals("someIdWithEmptyClosedDate")) {
 				map.put("closed_date", "");
 			}
+		} else if ("organisation_type".equals(tableName)) {
+			map.put("organisation_type_id", 34);
+			map.put("organisation_type_code", "unit");
 		}
 		oneRowRead = map;
 		returnedList.add(map);

@@ -212,8 +212,12 @@ public class DivaMixedRecordStorageProviderTest {
 		assertTrue(dbMainTableFactory instanceof DbMainTableFactoryImp);
 		assertSame(dbMainTableFactory.getRecordUpdaterFactory(),
 				dbStorage.getRecordUpdaterFactory());
-		assertTrue(
-				dbMainTableFactory.getTranslaterFactory() instanceof DataToDbTranslaterFactoryImp);
+
+		DataToDbTranslaterFactoryImp translaterFactory = (DataToDbTranslaterFactoryImp) dbMainTableFactory
+				.getTranslaterFactory();
+		assertTrue(translaterFactory instanceof DataToDbTranslaterFactoryImp);
+		assertTrue(translaterFactory.getRecordReaderFactory() instanceof RecordReaderFactoryImp);
+
 		RelatedTableFactoryImp relatedTableFactory = (RelatedTableFactoryImp) dbMainTableFactory
 				.getRelatedTableFactory();
 

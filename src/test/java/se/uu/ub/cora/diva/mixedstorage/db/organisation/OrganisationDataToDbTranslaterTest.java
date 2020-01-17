@@ -19,9 +19,14 @@
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotSame;
+import static org.testng.Assert.assertTrue;
 
 import java.sql.Date;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.data.DataGroup;
@@ -29,14 +34,22 @@ import se.uu.ub.cora.diva.mixedstorage.DataAtomicSpy;
 import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslater;
 import se.uu.ub.cora.diva.mixedstorage.db.DbException;
+import se.uu.ub.cora.diva.mixedstorage.db.RecordReaderSpy;
 
 public class OrganisationDataToDbTranslaterTest {
+
+	private RecordReaderSpy recordReader;
+	private DataToDbTranslater translater;
+
+	@BeforeMethod
+	public void setUp() {
+		recordReader = new RecordReaderSpy();
+		translater = new OrganisationDataToDbTranslater(recordReader);
+	}
 
 	@Test
 	public void testConditions() {
 		DataGroup dataGroup = createDataGroupWithId("56");
-		DataToDbTranslater translater = new OrganisationDataToDbTranslater();
-
 		translater.translate(dataGroup);
 		assertEquals(translater.getConditions().get("organisation_id"), 56);
 	}
@@ -46,7 +59,24 @@ public class OrganisationDataToDbTranslaterTest {
 		DataGroupSpy recordInfo = new DataGroupSpy("recordInfo");
 		recordInfo.addChild(new DataAtomicSpy("id", id));
 		dataGroup.addChild(recordInfo);
+		dataGroup.addChild(new DataAtomicSpy("organisationType", "unit"));
 		return dataGroup;
+	}
+
+	@Test
+	public void testLastUpdated() {
+		DataGroup dataGroup = createDataGroupWithId("45");
+		dataGroup.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
+
+		translater.translate(dataGroup);
+		assertEquals(translater.getConditions().get("organisation_id"), 45);
+		assertEquals(translater.getValues().get("organisation_name"), "someChangedName");
+
+		Timestamp lastUpdated = (Timestamp) translater.getValues().get("last_updated");
+		String lastUpdatedString = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+				.format(lastUpdated);
+		assertTrue(lastUpdatedString
+				.matches("\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{1,3}"));
 	}
 
 	@Test
@@ -54,7 +84,6 @@ public class OrganisationDataToDbTranslaterTest {
 		DataGroup dataGroup = createDataGroupWithId("45");
 		dataGroup.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 
-		DataToDbTranslater translater = new OrganisationDataToDbTranslater();
 		translater.translate(dataGroup);
 		assertEquals(translater.getConditions().get("organisation_id"), 45);
 		assertEquals(translater.getValues().get("organisation_name"), "someChangedName");
@@ -69,7 +98,6 @@ public class OrganisationDataToDbTranslaterTest {
 		dataGroup.addChild(new DataAtomicSpy("organisationNumber", "78979-45654"));
 		dataGroup.addChild(new DataAtomicSpy("URL", "www.someaddress.se"));
 
-		DataToDbTranslater translater = new OrganisationDataToDbTranslater();
 		translater.translate(dataGroup);
 
 		assertEquals(translater.getConditions().get("organisation_id"), 45);
@@ -86,7 +114,6 @@ public class OrganisationDataToDbTranslaterTest {
 	public void testUpdateEmptyDataAtomicsAreSetToNullInQuery() throws Exception {
 		DataGroup dataGroup = createDataGroupWithId("45");
 
-		DataToDbTranslater translater = new OrganisationDataToDbTranslater();
 		translater.translate(dataGroup);
 
 		assertEquals(translater.getConditions().get("organisation_id"), 45);
@@ -103,27 +130,29 @@ public class OrganisationDataToDbTranslaterTest {
 		DataGroup dataGroup = createDataGroupWithId("45");
 		dataGroup.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 
-		DataToDbTranslater translater = new OrganisationDataToDbTranslater();
 		translater.translate(dataGroup);
 		assertEquals(translater.getConditions().size(), 1);
-		assertEquals(translater.getValues().size(), 6);
+		assertEquals(translater.getValues().size(), 8);
 		assertEquals(translater.getConditions().get("organisation_id"), 45);
 		assertEquals(translater.getValues().get("organisation_name"), "someChangedName");
+		Timestamp lastUpdated = (Timestamp) translater.getValues().get("last_updated");
 
 		DataGroup dataGroup2 = createDataGroupWithId("4500");
 		dataGroup2.addChild(new DataAtomicSpy("organisationName", "someOtherChangedName"));
 		translater.translate(dataGroup2);
 		assertEquals(translater.getConditions().size(), 1);
-		assertEquals(translater.getValues().size(), 6);
+		assertEquals(translater.getValues().size(), 8);
 
 		assertEquals(translater.getConditions().get("organisation_id"), 4500);
 		assertEquals(translater.getValues().get("organisation_name"), "someOtherChangedName");
+		Timestamp lastUpdated2 = (Timestamp) translater.getValues().get("last_updated");
+		assertNotSame(lastUpdated, lastUpdated2);
+
 	}
 
 	@Test(expectedExceptions = DbException.class)
 	public void testUpdateOrganisationIdNotAnInt() throws Exception {
 		DataGroup dataGroup = createDataGroupWithId("notAnInt");
-		DataToDbTranslater translater = new OrganisationDataToDbTranslater();
 		translater.translate(dataGroup);
 
 	}
@@ -134,7 +163,6 @@ public class OrganisationDataToDbTranslaterTest {
 		dataGroup.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 		dataGroup.addChild(new DataAtomicSpy("eligible", "no"));
 
-		DataToDbTranslater translater = new OrganisationDataToDbTranslater();
 		translater.translate(dataGroup);
 		assertEquals(translater.getConditions().get("organisation_id"), 45);
 		assertEquals(translater.getValues().get("organisation_name"), "someChangedName");
@@ -147,10 +175,24 @@ public class OrganisationDataToDbTranslaterTest {
 		dataGroup.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 		dataGroup.addChild(new DataAtomicSpy("eligible", "yes"));
 
-		DataToDbTranslater translater = new OrganisationDataToDbTranslater();
 		translater.translate(dataGroup);
 		assertEquals(translater.getConditions().get("organisation_id"), 45);
 		assertEquals(translater.getValues().get("organisation_name"), "someChangedName");
 		assertEquals(translater.getValues().get("not_eligible"), false);
+	}
+
+	@Test
+	public void testOrganisationType() {
+		DataGroup dataGroup = createDataGroupWithId("45");
+		dataGroup.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
+
+		translater.translate(dataGroup);
+		assertEquals(translater.getConditions().get("organisation_id"), 45);
+		assertEquals(recordReader.usedTableNames.size(), 1);
+		assertEquals(recordReader.usedTableNames.get(0), "organisation_type");
+		assertEquals(recordReader.usedConditions.get("organisation_type_code"), "unit");
+
+		assertEquals(recordReader.oneRowRead.get("organisation_type_id"),
+				translater.getValues().get("organisation_type_id"));
 	}
 }

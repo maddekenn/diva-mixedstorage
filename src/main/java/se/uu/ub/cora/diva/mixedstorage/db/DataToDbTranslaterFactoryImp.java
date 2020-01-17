@@ -21,18 +21,32 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.OrganisationAlternativeNameDataToDbTranslater;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.OrganisationDataToDbTranslater;
+import se.uu.ub.cora.sqldatabase.RecordReader;
+import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
 public class DataToDbTranslaterFactoryImp implements DataToDbTranslaterFactory {
+
+	private RecordReaderFactory recordReaderFactory;
+
+	public DataToDbTranslaterFactoryImp(RecordReaderFactory recordReaderFactory) {
+		this.recordReaderFactory = recordReaderFactory;
+	}
 
 	@Override
 	public DataToDbTranslater factorForTableName(String tableName) {
 		if ("organisation".contentEquals(tableName)) {
-			return new OrganisationDataToDbTranslater();
+			RecordReader recordReader = recordReaderFactory.factor();
+			return new OrganisationDataToDbTranslater(recordReader);
 		}
 		if ("organisation_name".equals(tableName)) {
 			return new OrganisationAlternativeNameDataToDbTranslater();
 		}
 		throw NotImplementedException.withMessage("No translater implemented for: " + tableName);
+	}
+
+	public RecordReaderFactory getRecordReaderFactory() {
+		// needed for test
+		return recordReaderFactory;
 	}
 
 }

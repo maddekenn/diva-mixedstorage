@@ -18,8 +18,10 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
@@ -28,29 +30,35 @@ import se.uu.ub.cora.diva.mixedstorage.db.organisation.OrganisationDataToDbTrans
 
 public class DataToDbTranslaterFactoryTest {
 
+	private RecordReaderFactorySpy recordReaderFactory;
+	private DataToDbTranslaterFactory factory;
+
+	@BeforeMethod
+	public void setUp() {
+		recordReaderFactory = new RecordReaderFactorySpy();
+		factory = new DataToDbTranslaterFactoryImp(recordReaderFactory);
+	}
+
 	@Test
 	public void testInitFactory() {
-		DataToDbTranslaterFactory factory = new DataToDbTranslaterFactoryImp();
 		assertTrue(factory instanceof DataToDbTranslaterFactory);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = "No translater implemented for: nonExistingTable")
 	public void factorNonExisting() {
-		DataToDbTranslaterFactory factory = new DataToDbTranslaterFactoryImp();
 		factory.factorForTableName("nonExistingTable");
 	}
 
 	@Test
 	public void testFactorForOrganisation() {
-		DataToDbTranslaterFactory factory = new DataToDbTranslaterFactoryImp();
-		DataToDbTranslater translater = factory.factorForTableName("organisation");
+		OrganisationDataToDbTranslater translater = (OrganisationDataToDbTranslater) factory
+				.factorForTableName("organisation");
 		assertTrue(translater instanceof OrganisationDataToDbTranslater);
-
+		assertSame(recordReaderFactory.factored, translater.getRecordReader());
 	}
 
 	@Test
 	public void testFactorForOrganisationName() {
-		DataToDbTranslaterFactory factory = new DataToDbTranslaterFactoryImp();
 		DataToDbTranslater translater = factory.factorForTableName("organisation_name");
 		assertTrue(translater instanceof OrganisationAlternativeNameDataToDbTranslater);
 

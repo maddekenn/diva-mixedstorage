@@ -19,18 +19,25 @@
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbHelper;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslater;
+import se.uu.ub.cora.sqldatabase.RecordReader;
 
 public class OrganisationDataToDbTranslater implements DataToDbTranslater {
 
 	private Map<String, Object> values = new HashMap<>();
 	private Map<String, Object> conditions = new HashMap<>(1);
 	private DataGroup dataGroup;
+	private RecordReader recordReader;
+
+	public OrganisationDataToDbTranslater(RecordReader recordReader) {
+		this.recordReader = recordReader;
+	}
 
 	@Override
 	public void translate(DataGroup dataGroup) {
@@ -52,24 +59,22 @@ public class OrganisationDataToDbTranslater implements DataToDbTranslater {
 	private Map<String, Object> createColumnsWithValuesForUpdateQuery() {
 		addAtomicValuesToColumns();
 		addEligible();
-		// TODO:add last updated, som i OrganisationAlternativeNameRelatedTable
+		values.put("last_updated", getCurrentTimestamp());
+
+		Map<String, Object> conditionsForReadType = new HashMap<>();
+		conditionsForReadType.put("organisation_type_code",
+				dataGroup.getFirstAtomicValueWithNameInData("organisationType"));
+		Map<String, Object> organisationTypeRow = recordReader
+				.readOneRowFromDbUsingTableAndConditions("organisation_type",
+						conditionsForReadType);
+		Object typeId = organisationTypeRow.get("organisation_type_id");
+
+		values.put("organisation_type_id", typeId);
 		return values;
 	}
 
-	private void addEligible() {
-		boolean notEligible = false;
-		if (eligibleIsNoOrMissing()) {
-			notEligible = true;
-		}
-		values.put("not_eligible", notEligible);
-	}
-
-	private boolean eligibleIsNoOrMissing() {
-		return !dataGroup.containsChildWithNameInData("eligible")
-				|| "no".equals(dataGroup.getFirstAtomicValueWithNameInData("eligible"));
-	}
-
 	private void addAtomicValuesToColumns() {
+		// TODO: add domain, but only if this is for create, how to know?
 		for (OrganisationAtomicColumns column : OrganisationAtomicColumns.values()) {
 			addAtomicValueOrNullToColumn(column);
 		}
@@ -90,6 +95,19 @@ public class OrganisationDataToDbTranslater implements DataToDbTranslater {
 		return dataGroup.containsChildWithNameInData(coraName);
 	}
 
+	private void addEligible() {
+		boolean notEligible = false;
+		if (eligibleIsNoOrMissing()) {
+			notEligible = true;
+		}
+		values.put("not_eligible", notEligible);
+	}
+
+	private boolean eligibleIsNoOrMissing() {
+		return !dataGroup.containsChildWithNameInData("eligible")
+				|| "no".equals(dataGroup.getFirstAtomicValueWithNameInData("eligible"));
+	}
+
 	private void handleAndAddValue(String coraName, String dbColumnName,
 			OrganisationAtomicColumns column) {
 		String type = column.type;
@@ -106,6 +124,13 @@ public class OrganisationDataToDbTranslater implements DataToDbTranslater {
 		values.put(dbColumnName, valueAsDate);
 	}
 
+	private Timestamp getCurrentTimestamp() {
+		java.util.Date today = new java.util.Date();
+		long time = today.getTime();
+		return new Timestamp(time);
+
+	}
+
 	@Override
 	public Map<String, Object> getConditions() {
 		return conditions;
@@ -114,6 +139,11 @@ public class OrganisationDataToDbTranslater implements DataToDbTranslater {
 	@Override
 	public Map<String, Object> getValues() {
 		return values;
+	}
+
+	public RecordReader getRecordReader() {
+		// needed for test
+		return recordReader;
 	}
 
 }

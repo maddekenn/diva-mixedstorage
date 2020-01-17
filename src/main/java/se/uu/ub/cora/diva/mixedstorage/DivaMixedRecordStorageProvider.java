@@ -149,7 +149,8 @@ public class DivaMixedRecordStorageProvider
 
 	private DbMainTableFactoryImp createDbMainTableFactory(
 			RecordReaderFactoryImp recordReaderFactory, RecordUpdaterFactory recordUpdaterFactory) {
-		DataToDbTranslaterFactoryImp translaterFactory = new DataToDbTranslaterFactoryImp();
+		DataToDbTranslaterFactoryImp translaterFactory = new DataToDbTranslaterFactoryImp(
+				recordReaderFactory);
 
 		RelatedTableFactoryImp relatedFactory = createRelatedTableFactory(recordReaderFactory);
 
