@@ -35,6 +35,7 @@ import se.uu.ub.cora.sqldatabase.RecordUpdaterFactory;
 public class OrganisationAdressRelatedTable extends OrganisationRelatedTable
 		implements RelatedTable {
 
+	private static final String ORGANISATION_ADDRESS = "organisation_address";
 	private static final String ADDRESS_ID = "address_id";
 	private RecordReaderFactory recordReaderFactory;
 	private RecordDeleter recordDeleter;
@@ -57,18 +58,45 @@ public class OrganisationAdressRelatedTable extends OrganisationRelatedTable
 		Object addressIdInOrganisation = readOrg.get(0).get(ADDRESS_ID);
 		if (addressExistsInDatabase(addressIdInOrganisation)) {
 			int addressId = (int) addressIdInOrganisation;
-			if (!organisationDataGroupContainsAddress(organisation)) {
+			if (noAddressInDataGroup(organisation)) {
 				deleteAddressAndUpdateOrganisation(addressId);
+			} else {
+				readAddressFromDatabase(addressIdInOrganisation);
+				RecordUpdater addressUpdater = recordUpdaterFactory.factor();
+				Map<String, Object> values = new HashMap<>();
+				values.put("last_updated", getCurrentTimestamp());
+				values.put("city", getAtomicValueOrEmptyString(organisation, "city"));
+				values.put("street", getAtomicValueOrEmptyString(organisation, "street"));
+				values.put("postbox", getAtomicValueOrEmptyString(organisation, "postbox"));
+				values.put("postnumber", getAtomicValueOrEmptyString(organisation, "postnumber"));
+				values.put("country_code",
+						getAtomicValueOrEmptyString(organisation, "country_code"));
+				Map<String, Object> conditions = createConditionWithAddressId(addressId);
+				addressUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions(
+						ORGANISATION_ADDRESS, values, conditions);
+			}
+		} else {
+			if (organisationDataGroupContainsAddress(organisation)) {
+				readAddressFromDatabase(addressIdInOrganisation);
 			}
 		}
+	}
 
-		if (organisationDataGroupContainsAddress(organisation)) {
-			int addressId = (int) addressIdInOrganisation;
-			Map<String, Object> conditionsForAddress = createConditionWithAddressId(addressId);
-			RecordReader addressReader = recordReaderFactory.factor();
-			addressReader.readFromTableUsingConditions("organisation_address",
-					conditionsForAddress);
-		}
+	private boolean noAddressInDataGroup(DataGroup organisation) {
+		return !organisationDataGroupContainsAddress(organisation);
+	}
+
+	private void readAddressFromDatabase(Object addressIdInOrganisation) {
+		int addressId = (int) addressIdInOrganisation;
+		Map<String, Object> conditionsForAddress = createConditionWithAddressId(addressId);
+		RecordReader addressReader = recordReaderFactory.factor();
+		addressReader.readFromTableUsingConditions(ORGANISATION_ADDRESS, conditionsForAddress);
+	}
+
+	private Map<String, Object> createConditionWithAddressId(int addressId) {
+		Map<String, Object> conditionsForAddress = new HashMap<>();
+		conditionsForAddress.put(ADDRESS_ID, addressId);
+		return conditionsForAddress;
 	}
 
 	private List<Map<String, Object>> readOrganisationFromDb() {
@@ -80,18 +108,12 @@ public class OrganisationAdressRelatedTable extends OrganisationRelatedTable
 
 	private void deleteAddressAndUpdateOrganisation(int addressId) {
 		Map<String, Object> deleteConditions = createConditionWithAddressId(addressId);
-		recordDeleter.deleteFromTableUsingConditions("organisation_address", deleteConditions);
+		recordDeleter.deleteFromTableUsingConditions(ORGANISATION_ADDRESS, deleteConditions);
 		updateOrganisationWithNoAddressId();
 	}
 
 	private boolean addressExistsInDatabase(Object addressIdInOrganisation) {
 		return addressIdInOrganisation != null;
-	}
-
-	private Map<String, Object> createConditionWithAddressId(int addressId) {
-		Map<String, Object> conditionsForAddress = new HashMap<>();
-		conditionsForAddress.put(ADDRESS_ID, addressId);
-		return conditionsForAddress;
 	}
 
 	private void updateOrganisationWithNoAddressId() {
@@ -112,6 +134,12 @@ public class OrganisationAdressRelatedTable extends OrganisationRelatedTable
 		return updateConditions;
 	}
 
+	private String getAtomicValueOrEmptyString(DataGroup organisation, String nameInData) {
+		return organisation.containsChildWithNameInData(nameInData)
+				? organisation.getFirstAtomicValueWithNameInData(nameInData)
+				: "";
+	}
+
 	private void updateAddressColumnInOrganisation(Map<String, Object> values,
 			Map<String, Object> updateConditions) {
 		RecordUpdater recordUpdater = recordUpdaterFactory.factor();
@@ -121,11 +149,10 @@ public class OrganisationAdressRelatedTable extends OrganisationRelatedTable
 
 	private boolean organisationDataGroupContainsAddress(DataGroup organisation) {
 		return organisation.containsChildWithNameInData("city")
-		// || organisation.containsChildWithNameInData("street")
-		// || organisation.containsChildWithNameInData("postbox")
-		// || organisation.containsChildWithNameInData("postnumber")
-		// || organisation.containsChildWithNameInData("country_code")
-		;
+				|| organisation.containsChildWithNameInData("street")
+				|| organisation.containsChildWithNameInData("postbox")
+				|| organisation.containsChildWithNameInData("postnumber")
+				|| organisation.containsChildWithNameInData("country_code");
 	}
 
 	@Override
