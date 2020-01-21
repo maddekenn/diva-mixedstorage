@@ -52,31 +52,40 @@ public class OrganisationAdressRelatedTable extends OrganisationRelatedTable
 	@Override
 	public void handleDbForDataGroup(DataGroup organisation) {
 		setIdAsInt(organisation);
-		Map<String, Object> conditions = new HashMap<>();
-		RecordReader organisationReader = recordReaderFactory.factor();
-		conditions.put("organisation_id", organisationId);
-		List<Map<String, Object>> readOrg = organisationReader
-				.readFromTableUsingConditions("organisation", conditions);
+		List<Map<String, Object>> readOrg = readOrganisationFromDb();
+
 		Object addressIdInOrganisation = readOrg.get(0).get(ADDRESS_ID);
-		if (addressIdInOrganisation != null) {
+		if (addressExistsInDatabase(addressIdInOrganisation)) {
 			int addressId = (int) addressIdInOrganisation;
 			if (!organisationDataGroupContainsAddress(organisation)) {
-				Map<String, Object> deleteConditions = createConditionWithAddressId(addressId);
-				recordDeleter.deleteFromTableUsingConditions("organisation_address",
-						deleteConditions);
-				updateOrganisationWithNoAddressId();
-
+				deleteAddressAndUpdateOrganisation(addressId);
 			}
 		}
 
 		if (organisationDataGroupContainsAddress(organisation)) {
 			int addressId = (int) addressIdInOrganisation;
 			Map<String, Object> conditionsForAddress = createConditionWithAddressId(addressId);
-
 			RecordReader addressReader = recordReaderFactory.factor();
 			addressReader.readFromTableUsingConditions("organisation_address",
 					conditionsForAddress);
 		}
+	}
+
+	private List<Map<String, Object>> readOrganisationFromDb() {
+		RecordReader organisationReader = recordReaderFactory.factor();
+		Map<String, Object> conditions = new HashMap<>();
+		conditions.put("organisation_id", organisationId);
+		return organisationReader.readFromTableUsingConditions("organisation", conditions);
+	}
+
+	private void deleteAddressAndUpdateOrganisation(int addressId) {
+		Map<String, Object> deleteConditions = createConditionWithAddressId(addressId);
+		recordDeleter.deleteFromTableUsingConditions("organisation_address", deleteConditions);
+		updateOrganisationWithNoAddressId();
+	}
+
+	private boolean addressExistsInDatabase(Object addressIdInOrganisation) {
+		return addressIdInOrganisation != null;
 	}
 
 	private Map<String, Object> createConditionWithAddressId(int addressId) {

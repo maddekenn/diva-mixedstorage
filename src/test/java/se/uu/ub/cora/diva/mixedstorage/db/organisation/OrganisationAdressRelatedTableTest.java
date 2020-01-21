@@ -19,6 +19,7 @@
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public class OrganisationAdressRelatedTableTest {
 	private RecordDeleterSpy recordDeleter;
 	private RecordCreatorSpy recordCreator;
 	private RecordUpdaterFactorySpy recordUpdaterFactory;
-	private RelatedTable adress;
+	private RelatedTable address;
 
 	@BeforeMethod
 	public void setUp() {
@@ -52,17 +53,17 @@ public class OrganisationAdressRelatedTableTest {
 		recordDeleter = new RecordDeleterSpy();
 		recordCreator = new RecordCreatorSpy();
 		recordUpdaterFactory = new RecordUpdaterFactorySpy();
-		adress = new OrganisationAdressRelatedTable(recordReaderFactory, recordDeleter,
+		address = new OrganisationAdressRelatedTable(recordReaderFactory, recordDeleter,
 				recordCreator, recordUpdaterFactory);
 
 	}
 
 	@Test
-	public void testNoAddressDataGroupNoAddressDatabase() {
+	public void testNoAddressInDataGroupNoInAddressDatabase() {
 		DataGroup organisation = createDataGroupWithId("678");
 		int organisationId = 678;
 		addOrganisationToReturnFromSpy("organisation", organisationId, -1);
-		adress.handleDbForDataGroup(organisation);
+		address.handleDbForDataGroup(organisation);
 		assertFirstReadRowIsOrganisation(organisationId);
 		assertEquals(recordReaderFactory.factoredReaders.size(), 1);
 	}
@@ -106,32 +107,37 @@ public class OrganisationAdressRelatedTableTest {
 
 	@Test
 	public void testNoAddressInDataGroupButAddressInDatabase() {
-		DataGroup organisation = createDataGroupWithId("678");
 		int organisationId = 678;
+		DataGroup organisation = createDataGroupWithId("678");
 		addOrganisationToReturnFromSpy("organisation", organisationId, 4);
 		addOrganisationAddressToReturnFromSpy("organisation_address", 4);
-		adress.handleDbForDataGroup(organisation);
+
+		address.handleDbForDataGroup(organisation);
+
 		assertFirstReadRowIsOrganisation(organisationId);
 		assertEquals(recordReaderFactory.factoredReaders.size(), 1);
 
 		assertTrue(recordDeleter.deleteWasCalled);
 		assertEquals(recordDeleter.usedTableName, "organisation_address");
 
-		Map<String, Object> organisationRow = recordReaderFactory.factoredReaders
-				.get(0).rowsToReturn.get("organisation").get(0);
-
-		int addressIdReturnedFromOrganisationReadSpy = (int) organisationRow.get("address_id");
-		assertEquals(recordDeleter.usedConditions.get("address_id"),
-				addressIdReturnedFromOrganisationReadSpy);
+		assertConditionsForDeleteContainsIdFromRead();
 
 		RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
 		assertTrue(factoredUpdater.updateWasCalled);
 		assertEquals(factoredUpdater.tableName, "organisation");
 		assertTrue(factoredUpdater.values.containsKey("address_id"));
 		assertEquals(factoredUpdater.values.get("address_id"), null);
-
 		assertEquals(factoredUpdater.conditions.get("organisation_id"), 678);
 
+	}
+
+	private void assertConditionsForDeleteContainsIdFromRead() {
+		Map<String, Object> organisationRow = recordReaderFactory.factoredReaders
+				.get(0).rowsToReturn.get("organisation").get(0);
+
+		int addressIdReturnedFromOrganisationReadSpy = (int) organisationRow.get("address_id");
+		assertEquals(recordDeleter.usedConditions.get("address_id"),
+				addressIdReturnedFromOrganisationReadSpy);
 	}
 
 	private void addOrganisationAddressToReturnFromSpy(String tableName, int addressId) {
@@ -139,58 +145,33 @@ public class OrganisationAdressRelatedTableTest {
 		rowToReturn.put("address_id", addressId);
 	}
 
-	// private void assertCorrectDataSentToRecordReader() {
-	// RecordReaderAddressSpy organisationReader = recordReaderFactory.factoredReaders.get(0);
-	// assertEquals(organisationReader.usedTableNames.get(0), "organisation");
-	// assertEquals(recordReaderFactory.factoredReaders.get(0).usedConditions.get(0)
-	// .get("organisation_id"), 678);
-	//
-	// // recordReader.fa
-	// RecordReaderAddressSpy addressReader = recordReaderFactory.factoredReaders.get(1);
-	// assertEquals(addressReader.usedTableNames.get(0), "organisation_address");
-	//
-	// assertEquals(addressReader.usedConditions.get(0).get("address_id"),
-	// addressIdReturnedFromOrganisationReadSpy);
-	// }
+	@Test
+	public void testCityInDataGroupAddressInDatabase() {
+		int organisationId = 678;
+		DataGroup organisation = createDataGroupWithId("678");
+		organisation.addChild(new DataAtomicSpy("city", "City of rock and roll"));
 
-	// @Test
-	// public void testNoNameInDbNoNameInDataGroup() {
-	// DataGroup organisation = createDataGroupWithId("678");
-	// adress.handleDbForDataGroup(organisation);
-	// assertCorrectDataSentToRecordReader();
-	// assertFalse(recordDeleter.deleteWasCalled);
-	// assertFalse(recordCreator.insertWasCalled);
-	// }
-	//
-	// @Test
-	// public void testNoNameInDbIncompleteNameInDataGroup() {
-	// DataGroup organisation = createDataGroupWithId("678");
-	// DataGroupSpy alternativeNameGroup = new DataGroupSpy("alternativeName");
-	// organisation.addChild(alternativeNameGroup);
-	//
-	// adress.handleDbForDataGroup(organisation);
-	// assertCorrectDataSentToRecordReader();
-	// assertFalse(recordDeleter.deleteWasCalled);
-	// assertFalse(recordCreator.insertWasCalled);
-	// }
-	//
-	// @Test
-	// public void testOneNameInDbButNoNameInDataGroup() {
-	// DataGroup organisation = createDataGroupWithId("678");
-	//
-	// addNameToReturnFromSpy("organisation_name", 234, 678);
-	//
-	// adress.handleDbForDataGroup(organisation);
-	// assertCorrectDataSentToRecordReader();
-	// assertTrue(recordDeleter.deleteWasCalled);
-	//
-	// assertEquals(recordDeleter.usedTableName, "organisation_name");
-	// assertEquals(recordDeleter.usedConditions.get("organisation_name_id"), 234);
-	//
-	// assertFalse(recordCreator.insertWasCalled);
-	//
-	// }
-	//
+		addOrganisationToReturnFromSpy("organisation", organisationId, 4);
+		addOrganisationAddressToReturnFromSpy("organisation_address", 4);
+
+		address.handleDbForDataGroup(organisation);
+
+		assertFirstReadRowIsOrganisation(organisationId);
+		assertEquals(recordReaderFactory.factoredReaders.size(), 2);
+
+		assertFalse(recordDeleter.deleteWasCalled);
+		// assertEquals(recordDeleter.usedTableName, "organisation_address");
+		//
+		// assertConditionsForDeleteContainsIdFromRead();
+		//
+		RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
+		assertTrue(factoredUpdater.updateWasCalled);
+		// assertEquals(factoredUpdater.tableName, "organisation");
+		// assertTrue(factoredUpdater.values.containsKey("address_id"));
+		// assertEquals(factoredUpdater.values.get("address_id"), null);
+		// assertEquals(factoredUpdater.conditions.get("organisation_id"), 678);
+
+	}
 
 	// @Test
 	// public void testOneNameInDbSameNameInDataGroup() {
