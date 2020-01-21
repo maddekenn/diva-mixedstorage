@@ -30,19 +30,22 @@ import se.uu.ub.cora.sqldatabase.RecordDeleter;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 import se.uu.ub.cora.sqldatabase.RecordUpdater;
+import se.uu.ub.cora.sqldatabase.RecordUpdaterFactory;
 
 public class OrganisationAdressRelatedTable extends OrganisationRelatedTable
 		implements RelatedTable {
 
+	private static final String ADDRESS_ID = "address_id";
 	private RecordReaderFactory recordReaderFactory;
 	private RecordDeleter recordDeleter;
-	private RecordUpdater recordUpdater;
+	private RecordUpdaterFactory recordUpdaterFactory;
 
 	public OrganisationAdressRelatedTable(RecordReaderFactory recordReaderFactory,
-			RecordDeleter recordDeleter, RecordCreator recordCreator, RecordUpdater recordUpdater) {
+			RecordDeleter recordDeleter, RecordCreator recordCreator,
+			RecordUpdaterFactory recordUpdaterFactory) {
 		this.recordReaderFactory = recordReaderFactory;
 		this.recordDeleter = recordDeleter;
-		this.recordUpdater = recordUpdater;
+		this.recordUpdaterFactory = recordUpdaterFactory;
 
 	}
 
@@ -54,26 +57,57 @@ public class OrganisationAdressRelatedTable extends OrganisationRelatedTable
 		conditions.put("organisation_id", organisationId);
 		List<Map<String, Object>> readOrg = organisationReader
 				.readFromTableUsingConditions("organisation", conditions);
-		Object addressIdInOrganisation = readOrg.get(0).get("address_id");
+		Object addressIdInOrganisation = readOrg.get(0).get(ADDRESS_ID);
 		if (addressIdInOrganisation != null) {
 			int addressId = (int) addressIdInOrganisation;
 			if (!organisationDataGroupContainsAddress(organisation)) {
-				Map<String, Object> deleteConditions = new HashMap<>();
-				deleteConditions.put("address_id", addressId);
+				Map<String, Object> deleteConditions = createConditionWithAddressId(addressId);
 				recordDeleter.deleteFromTableUsingConditions("organisation_address",
 						deleteConditions);
+				updateOrganisationWithNoAddressId();
+
 			}
 		}
 
 		if (organisationDataGroupContainsAddress(organisation)) {
 			int addressId = (int) addressIdInOrganisation;
-			Map<String, Object> conditionsForAddressRead = new HashMap<>();
-			conditionsForAddressRead.put("address_id", addressId);
+			Map<String, Object> conditionsForAddress = createConditionWithAddressId(addressId);
 
 			RecordReader addressReader = recordReaderFactory.factor();
 			addressReader.readFromTableUsingConditions("organisation_address",
-					conditionsForAddressRead);
+					conditionsForAddress);
 		}
+	}
+
+	private Map<String, Object> createConditionWithAddressId(int addressId) {
+		Map<String, Object> conditionsForAddress = new HashMap<>();
+		conditionsForAddress.put(ADDRESS_ID, addressId);
+		return conditionsForAddress;
+	}
+
+	private void updateOrganisationWithNoAddressId() {
+		Map<String, Object> values = createValuesForNullAddressId();
+		Map<String, Object> updateConditions = createConditionsWithOrganisationId();
+		updateAddressColumnInOrganisation(values, updateConditions);
+	}
+
+	private Map<String, Object> createValuesForNullAddressId() {
+		Map<String, Object> values = new HashMap<>();
+		values.put(ADDRESS_ID, null);
+		return values;
+	}
+
+	private Map<String, Object> createConditionsWithOrganisationId() {
+		Map<String, Object> updateConditions = new HashMap<>();
+		updateConditions.put("organisation_id", organisationId);
+		return updateConditions;
+	}
+
+	private void updateAddressColumnInOrganisation(Map<String, Object> values,
+			Map<String, Object> updateConditions) {
+		RecordUpdater recordUpdater = recordUpdaterFactory.factor();
+		recordUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions("organisation", values,
+				updateConditions);
 	}
 
 	private boolean organisationDataGroupContainsAddress(DataGroup organisation) {

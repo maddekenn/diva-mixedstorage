@@ -34,6 +34,7 @@ import se.uu.ub.cora.diva.mixedstorage.DataAtomicSpy;
 import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordCreatorSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordDeleterSpy;
+import se.uu.ub.cora.diva.mixedstorage.db.RecordUpdaterFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordUpdaterSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
 
@@ -42,7 +43,7 @@ public class OrganisationAdressRelatedTableTest {
 	private RecordReaderRelatedTableFactorySpy recordReaderFactory;
 	private RecordDeleterSpy recordDeleter;
 	private RecordCreatorSpy recordCreator;
-	private RecordUpdaterSpy recordUpdater;
+	private RecordUpdaterFactorySpy recordUpdaterFactory;
 	private RelatedTable adress;
 
 	@BeforeMethod
@@ -50,9 +51,9 @@ public class OrganisationAdressRelatedTableTest {
 		recordReaderFactory = new RecordReaderRelatedTableFactorySpy();
 		recordDeleter = new RecordDeleterSpy();
 		recordCreator = new RecordCreatorSpy();
-		recordUpdater = new RecordUpdaterSpy();
+		recordUpdaterFactory = new RecordUpdaterFactorySpy();
 		adress = new OrganisationAdressRelatedTable(recordReaderFactory, recordDeleter,
-				recordCreator, recordUpdater);
+				recordCreator, recordUpdaterFactory);
 
 	}
 
@@ -123,17 +124,14 @@ public class OrganisationAdressRelatedTableTest {
 		assertEquals(recordDeleter.usedConditions.get("address_id"),
 				addressIdReturnedFromOrganisationReadSpy);
 
-		assertTrue(recordUpdater.updateWasCalled);
+		RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
+		assertTrue(factoredUpdater.updateWasCalled);
+		assertEquals(factoredUpdater.tableName, "organisation");
+		assertTrue(factoredUpdater.values.containsKey("address_id"));
+		assertEquals(factoredUpdater.values.get("address_id"), null);
 
-		// RecordReaderAddressSpy addressReader = recordReaderFactory.factoredReaders.get(1);
-		// assertEquals(addressReader.usedTableNames.get(0), "organisation_address");
-		// Map<String, Object> organisationRow = recordReaderFactory.factoredReaders
-		// .get(0).rowsToReturn.get("organisation").get(0);
-		//
-		// int addressIdReturnedFromOrganisationReadSpy = (int) organisationRow.get("address_id");
-		//
-		// assertEquals(addressReader.usedConditions.get(0).get("address_id"),
-		// addressIdReturnedFromOrganisationReadSpy);
+		assertEquals(factoredUpdater.conditions.get("organisation_id"), 678);
+
 	}
 
 	private void addOrganisationAddressToReturnFromSpy(String tableName, int addressId) {
