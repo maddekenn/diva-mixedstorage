@@ -103,9 +103,26 @@ public class DivaDbToCoraOrganisationConverterTest {
 		assertEquals(factoredRecordInfo.nameInData, "recordInfo");
 		assertSame(factoredRecordInfo, organisation.getFirstChildWithNameInData("recordInfo"));
 
-		DataAtomicSpy factoredDataAtomicForId = dataAtomicFactorySpy.factoredDataAtomics.get(0);
+		DataAtomicSpy factoredDataAtomicForId = getFactoredDataAtomicByNumber(0);
 		assertEquals(factoredDataAtomicForId.nameInData, "id");
 		assertEquals(factoredDataAtomicForId.value, "someOrgId");
+	}
+
+	private DataAtomicSpy getFactoredDataAtomicByNumber(int noFactored) {
+		return dataAtomicFactorySpy.factoredDataAtomics.get(noFactored);
+	}
+
+	@Test
+	public void testOrganisationDomain() throws Exception {
+		rowFromDb.put("domain", "uu");
+
+		DataGroup organisation = converter.fromMap(rowFromDb);
+
+		DataAtomicSpy factoredDataAtomicForId = getFactoredDataAtomicByNumber(11);
+		assertEquals(factoredDataAtomicForId.nameInData, "domain");
+		assertEquals(factoredDataAtomicForId.value, "uu");
+
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("domain"), "uu");
 	}
 
 	@Test
@@ -207,26 +224,23 @@ public class DivaDbToCoraOrganisationConverterTest {
 		rowFromDb.put("country_code", "fi");
 
 		DataGroup organisation = converter.fromMap(rowFromDb);
-		DataAtomicSpy factoredDataAtomicForCity = dataAtomicFactorySpy.factoredDataAtomics.get(15);
+		DataAtomicSpy factoredDataAtomicForCity = getFactoredDataAtomicByNumber(16);
 		assertEquals(factoredDataAtomicForCity.nameInData, "city");
 		assertEquals(factoredDataAtomicForCity.value, "uppsala");
 
-		DataAtomicSpy factoredDataAtomicForStreet = dataAtomicFactorySpy.factoredDataAtomics
-				.get(16);
+		DataAtomicSpy factoredDataAtomicForStreet = getFactoredDataAtomicByNumber(17);
 		assertEquals(factoredDataAtomicForStreet.nameInData, "street");
 		assertEquals(factoredDataAtomicForStreet.value, "Övre slottsgatan 1");
 
-		DataAtomicSpy factoredDataAtomicForBox = dataAtomicFactorySpy.factoredDataAtomics.get(17);
+		DataAtomicSpy factoredDataAtomicForBox = getFactoredDataAtomicByNumber(18);
 		assertEquals(factoredDataAtomicForBox.nameInData, "box");
 		assertEquals(factoredDataAtomicForBox.value, "Box5435");
 
-		DataAtomicSpy factoredDataAtomicForPostcode = dataAtomicFactorySpy.factoredDataAtomics
-				.get(18);
+		DataAtomicSpy factoredDataAtomicForPostcode = getFactoredDataAtomicByNumber(19);
 		assertEquals(factoredDataAtomicForPostcode.nameInData, "postcode");
 		assertEquals(factoredDataAtomicForPostcode.value, "345 34");
 
-		DataAtomicSpy factoredDataAtomicForCountry = dataAtomicFactorySpy.factoredDataAtomics
-				.get(19);
+		DataAtomicSpy factoredDataAtomicForCountry = getFactoredDataAtomicByNumber(20);
 		assertEquals(factoredDataAtomicForCountry.nameInData, "country");
 		assertEquals(factoredDataAtomicForCountry.value, "FI");
 

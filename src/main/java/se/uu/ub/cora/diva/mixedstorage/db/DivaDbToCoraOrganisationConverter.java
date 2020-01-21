@@ -53,6 +53,7 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 
 	private DataGroup createDataGroup() {
 		createAndAddOrganisationWithRecordInfo();
+		createAndAddDomain();
 		createAndAddName();
 		createAndAddAlternativeName();
 		createAndAddOrganisationType();
@@ -129,6 +130,12 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 			String nameInData) {
 		recordInfo.addChild(DataAtomicProvider.getDataAtomicUsingNameInDataAndValue(nameInData,
 				"2017-01-01T00:00:00.000000Z"));
+	}
+
+	private void createAndAddDomain() {
+		String domain = (String) dbRow.get("domain");
+		organisation.addChild(
+				DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("domain", domain));
 	}
 
 	private void createAndAddName() {
