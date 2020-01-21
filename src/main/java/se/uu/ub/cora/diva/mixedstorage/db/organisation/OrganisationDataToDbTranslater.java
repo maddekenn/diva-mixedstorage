@@ -60,21 +60,23 @@ public class OrganisationDataToDbTranslater implements DataToDbTranslater {
 		addAtomicValuesToColumns();
 		addEligible();
 		values.put("last_updated", getCurrentTimestamp());
-
-		Map<String, Object> conditionsForReadType = new HashMap<>();
-		conditionsForReadType.put("organisation_type_code",
-				dataGroup.getFirstAtomicValueWithNameInData("organisationType"));
-		Map<String, Object> organisationTypeRow = recordReader
-				.readOneRowFromDbUsingTableAndConditions("organisation_type",
-						conditionsForReadType);
-		Object typeId = organisationTypeRow.get("organisation_type_id");
-
+		Object typeId = getTypeCodeForOrganisationType();
 		values.put("organisation_type_id", typeId);
 		return values;
 	}
 
+	private Object getTypeCodeForOrganisationType() {
+		Map<String, Object> conditionsForReadType = new HashMap<>();
+		conditionsForReadType.put("organisation_type_code",
+				dataGroup.getFirstAtomicValueWithNameInData("organisationType"));
+
+		Map<String, Object> organisationTypeRow = recordReader
+				.readOneRowFromDbUsingTableAndConditions("organisation_type",
+						conditionsForReadType);
+		return organisationTypeRow.get("organisation_type_id");
+	}
+
 	private void addAtomicValuesToColumns() {
-		// TODO: add domain, but only if this is for create, how to know?
 		for (OrganisationAtomicColumns column : OrganisationAtomicColumns.values()) {
 			addAtomicValueOrNullToColumn(column);
 		}

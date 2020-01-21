@@ -54,7 +54,6 @@ public class DbOrganisationMainTable implements DbMainTable {
 		predecessor.handleDbForDataGroup(dataGroup);
 
 		// TODO: uppdatera adress om det är ändrat
-		// TODO:uppdatera organisation type om ändrat
 	}
 
 	public DataToDbTranslater getDataToDbTranslater() {

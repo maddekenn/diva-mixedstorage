@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2020 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -16,27 +16,26 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.diva.mixedstorage.db;
+package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import se.uu.ub.cora.sqldatabase.RecordUpdater;
+import se.uu.ub.cora.sqldatabase.RecordReader;
+import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
-public class RecordUpdaterSpy implements RecordUpdater {
+public class RecordReaderRelatedTableFactorySpy implements RecordReaderFactory {
 
-	public String tableName;
-	public Map<String, Object> values;
-	public Map<String, Object> conditions;
-	public boolean updateWasCalled = false;
+	public List<RecordReaderAddressSpy> factoredReaders = new ArrayList<>();
+	public Map<String, List<Map<String, Object>>> rowsToReturn = new HashMap<>();
 
 	@Override
-	public void updateTableUsingNameAndColumnsWithValuesAndConditions(String tableName,
-			Map<String, Object> values, Map<String, Object> conditions) {
-		updateWasCalled = true;
-		this.tableName = tableName;
-		this.values = values;
-		this.conditions = conditions;
-
+	public RecordReader factor() {
+		RecordReaderAddressSpy factoredRecordReader = new RecordReaderAddressSpy(rowsToReturn);
+		factoredReaders.add(factoredRecordReader);
+		return factoredRecordReader;
 	}
 
 }
