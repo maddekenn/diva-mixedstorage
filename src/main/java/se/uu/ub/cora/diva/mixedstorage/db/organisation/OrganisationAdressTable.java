@@ -65,7 +65,11 @@ public class OrganisationAdressTable implements ReferenceTable {
 			deleteOrUpdateAddress(organisation, addressIdInOrganisation);
 		} else {
 			if (organisationDataGroupContainsAddress(organisation)) {
-				Map<String, Object> valuesForInsert = new HashMap<>();
+				Map<String, Object> valuesForInsert = createValuesForAddressUpdate(organisation);
+				RecordReader sequenceReader = recordReaderFactory.factor();
+				Map<String, Object> nextValue = sequenceReader
+						.readNextValueFromSequence("address_sequence");
+				valuesForInsert.put(ADDRESS_ID, nextValue.get("nextval"));
 				recordCreator.insertIntoTableUsingNameAndColumnsWithValues(ORGANISATION_ADDRESS,
 						valuesForInsert);
 				// readAddressFromDatabase(addressIdInOrganisation);

@@ -20,6 +20,7 @@ package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +31,8 @@ public class RecordReaderAddressSpy implements RecordReader {
 	public List<String> usedTableNames = new ArrayList<>();
 	public List<Map<String, Object>> usedConditions = new ArrayList<>();
 	public Map<String, List<Map<String, Object>>> rowsToReturn;
+	public String sequenceName;
+	public Map<String, Object> nextVal;
 
 	public RecordReaderAddressSpy(Map<String, List<Map<String, Object>>> rowsToReturn) {
 		this.rowsToReturn = rowsToReturn;
@@ -60,8 +63,10 @@ public class RecordReaderAddressSpy implements RecordReader {
 
 	@Override
 	public Map<String, Object> readNextValueFromSequence(String sequenceName) {
-		// TODO Auto-generated method stub
-		return null;
+		this.sequenceName = sequenceName;
+		nextVal = new HashMap<>();
+		nextVal.put("nextval", 5);
+		return nextVal;
 	}
 
 }

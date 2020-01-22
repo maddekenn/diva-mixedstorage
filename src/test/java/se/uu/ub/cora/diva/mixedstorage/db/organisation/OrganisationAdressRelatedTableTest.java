@@ -288,7 +288,13 @@ public class OrganisationAdressRelatedTableTest {
 		address.handleDbForDataGroup(organisation);
 		assertTrue(recordCreator.insertWasCalled);
 		// TODO: nyckel - sekvens?
+
 		assertEquals(recordCreator.usedTableName, "organisation_address");
+
+		RecordReaderAddressSpy sequenceReader = recordReaderFactory.factoredReaders.get(1);
+		assertEquals(sequenceReader.sequenceName, "address_sequence");
+		assertEquals(recordCreator.values.get("address_id"), sequenceReader.nextVal.get("nextval"));
+		assertEquals(recordCreator.values.get("postbox"), "box21");
 
 	}
 	// private void assertCorrectValuesSentToInsert(String name) {
