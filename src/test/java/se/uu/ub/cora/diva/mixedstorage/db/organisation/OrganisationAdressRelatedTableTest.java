@@ -39,7 +39,6 @@ import se.uu.ub.cora.diva.mixedstorage.db.RecordCreatorSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordDeleterSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordUpdaterFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordUpdaterSpy;
-import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
 
 public class OrganisationAdressRelatedTableTest {
 
@@ -47,7 +46,7 @@ public class OrganisationAdressRelatedTableTest {
 	private RecordDeleterSpy recordDeleter;
 	private RecordCreatorSpy recordCreator;
 	private RecordUpdaterFactorySpy recordUpdaterFactory;
-	private RelatedTable address;
+	private ReferenceTable address;
 
 	@BeforeMethod
 	public void setUp() {
@@ -55,8 +54,8 @@ public class OrganisationAdressRelatedTableTest {
 		recordDeleter = new RecordDeleterSpy();
 		recordCreator = new RecordCreatorSpy();
 		recordUpdaterFactory = new RecordUpdaterFactorySpy();
-		address = new OrganisationAdressRelatedTable(recordReaderFactory, recordDeleter,
-				recordCreator, recordUpdaterFactory);
+		address = new OrganisationAdressTable(recordReaderFactory, recordDeleter, recordCreator,
+				recordUpdaterFactory);
 
 	}
 
@@ -163,12 +162,8 @@ public class OrganisationAdressRelatedTableTest {
 
 	private void assertCorrectDatabaseQueriesWhenUpdatingAddress(int organisationId,
 			DataGroup organisation) {
-		assertEquals(recordReaderFactory.factoredReaders.size(), 2);
+		assertEquals(recordReaderFactory.factoredReaders.size(), 1);
 		assertFirstReadRowIsOrganisation(organisationId);
-
-		RecordReaderAddressSpy addressReader = recordReaderFactory.factoredReaders.get(1);
-		assertEquals(addressReader.usedTableNames.get(0), "organisation_address");
-		assertEquals(addressReader.usedConditions.get(0).get("address_id"), 4);
 
 		RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
 		assertTrue(factoredUpdater.updateWasCalled);
@@ -195,11 +190,11 @@ public class OrganisationAdressRelatedTableTest {
 		assertEquals(factoredUpdater.values.get("street"),
 				getAtomicValueOrEmptyString(organisation, "street"));
 		assertEquals(factoredUpdater.values.get("postbox"),
-				getAtomicValueOrEmptyString(organisation, "postbox"));
+				getAtomicValueOrEmptyString(organisation, "box"));
 		assertEquals(factoredUpdater.values.get("postnumber"),
-				getAtomicValueOrEmptyString(organisation, "postnumber"));
+				getAtomicValueOrEmptyString(organisation, "postcode"));
 		assertEquals(factoredUpdater.values.get("country_code"),
-				getAtomicValueOrEmptyString(organisation, "country_code"));
+				getAtomicValueOrEmptyString(organisation, "country"));
 	}
 
 	private String getAtomicValueOrEmptyString(DataGroup organisation, String nameInData) {
@@ -226,7 +221,7 @@ public class OrganisationAdressRelatedTableTest {
 	public void testPostboxInDataGroupAndAddressInDatabase() {
 		int organisationId = 678;
 		DataGroup organisation = createDataGroupWithId("678");
-		organisation.addChild(new DataAtomicSpy("postbox", "box21"));
+		organisation.addChild(new DataAtomicSpy("box", "box21"));
 
 		addOrganisationToReturnFromSpy("organisation", organisationId, 4);
 		addOrganisationAddressToReturnFromSpy("organisation_address", 4);
@@ -240,7 +235,7 @@ public class OrganisationAdressRelatedTableTest {
 	public void testPostnumberInDataGroupAndAddressInDatabase() {
 		int organisationId = 678;
 		DataGroup organisation = createDataGroupWithId("678");
-		organisation.addChild(new DataAtomicSpy("postnumber", "90210"));
+		organisation.addChild(new DataAtomicSpy("postcode", "90210"));
 
 		addOrganisationToReturnFromSpy("organisation", organisationId, 4);
 		addOrganisationAddressToReturnFromSpy("organisation_address", 4);
@@ -254,7 +249,7 @@ public class OrganisationAdressRelatedTableTest {
 	public void testCountryCodeInDataGroupAndAddressInDatabase() {
 		int organisationId = 678;
 		DataGroup organisation = createDataGroupWithId("678");
-		organisation.addChild(new DataAtomicSpy("country_code", "SE"));
+		organisation.addChild(new DataAtomicSpy("country", "SE"));
 
 		addOrganisationToReturnFromSpy("organisation", organisationId, 4);
 		addOrganisationAddressToReturnFromSpy("organisation_address", 4);
@@ -264,38 +259,38 @@ public class OrganisationAdressRelatedTableTest {
 		assertCorrectDatabaseQueriesWhenUpdatingAddress(organisationId, organisation);
 	}
 
-	// @Test
-	// public void testOneNameInDbSameNameInDataGroup() {
-	// DataGroup organisation = createDataGroupWithId("678");
-	// addAlternativeName(organisation, "some english name");
-	//
-	// addNameToReturnFromSpy("organisation_name", 234, 678);
-	//
-	// adress.handleDbForDataGroup(organisation);
-	// assertCorrectDataSentToRecordReader();
-	// assertFalse(recordDeleter.deleteWasCalled);
-	//
-	// assertFalse(recordCreator.insertWasCalled);
-	//
-	// }
-	//
-	// @Test
-	// public void testOneNameInDbDifferentNameInDataGroup() {
-	// DataGroup organisation = createDataGroupWithId("678");
-	// addAlternativeName(organisation, "some other english name");
-	//
-	// addNameToReturnFromSpy("organisation_name", 234, 678);
-	//
-	// adress.handleDbForDataGroup(organisation);
-	// assertCorrectDataSentToRecordReader();
-	//
-	// assertTrue(recordDeleter.deleteWasCalled);
-	//
-	// assertTrue(recordCreator.insertWasCalled);
-	// assertCorrectValuesSentToInsert("some other english name");
-	//
-	// }
-	//
+	@Test
+	public void testCompleteAddressInDataGroupAndAddressInDatabase() {
+		int organisationId = 678;
+		DataGroup organisation = createDataGroupWithId("678");
+		organisation.addChild(new DataAtomicSpy("city", "City of rock and roll"));
+		organisation.addChild(new DataAtomicSpy("country", "SE"));
+		organisation.addChild(new DataAtomicSpy("postcode", "90210"));
+		organisation.addChild(new DataAtomicSpy("box", "box21"));
+		organisation.addChild(new DataAtomicSpy("street", "Hill street"));
+
+		addOrganisationToReturnFromSpy("organisation", organisationId, 4);
+		addOrganisationAddressToReturnFromSpy("organisation_address", 4);
+
+		address.handleDbForDataGroup(organisation);
+
+		assertCorrectDatabaseQueriesWhenUpdatingAddress(organisationId, organisation);
+	}
+
+	@Test
+	public void testAddressInDataGroupButNOAddressInDatabase() {
+		int organisationId = 678;
+		DataGroup organisation = createDataGroupWithId("678");
+		organisation.addChild(new DataAtomicSpy("box", "box21"));
+
+		addOrganisationToReturnFromSpy("organisation", organisationId, -1);
+
+		address.handleDbForDataGroup(organisation);
+		assertTrue(recordCreator.insertWasCalled);
+		// TODO: nyckel - sekvens?
+		assertEquals(recordCreator.usedTableName, "organisation_address");
+
+	}
 	// private void assertCorrectValuesSentToInsert(String name) {
 	// assertEquals(recordReader.sequenceName, "name_sequence");
 	// assertEquals(recordCreator.usedTableName, "organisation_name");
