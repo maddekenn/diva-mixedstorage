@@ -220,7 +220,7 @@ public class DivaDbToCoraOrganisationConverterTest {
 	public void testAdress() {
 		rowFromDb.put("city", "uppsala");
 		rowFromDb.put("street", "Övre slottsgatan 1");
-		rowFromDb.put("box", "Box5435");
+		rowFromDb.put("postbox", "Box5435");
 		rowFromDb.put("postnumber", "345 34");
 		rowFromDb.put("country_code", "fi");
 

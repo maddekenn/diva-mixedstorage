@@ -183,7 +183,7 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 	private void possiblyCreateAndAddAddress() {
 		possiblyAddAtomicValueUsingKeyAndNameInData("city", "city");
 		possiblyAddAtomicValueUsingKeyAndNameInData("street", "street");
-		possiblyAddAtomicValueUsingKeyAndNameInData("box", "box");
+		possiblyAddAtomicValueUsingKeyAndNameInData("postbox", "box");
 		possiblyAddAtomicValueUsingKeyAndNameInData("postnumber", "postcode");
 		addCountryConvertedToUpperCaseOrSetDefault();
 	}
