@@ -208,7 +208,7 @@ public class DivaDbToCoraOrganisationConverterTest {
 		DataGroup organisation = converter.fromMap(rowFromDb);
 		assertFalse(organisation.containsChildWithNameInData("city"));
 		assertFalse(organisation.containsChildWithNameInData("street"));
-		assertFalse(organisation.containsChildWithNameInData("postbox"));
+		assertFalse(organisation.containsChildWithNameInData("box"));
 		assertFalse(organisation.containsChildWithNameInData("postcode"));
 
 		// default value, since country is mandatory
