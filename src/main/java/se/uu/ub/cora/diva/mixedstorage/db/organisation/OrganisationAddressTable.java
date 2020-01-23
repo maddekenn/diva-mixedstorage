@@ -33,7 +33,7 @@ import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 import se.uu.ub.cora.sqldatabase.RecordUpdater;
 import se.uu.ub.cora.sqldatabase.RecordUpdaterFactory;
 
-public class OrganisationAdressTable implements ReferenceTable {
+public class OrganisationAddressTable implements ReferenceTable {
 
 	private static final String CITY = "city";
 	private static final String STREET = "street";
@@ -45,9 +45,9 @@ public class OrganisationAdressTable implements ReferenceTable {
 	private int organisationId;
 	private RecordCreator recordCreator;
 
-	public OrganisationAdressTable(RecordReaderFactory recordReaderFactory,
-			RecordDeleter recordDeleter, RecordCreator recordCreator,
-			RecordUpdaterFactory recordUpdaterFactory) {
+	public OrganisationAddressTable(RecordCreator recordCreator,
+			RecordReaderFactory recordReaderFactory, RecordUpdaterFactory recordUpdaterFactory,
+			RecordDeleter recordDeleter) {
 		this.recordReaderFactory = recordReaderFactory;
 		this.recordDeleter = recordDeleter;
 		this.recordCreator = recordCreator;
@@ -64,16 +64,8 @@ public class OrganisationAdressTable implements ReferenceTable {
 		if (addressExistsInDatabase(addressIdInOrganisation)) {
 			deleteOrUpdateAddress(organisation, addressIdInOrganisation);
 		} else {
-			if (organisationDataGroupContainsAddress(organisation)) {
-				Map<String, Object> valuesForInsert = createValuesForAddressUpdate(organisation);
-				RecordReader sequenceReader = recordReaderFactory.factor();
-				Map<String, Object> nextValue = sequenceReader
-						.readNextValueFromSequence("address_sequence");
-				valuesForInsert.put(ADDRESS_ID, nextValue.get("nextval"));
-				recordCreator.insertIntoTableUsingNameAndColumnsWithValues(ORGANISATION_ADDRESS,
-						valuesForInsert);
-				// readAddressFromDatabase(addressIdInOrganisation);
-			}
+			possiblyInsertAddress(organisation);
+
 		}
 	}
 
@@ -88,7 +80,7 @@ public class OrganisationAdressTable implements ReferenceTable {
 
 	private void updateAddress(DataGroup organisation, int addressId) {
 		RecordUpdater addressUpdater = recordUpdaterFactory.factor();
-		Map<String, Object> values = createValuesForAddressUpdate(organisation);
+		Map<String, Object> values = createValuesForAddressInsertOrUpdate(organisation);
 		Map<String, Object> conditions = createConditionWithAddressId(addressId);
 		addressUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions(ORGANISATION_ADDRESS,
 				values, conditions);
@@ -160,14 +152,7 @@ public class OrganisationAdressTable implements ReferenceTable {
 				updateConditions);
 	}
 
-	private void readAddressFromDatabase(Object addressIdInOrganisation) {
-		int addressId = (int) addressIdInOrganisation;
-		Map<String, Object> conditionsForAddress = createConditionWithAddressId(addressId);
-		RecordReader addressReader = recordReaderFactory.factor();
-		addressReader.readFromTableUsingConditions(ORGANISATION_ADDRESS, conditionsForAddress);
-	}
-
-	private Map<String, Object> createValuesForAddressUpdate(DataGroup organisation) {
+	private Map<String, Object> createValuesForAddressInsertOrUpdate(DataGroup organisation) {
 		Map<String, Object> values = new HashMap<>();
 		values.put("last_updated", getCurrentTimestamp());
 		values.put(CITY, getAtomicValueOrEmptyString(organisation, CITY));
@@ -189,6 +174,56 @@ public class OrganisationAdressTable implements ReferenceTable {
 		long time = today.getTime();
 		return new Timestamp(time);
 
+	}
+
+	private void possiblyInsertAddress(DataGroup organisation) {
+		if (organisationDataGroupContainsAddress(organisation)) {
+
+			RecordReader sequenceReader = recordReaderFactory.factor();
+			Map<String, Object> nextValue = sequenceReader
+					.readNextValueFromSequence("address_sequence");
+			insertAddress(organisation, nextValue.get("nextval"));
+
+			Map<String, Object> values = new HashMap<>();
+			values.put(ADDRESS_ID, nextValue.get("nextval"));
+
+			updateAddressColumnInOrganisation(values, createConditionsWithOrganisationId());
+		}
+	}
+
+	private void insertAddress(DataGroup organisation, Object object) {
+		Map<String, Object> valuesForInsert = createValuesForInsert(organisation, object);
+		recordCreator.insertIntoTableUsingNameAndColumnsWithValues(ORGANISATION_ADDRESS,
+				valuesForInsert);
+	}
+
+	private Map<String, Object> createValuesForInsert(DataGroup organisation, Object object) {
+		Map<String, Object> valuesForInsert = createValuesForAddressInsertOrUpdate(organisation);
+		valuesForInsert.put(ADDRESS_ID, object);
+		return valuesForInsert;
+	}
+
+	@Override
+	public RecordReaderFactory getRecordReaderFactory() {
+		// needed for test
+		return recordReaderFactory;
+	}
+
+	@Override
+	public RecordCreator getRecordCreator() {
+		// needed for test
+		return recordCreator;
+	}
+
+	@Override
+	public RecordDeleter getRecordDeleter() {
+		// needed for test
+		return recordDeleter;
+	}
+
+	public RecordUpdaterFactory getRecordUpdaterFactory() {
+		// needed for test
+		return recordUpdaterFactory;
 	}
 
 }

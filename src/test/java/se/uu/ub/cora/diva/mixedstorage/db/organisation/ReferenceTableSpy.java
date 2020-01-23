@@ -23,14 +23,32 @@ import se.uu.ub.cora.sqldatabase.RecordCreator;
 import se.uu.ub.cora.sqldatabase.RecordDeleter;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
-public interface ReferenceTable {
+public class ReferenceTableSpy implements ReferenceTable {
 
-	void handleDbForDataGroup(DataGroup organisation);
+	public DataGroup organisationSentToSpy;
 
-	RecordReaderFactory getRecordReaderFactory();
+	@Override
+	public void handleDbForDataGroup(DataGroup organisation) {
+		this.organisationSentToSpy = organisation;
 
-	RecordDeleter getRecordDeleter();
+	}
 
-	RecordCreator getRecordCreator();
+	@Override
+	public RecordReaderFactory getRecordReaderFactory() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public RecordDeleter getRecordDeleter() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public RecordCreator getRecordCreator() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

@@ -30,12 +30,14 @@ public class DbOrganisationMainTable implements DbMainTable {
 	private DataToDbTranslater dataToDbTranslater;
 	private RecordUpdater recordUpdater;
 	private RelatedTableFactory relatedTableFactory;
+	private ReferenceTableFactory referenceTableFactory;
 
 	public DbOrganisationMainTable(DataToDbTranslater dataTranslater, RecordUpdater recordUpdater,
-			RelatedTableFactory relatedTableFactory) {
+			RelatedTableFactory relatedTableFactory, ReferenceTableFactory referenceTableFactory) {
 		this.dataToDbTranslater = dataTranslater;
 		this.recordUpdater = recordUpdater;
 		this.relatedTableFactory = relatedTableFactory;
+		this.referenceTableFactory = referenceTableFactory;
 	}
 
 	@Override
@@ -53,7 +55,9 @@ public class DbOrganisationMainTable implements DbMainTable {
 		RelatedTable predecessor = relatedTableFactory.factor("organisationPredecessor");
 		predecessor.handleDbForDataGroup(dataGroup);
 
-		// TODO: uppdatera adress om det är ändrat
+		ReferenceTable addressTable = referenceTableFactory.factor("organisationAddress");
+		addressTable.handleDbForDataGroup(dataGroup);
+
 	}
 
 	public DataToDbTranslater getDataToDbTranslater() {
@@ -69,6 +73,10 @@ public class DbOrganisationMainTable implements DbMainTable {
 	public RelatedTableFactory getRelatedTableFactory() {
 		// needed for test
 		return relatedTableFactory;
+	}
+
+	public ReferenceTableFactory getReferenceTableFactory() {
+		return referenceTableFactory;
 	}
 
 }

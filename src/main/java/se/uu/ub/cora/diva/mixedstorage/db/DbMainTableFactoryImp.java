@@ -20,6 +20,7 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.DbOrganisationMainTable;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.ReferenceTableFactory;
 import se.uu.ub.cora.sqldatabase.RecordUpdater;
 import se.uu.ub.cora.sqldatabase.RecordUpdaterFactory;
 
@@ -28,12 +29,15 @@ public class DbMainTableFactoryImp implements DbMainTableFactory {
 	private DataToDbTranslaterFactory translaterFactory;
 	private RecordUpdaterFactory recordUpdaterFactory;
 	private RelatedTableFactory relatedTableFactory;
+	private ReferenceTableFactory referenceTableFactory;
 
 	public DbMainTableFactoryImp(DataToDbTranslaterFactory translaterFactory,
-			RecordUpdaterFactory recordUpdaterFactory, RelatedTableFactory relatedTableFactory) {
+			RecordUpdaterFactory recordUpdaterFactory, RelatedTableFactory relatedTableFactory,
+			ReferenceTableFactory referenceTableFactory) {
 		this.translaterFactory = translaterFactory;
 		this.recordUpdaterFactory = recordUpdaterFactory;
 		this.relatedTableFactory = relatedTableFactory;
+		this.referenceTableFactory = referenceTableFactory;
 	}
 
 	@Override
@@ -41,7 +45,8 @@ public class DbMainTableFactoryImp implements DbMainTableFactory {
 		if (tableName.equals("organisation")) {
 			RecordUpdater recordUpdater = recordUpdaterFactory.factor();
 			DataToDbTranslater translater = translaterFactory.factorForTableName("organisation");
-			return new DbOrganisationMainTable(translater, recordUpdater, relatedTableFactory);
+			return new DbOrganisationMainTable(translater, recordUpdater, relatedTableFactory,
+					referenceTableFactory);
 		}
 		throw NotImplementedException.withMessage("Main table not implemented for " + tableName);
 	}
@@ -59,6 +64,11 @@ public class DbMainTableFactoryImp implements DbMainTableFactory {
 	public RelatedTableFactory getRelatedTableFactory() {
 		// needed for test
 		return relatedTableFactory;
+	}
+
+	public ReferenceTableFactory getReferenceTableFactory() {
+		// needed for test
+		return referenceTableFactory;
 	}
 
 }

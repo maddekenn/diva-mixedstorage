@@ -25,6 +25,7 @@ import org.testng.annotations.Test;
 
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.DbOrganisationMainTable;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.ReferenceTableFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.RelatedTableFactorySpy;
 
 public class DbMainTableFactoryTest {
@@ -33,14 +34,16 @@ public class DbMainTableFactoryTest {
 	private DataToDbTranslaterFactorySpy translaterFactory;
 	private RecordUpdaterFactorySpy recordUpdaterFactory;
 	private RelatedTableFactorySpy relatedTableFactory;
+	private ReferenceTableFactorySpy referenceTableFactory;
 
 	@BeforeMethod
 	public void setUp() {
 		translaterFactory = new DataToDbTranslaterFactorySpy();
 		recordUpdaterFactory = new RecordUpdaterFactorySpy();
 		relatedTableFactory = new RelatedTableFactorySpy();
+		referenceTableFactory = new ReferenceTableFactorySpy();
 		factory = new DbMainTableFactoryImp(translaterFactory, recordUpdaterFactory,
-				relatedTableFactory);
+				relatedTableFactory, referenceTableFactory);
 	}
 
 	@Test
@@ -50,6 +53,7 @@ public class DbMainTableFactoryTest {
 		assertSame(mainTable.getDataToDbTranslater(), translaterFactory.factoredTranslater);
 		assertSame(mainTable.getRecordUpdater(), recordUpdaterFactory.factoredUpdater);
 		assertSame(mainTable.getRelatedTableFactory(), relatedTableFactory);
+		assertSame(mainTable.getReferenceTableFactory(), referenceTableFactory);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""

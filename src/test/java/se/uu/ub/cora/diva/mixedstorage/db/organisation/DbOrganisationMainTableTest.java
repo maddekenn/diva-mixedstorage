@@ -37,14 +37,16 @@ public class DbOrganisationMainTableTest {
 	private DataToDbTranslaterSpy dataTranslater;
 	private RecordUpdaterSpy recordUpdater;
 	private RelatedTableFactorySpy relatedTableFactory;
+	private ReferenceTableFactorySpy referenceTableFactory;
 
 	@BeforeMethod
 	public void setUp() {
 		dataTranslater = new DataToDbTranslaterSpy();
 		recordUpdater = new RecordUpdaterSpy();
 		relatedTableFactory = new RelatedTableFactorySpy();
-
-		mainTable = new DbOrganisationMainTable(dataTranslater, recordUpdater, relatedTableFactory);
+		referenceTableFactory = new ReferenceTableFactorySpy();
+		mainTable = new DbOrganisationMainTable(dataTranslater, recordUpdater, relatedTableFactory,
+				referenceTableFactory);
 	}
 
 	@Test
@@ -88,6 +90,15 @@ public class DbOrganisationMainTableTest {
 				.get(2);
 		assertSame(thirdRelatedTable.dataGroup, dataGroup);
 
+	}
+
+	@Test
+	public void testAddress() {
+		DataGroup dataGroup = new DataGroupSpy("organisation");
+		mainTable.update(dataGroup);
+		assertEquals(referenceTableFactory.tableName, "organisationAddress");
+		ReferenceTableSpy addressTable = referenceTableFactory.factored;
+		assertSame(addressTable.organisationSentToSpy, dataGroup);
 	}
 
 }

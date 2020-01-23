@@ -18,19 +18,16 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
-import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.sqldatabase.RecordCreator;
-import se.uu.ub.cora.sqldatabase.RecordDeleter;
-import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
+public class ReferenceTableFactorySpy implements ReferenceTableFactory {
 
-public interface ReferenceTable {
+	public String tableName;
+	public ReferenceTableSpy factored;
 
-	void handleDbForDataGroup(DataGroup organisation);
-
-	RecordReaderFactory getRecordReaderFactory();
-
-	RecordDeleter getRecordDeleter();
-
-	RecordCreator getRecordCreator();
+	@Override
+	public ReferenceTable factor(String tableName) {
+		this.tableName = tableName;
+		factored = new ReferenceTableSpy();
+		return factored;
+	}
 
 }

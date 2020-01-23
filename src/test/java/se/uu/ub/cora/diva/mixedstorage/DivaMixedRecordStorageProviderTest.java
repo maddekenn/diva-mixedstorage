@@ -49,6 +49,7 @@ import se.uu.ub.cora.diva.mixedstorage.db.DbMainTableFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraRecordStorage;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.ReferenceTableFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.RelatedTableFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DataGroupFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraConverterFactory;
@@ -218,6 +219,12 @@ public class DivaMixedRecordStorageProviderTest {
 		assertTrue(translaterFactory instanceof DataToDbTranslaterFactoryImp);
 		assertTrue(translaterFactory.getRecordReaderFactory() instanceof RecordReaderFactoryImp);
 
+		assertCorrectRelatedTableFactory(dbMainTableFactory);
+
+		assertCorrectReferenceTable(dbMainTableFactory);
+	}
+
+	private void assertCorrectRelatedTableFactory(DbMainTableFactoryImp dbMainTableFactory) {
 		RelatedTableFactoryImp relatedTableFactory = (RelatedTableFactoryImp) dbMainTableFactory
 				.getRelatedTableFactory();
 
@@ -226,6 +233,19 @@ public class DivaMixedRecordStorageProviderTest {
 				relatedTableFactory.getRecordDeleterFactory() instanceof RecordDeleterFactoryImp);
 		assertTrue(
 				relatedTableFactory.getRecordCreatorFactory() instanceof RecordCreatorFactoryImp);
+	}
+
+	private void assertCorrectReferenceTable(DbMainTableFactoryImp dbMainTableFactory) {
+		ReferenceTableFactoryImp referenceTableFactory = (ReferenceTableFactoryImp) dbMainTableFactory
+				.getReferenceTableFactory();
+		assertTrue(
+				referenceTableFactory.getRecordCreatorFactory() instanceof RecordCreatorFactoryImp);
+		assertTrue(
+				referenceTableFactory.getRecordReaderFactory() instanceof RecordReaderFactoryImp);
+		assertTrue(
+				referenceTableFactory.getRecordUpdaterFactory() instanceof RecordUpdaterFactoryImp);
+		assertTrue(
+				referenceTableFactory.getRecordDeleterFactory() instanceof RecordDeleterFactoryImp);
 	}
 
 	private RecordReaderFactoryImp assertCorrectRecordReaderFactory(

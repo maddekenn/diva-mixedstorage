@@ -33,6 +33,7 @@ import se.uu.ub.cora.diva.mixedstorage.db.DbMainTableFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraRecordStorage;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.ReferenceTableFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.RelatedTableFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraConverterFactory;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraConverterFactoryImp;
@@ -152,18 +153,18 @@ public class DivaMixedRecordStorageProvider
 		DataToDbTranslaterFactoryImp translaterFactory = new DataToDbTranslaterFactoryImp(
 				recordReaderFactory);
 
-		RelatedTableFactoryImp relatedFactory = createRelatedTableFactory(recordReaderFactory);
-
-		return new DbMainTableFactoryImp(translaterFactory, recordUpdaterFactory, relatedFactory);
-	}
-
-	private RelatedTableFactoryImp createRelatedTableFactory(
-			RecordReaderFactoryImp recordReaderFactory) {
 		RecordCreatorFactoryImp recordCreatorFactory = createRecordCreatorFactory();
 		RecordDeleterFactory recordDeleterFactory = createRecordDeleterFactory();
 
-		return RelatedTableFactoryImp.usingReaderDeleterAndCreator(recordReaderFactory,
-				recordDeleterFactory, recordCreatorFactory);
+		RelatedTableFactoryImp relatedFactory = RelatedTableFactoryImp.usingReaderDeleterAndCreator(
+				recordReaderFactory, recordDeleterFactory, recordCreatorFactory);
+
+		ReferenceTableFactoryImp referenceTableFactory = new ReferenceTableFactoryImp(
+				recordCreatorFactory, recordReaderFactory, recordUpdaterFactory,
+				recordDeleterFactory);
+
+		return new DbMainTableFactoryImp(translaterFactory, recordUpdaterFactory, relatedFactory,
+				referenceTableFactory);
 	}
 
 	private RecordCreatorFactoryImp createRecordCreatorFactory() {

@@ -32,10 +32,12 @@ public class RecordCreatorSpy implements RecordCreator {
 	public String usedTableName;
 	public List<String> usedTableNames = new ArrayList<>();
 	public List<Map<String, Object>> listOfValues = new ArrayList<>();
+	public boolean createWasCalled = false;
 
 	@Override
 	public void insertIntoTableUsingNameAndColumnsWithValues(String tableName,
 			Map<String, Object> values) {
+		createWasCalled = true;
 		usedTableName = tableName;
 		usedTableNames.add(tableName);
 		this.values = values;

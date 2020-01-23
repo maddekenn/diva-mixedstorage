@@ -20,6 +20,7 @@ package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
 import java.sql.Timestamp;
@@ -40,7 +41,7 @@ import se.uu.ub.cora.diva.mixedstorage.db.RecordDeleterSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordUpdaterFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordUpdaterSpy;
 
-public class OrganisationAdressRelatedTableTest {
+public class OrganisationAddressRelatedTableTest {
 
 	private RecordReaderRelatedTableFactorySpy recordReaderFactory;
 	private RecordDeleterSpy recordDeleter;
@@ -51,11 +52,11 @@ public class OrganisationAdressRelatedTableTest {
 	@BeforeMethod
 	public void setUp() {
 		recordReaderFactory = new RecordReaderRelatedTableFactorySpy();
+		recordUpdaterFactory = new RecordUpdaterFactorySpy();
 		recordDeleter = new RecordDeleterSpy();
 		recordCreator = new RecordCreatorSpy();
-		recordUpdaterFactory = new RecordUpdaterFactorySpy();
-		address = new OrganisationAdressTable(recordReaderFactory, recordDeleter, recordCreator,
-				recordUpdaterFactory);
+		address = new OrganisationAddressTable(recordCreator, recordReaderFactory,
+				recordUpdaterFactory, recordDeleter);
 
 	}
 
@@ -67,6 +68,10 @@ public class OrganisationAdressRelatedTableTest {
 		address.handleDbForDataGroup(organisation);
 		assertFirstReadRowIsOrganisation(organisationId);
 		assertEquals(recordReaderFactory.factoredReaders.size(), 1);
+		assertNull(recordUpdaterFactory.factoredUpdater);
+		assertFalse(recordDeleter.deleteWasCalled);
+		assertFalse(recordCreator.createWasCalled);
+
 	}
 
 	private void assertFirstReadRowIsOrganisation(int organisationId) {
@@ -171,29 +176,27 @@ public class OrganisationAdressRelatedTableTest {
 
 		assertEquals(factoredUpdater.conditions.get("address_id"), 4);
 
-		assertValuesInUpdaterAreCorrect(organisation, factoredUpdater);
+		Map<String, Object> values = factoredUpdater.values;
+		assertValuesForCreateOrUpdateAddressAreCorrect(organisation, values);
 
 		assertFalse(recordDeleter.deleteWasCalled);
 	}
 
-	private void assertValuesInUpdaterAreCorrect(DataGroup organisation,
-			RecordUpdaterSpy factoredUpdater) {
+	private void assertValuesForCreateOrUpdateAddressAreCorrect(DataGroup organisation,
+			Map<String, Object> values) {
 
-		Timestamp lastUpdated = (Timestamp) factoredUpdater.values.get("last_updated");
+		Timestamp lastUpdated = (Timestamp) values.get("last_updated");
 		String lastUpdatedString = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
 				.format(lastUpdated);
 		assertTrue(lastUpdatedString
 				.matches("\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{1,3}"));
 
-		assertEquals(factoredUpdater.values.get("city"),
-				getAtomicValueOrEmptyString(organisation, "city"));
-		assertEquals(factoredUpdater.values.get("street"),
-				getAtomicValueOrEmptyString(organisation, "street"));
-		assertEquals(factoredUpdater.values.get("postbox"),
-				getAtomicValueOrEmptyString(organisation, "box"));
-		assertEquals(factoredUpdater.values.get("postnumber"),
+		assertEquals(values.get("city"), getAtomicValueOrEmptyString(organisation, "city"));
+		assertEquals(values.get("street"), getAtomicValueOrEmptyString(organisation, "street"));
+		assertEquals(values.get("postbox"), getAtomicValueOrEmptyString(organisation, "box"));
+		assertEquals(values.get("postnumber"),
 				getAtomicValueOrEmptyString(organisation, "postcode"));
-		assertEquals(factoredUpdater.values.get("country_code"),
+		assertEquals(values.get("country_code"),
 				getAtomicValueOrEmptyString(organisation, "country"));
 	}
 
@@ -287,54 +290,21 @@ public class OrganisationAdressRelatedTableTest {
 
 		address.handleDbForDataGroup(organisation);
 		assertTrue(recordCreator.insertWasCalled);
-		// TODO: nyckel - sekvens?
 
 		assertEquals(recordCreator.usedTableName, "organisation_address");
 
 		RecordReaderAddressSpy sequenceReader = recordReaderFactory.factoredReaders.get(1);
 		assertEquals(sequenceReader.sequenceName, "address_sequence");
-		assertEquals(recordCreator.values.get("address_id"), sequenceReader.nextVal.get("nextval"));
-		assertEquals(recordCreator.values.get("postbox"), "box21");
+		int generatedAddressKey = (int) sequenceReader.nextVal.get("nextval");
+		assertEquals(recordCreator.values.get("address_id"), generatedAddressKey);
+
+		assertValuesForCreateOrUpdateAddressAreCorrect(organisation, recordCreator.values);
+
+		RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
+
+		assertEquals(factoredUpdater.tableName, "organisation");
+		assertEquals(factoredUpdater.values.get("address_id"), generatedAddressKey);
+		assertEquals(factoredUpdater.conditions.get("organisation_id"), 678);
 
 	}
-	// private void assertCorrectValuesSentToInsert(String name) {
-	// assertEquals(recordReader.sequenceName, "name_sequence");
-	// assertEquals(recordCreator.usedTableName, "organisation_name");
-	// assertEquals(recordCreator.values.get("organisation_name_id"),
-	// recordReader.nextVal.get("nextval"));
-	// assertEquals(recordCreator.values.get("locale"), "en");
-	// assertEquals(recordCreator.values.get("organisation_id"), 678);
-	//
-	// Timestamp lastUpdated = (Timestamp) recordCreator.values.get("last_updated");
-	// String lastUpdatedString = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
-	// .format(lastUpdated);
-	//
-	// assertTrue(lastUpdatedString
-	// .matches("\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{1,3}"));
-	//
-	// assertEquals(recordCreator.values.get("organisation_name"), name);
-	// }
-	//
-	// private void addAlternativeName(DataGroup organisation, String name) {
-	// DataGroupSpy alternativeNameGroup = new DataGroupSpy("alternativeName");
-	// alternativeNameGroup.addChild(new DataAtomicSpy("organisationName", name));
-	// alternativeNameGroup.addChild(new DataAtomicSpy("language", "en"));
-	// organisation.addChild(alternativeNameGroup);
-	// }
-	//
-	// @Test
-	// public void testNoNameInDbButNameInDataGroup() {
-	// DataGroup organisation = createDataGroupWithId("678");
-	// DataGroupSpy alternativeNameGroup = new DataGroupSpy("alternativeName");
-	// alternativeNameGroup.addChild(new DataAtomicSpy("organisationName", "some english name"));
-	// alternativeNameGroup.addChild(new DataAtomicSpy("language", "en"));
-	// organisation.addChild(alternativeNameGroup);
-	//
-	// adress.handleDbForDataGroup(organisation);
-	// assertCorrectDataSentToRecordReader();
-	// assertFalse(recordDeleter.deleteWasCalled);
-	//
-	// assertTrue(recordCreator.insertWasCalled);
-	// assertCorrectValuesSentToInsert("some english name");
-	// }
 }
