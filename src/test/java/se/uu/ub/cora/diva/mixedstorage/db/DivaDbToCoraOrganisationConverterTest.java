@@ -208,7 +208,7 @@ public class DivaDbToCoraOrganisationConverterTest {
 		DataGroup organisation = converter.fromMap(rowFromDb);
 		assertFalse(organisation.containsChildWithNameInData("city"));
 		assertFalse(organisation.containsChildWithNameInData("street"));
-		assertFalse(organisation.containsChildWithNameInData("box"));
+		assertFalse(organisation.containsChildWithNameInData("postbox"));
 		assertFalse(organisation.containsChildWithNameInData("postcode"));
 
 		// default value, since country is mandatory
@@ -219,7 +219,7 @@ public class DivaDbToCoraOrganisationConverterTest {
 	public void testAdress() {
 		rowFromDb.put("city", "uppsala");
 		rowFromDb.put("street", "Övre slottsgatan 1");
-		rowFromDb.put("box", "Box5435");
+		rowFromDb.put("postbox", "Box5435");
 		rowFromDb.put("postnumber", "345 34");
 		rowFromDb.put("country_code", "fi");
 
