@@ -16,7 +16,7 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.diva.mixedstorage.db;
+package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -37,6 +37,7 @@ import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.diva.mixedstorage.DataAtomicFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.DataAtomicSpy;
 import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
+import se.uu.ub.cora.diva.mixedstorage.db.ConversionException;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DataGroupFactorySpy;
 
 public class DivaDbToCoraOrganisationConverterTest {
@@ -54,6 +55,7 @@ public class DivaDbToCoraOrganisationConverterTest {
 		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactorySpy);
 		rowFromDb = new HashMap<>();
 		rowFromDb.put("id", "someOrgId");
+		rowFromDb.put("type_code", "unit");
 		converter = new DivaDbToCoraOrganisationConverter();
 	}
 
@@ -136,9 +138,11 @@ public class DivaDbToCoraOrganisationConverterTest {
 
 	@Test
 	public void testTypeCode() {
-		rowFromDb.put("type_code", "unit");
+		String typeCode = "university";
+		rowFromDb.put("type_code", typeCode);
+
 		DataGroup organisation = converter.fromMap(rowFromDb);
-		assertEquals(organisation.getFirstAtomicValueWithNameInData("organisationType"), "unit");
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("organisationType"), typeCode);
 	}
 
 	@Test

@@ -24,6 +24,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbToCoraOrganisationConverter;
 
 public class DivaDbToCoraConverterFactoryTest {
 	private DivaDbToCoraConverterFactory divaDbToCoraConverterFactoryImp;
