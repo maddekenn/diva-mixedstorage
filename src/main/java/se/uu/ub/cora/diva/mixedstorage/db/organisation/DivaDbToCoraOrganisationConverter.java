@@ -158,8 +158,10 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 	}
 
 	private void createAndAddOrganisationType() {
+		int typeId = (int) dbRow.get("organisation_type_id");
+		String typeCode = OrganisationType.getTypeCodeForIntValue(typeId);
 		organisation.addChild(DataAtomicProvider
-				.getDataAtomicUsingNameInDataAndValue("organisationType", "unit"));
+				.getDataAtomicUsingNameInDataAndValue("organisationType", typeCode));
 	}
 
 	private void possiblyCreateAndAddEligibility() {
