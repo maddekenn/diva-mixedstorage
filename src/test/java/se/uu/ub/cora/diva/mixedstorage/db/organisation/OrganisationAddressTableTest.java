@@ -40,6 +40,7 @@ import se.uu.ub.cora.diva.mixedstorage.db.RecordCreatorSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordDeleterSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordUpdaterFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordUpdaterSpy;
+import se.uu.ub.cora.diva.mixedstorage.db.ReferenceTable;
 
 public class OrganisationAddressTableTest {
 

@@ -28,7 +28,6 @@ import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
-import se.uu.ub.cora.sqldatabase.RecordUpdaterFactory;
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
 import se.uu.ub.cora.storage.RecordNotFoundException;
 import se.uu.ub.cora.storage.RecordStorage;
@@ -42,25 +41,22 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	private DivaDbToCoraConverterFactory converterFactory;
 	private DivaDbToCoraFactory divaDbToCoraFactory;
 	private DbMainTableFactory dbMainTableFactory;
-	private RecordUpdaterFactory recordUpdaterFactory;
 
 	private DivaDbToCoraRecordStorage(RecordReaderFactory recordReaderFactory,
 			DivaDbToCoraConverterFactory converterFactory, DivaDbToCoraFactory divaDbToCoraFactory,
-			DbMainTableFactory dbMainTableFactory, RecordUpdaterFactory recordUpdaterFactory) {
+			DbMainTableFactory dbMainTableFactory) {
 		this.recordReaderFactory = recordReaderFactory;
 		this.converterFactory = converterFactory;
 		this.divaDbToCoraFactory = divaDbToCoraFactory;
 		this.dbMainTableFactory = dbMainTableFactory;
-		this.recordUpdaterFactory = recordUpdaterFactory;
 
 	}
 
 	public static DivaDbToCoraRecordStorage usingRecordReaderFactoryConverterFactoryDbToCoraFactoryRecordUpdaterFactoryAndMainTableFactory(
 			RecordReaderFactory recordReaderFactory, DivaDbToCoraConverterFactory converterFactory,
-			DivaDbToCoraFactory divaDbToCoraFactory, RecordUpdaterFactory recordUpdaterFactory,
-			DbMainTableFactory dbMainTableFactory) {
+			DivaDbToCoraFactory divaDbToCoraFactory, DbMainTableFactory dbMainTableFactory) {
 		return new DivaDbToCoraRecordStorage(recordReaderFactory, converterFactory,
-				divaDbToCoraFactory, dbMainTableFactory, recordUpdaterFactory);
+				divaDbToCoraFactory, dbMainTableFactory);
 	}
 
 	@Override
@@ -99,27 +95,8 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	}
 
 	private void updateOrganisation(DataGroup dataGroup) {
-		// RecordUpdater recordUpdater = recordUpdaterFactory.factor();
-
-		DbMainTable mainTable = dbMainTableFactory.factor("organisation");
+		DbMainTable mainTable = dbMainTableFactory.factor(ORGANISATION);
 		mainTable.update(dataGroup);
-
-		// DataToDbTranslater dataToDbTranslater = dataToDbTranslaterFactory
-		// .factorForTableName(ORGANISATION);
-		// dataToDbTranslater.translate(dataGroup);
-		// TODO: hantera transaktioner??
-		// recordUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions(ORGANISATION,
-		// dataToDbTranslater.getValues(), dataToDbTranslater.getConditions());
-		// Läs alternativt namn
-		// finns det ett med samma locale?
-		// har det samma värde? gör inget
-		// annars ta bort, lägg till nytt
-
-		// TODO: uppdatera alternativt namn om det är ändrat
-		// TODO:uppdatera parent om ändrat -OBS repeateble
-		// TODO: uppdatera preecessor om ändrat
-		// TODO: uppdatera adress om det är ändrat
-		// TODO:uppdatera organisation type om ändrat
 	}
 
 	private Map<String, Object> createConditionsAddingOrganisationId(String id) {
@@ -236,11 +213,6 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	public DivaDbToCoraFactory getDivaDbToCoraFactory() {
 		// needed for test
 		return divaDbToCoraFactory;
-	}
-
-	public RecordUpdaterFactory getRecordUpdaterFactory() {
-		// needed for test
-		return recordUpdaterFactory;
 	}
 
 	public DbMainTableFactory getDbMainTableFactory() {

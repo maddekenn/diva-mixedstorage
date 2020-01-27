@@ -18,6 +18,9 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
+import se.uu.ub.cora.diva.mixedstorage.db.ReferenceTable;
+import se.uu.ub.cora.diva.mixedstorage.db.ReferenceTableFactory;
+
 public class ReferenceTableFactorySpy implements ReferenceTableFactory {
 
 	public String tableName;

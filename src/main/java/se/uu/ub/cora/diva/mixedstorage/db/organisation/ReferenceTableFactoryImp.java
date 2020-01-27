@@ -19,6 +19,8 @@
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
+import se.uu.ub.cora.diva.mixedstorage.db.ReferenceTable;
+import se.uu.ub.cora.diva.mixedstorage.db.ReferenceTableFactory;
 import se.uu.ub.cora.sqldatabase.RecordCreator;
 import se.uu.ub.cora.sqldatabase.RecordCreatorFactory;
 import se.uu.ub.cora.sqldatabase.RecordDeleter;

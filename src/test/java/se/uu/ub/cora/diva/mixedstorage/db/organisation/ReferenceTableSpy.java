@@ -19,6 +19,7 @@
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.diva.mixedstorage.db.ReferenceTable;
 import se.uu.ub.cora.sqldatabase.RecordCreator;
 import se.uu.ub.cora.sqldatabase.RecordDeleter;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;

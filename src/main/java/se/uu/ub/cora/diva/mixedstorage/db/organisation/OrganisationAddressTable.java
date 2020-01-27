@@ -26,6 +26,7 @@ import java.util.Map;
 
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbHelper;
+import se.uu.ub.cora.diva.mixedstorage.db.ReferenceTable;
 import se.uu.ub.cora.sqldatabase.RecordCreator;
 import se.uu.ub.cora.sqldatabase.RecordDeleter;
 import se.uu.ub.cora.sqldatabase.RecordReader;

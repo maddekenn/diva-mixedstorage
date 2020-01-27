@@ -29,6 +29,7 @@ import se.uu.ub.cora.diva.mixedstorage.db.RecordCreatorFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordDeleterFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordReaderFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordUpdaterFactorySpy;
+import se.uu.ub.cora.diva.mixedstorage.db.ReferenceTableFactory;
 
 public class ReferenceTableFactoryTest {
 

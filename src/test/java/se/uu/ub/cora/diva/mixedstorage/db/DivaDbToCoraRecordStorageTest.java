@@ -57,7 +57,7 @@ public class DivaDbToCoraRecordStorageTest {
 		divaToCoraRecordStorage = DivaDbToCoraRecordStorage
 				.usingRecordReaderFactoryConverterFactoryDbToCoraFactoryRecordUpdaterFactoryAndMainTableFactory(
 						recordReaderFactory, converterFactory, divaDbToCoraFactory,
-						recordUpdaterFactory, dbMainTableFactory);
+						dbMainTableFactory);
 	}
 
 	@Test

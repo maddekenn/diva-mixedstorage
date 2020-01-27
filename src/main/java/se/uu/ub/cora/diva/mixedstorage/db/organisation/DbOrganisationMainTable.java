@@ -21,6 +21,8 @@ package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslater;
 import se.uu.ub.cora.diva.mixedstorage.db.DbMainTable;
+import se.uu.ub.cora.diva.mixedstorage.db.ReferenceTable;
+import se.uu.ub.cora.diva.mixedstorage.db.ReferenceTableFactory;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTableFactory;
 import se.uu.ub.cora.sqldatabase.RecordUpdater;

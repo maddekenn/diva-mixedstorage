@@ -195,7 +195,7 @@ public class DivaMixedRecordStorageProviderTest {
 
 		RecordReaderFactoryImp recordReaderFactory = assertCorrectRecordReaderFactory(dbStorage);
 
-		assertCorrectRecordUpdaterFactory(dbStorage);
+		// assertCorrectRecordUpdaterFactory(dbStorage);
 
 		assertTrue(dbStorage.getConverterFactory() instanceof DivaDbToCoraConverterFactoryImp);
 		assertCorrectDbMainTableFactory(dbStorage);
@@ -211,8 +211,8 @@ public class DivaMixedRecordStorageProviderTest {
 		DbMainTableFactoryImp dbMainTableFactory = (DbMainTableFactoryImp) dbStorage
 				.getDbMainTableFactory();
 		assertTrue(dbMainTableFactory instanceof DbMainTableFactoryImp);
-		assertSame(dbMainTableFactory.getRecordUpdaterFactory(),
-				dbStorage.getRecordUpdaterFactory());
+		// assertSame(dbMainTableFactory.getRecordUpdaterFactory(),
+		// dbStorage.getRecordUpdaterFactory());
 
 		DataToDbTranslaterFactoryImp translaterFactory = (DataToDbTranslaterFactoryImp) dbMainTableFactory
 				.getTranslaterFactory();
@@ -264,14 +264,6 @@ public class DivaMixedRecordStorageProviderTest {
 			ContextConnectionProviderImp connectionProvider) {
 		assertEquals(connectionProvider.getName(), initInfo.get("databaseLookupName"));
 		assertTrue(connectionProvider.getContext() instanceof InitialContext);
-	}
-
-	private void assertCorrectRecordUpdaterFactory(DivaDbToCoraRecordStorage dbStorage) {
-		RecordUpdaterFactoryImp recordUpdaterFactory = (RecordUpdaterFactoryImp) dbStorage
-				.getRecordUpdaterFactory();
-		ContextConnectionProviderImp updaterConnectionProvider = (ContextConnectionProviderImp) recordUpdaterFactory
-				.getSqlConnectionProvider();
-		assertCorrectSqlConnectionProvider(updaterConnectionProvider);
 	}
 
 	@Test

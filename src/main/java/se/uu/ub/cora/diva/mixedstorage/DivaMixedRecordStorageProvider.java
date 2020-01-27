@@ -135,7 +135,7 @@ public class DivaMixedRecordStorageProvider
 		return DivaDbToCoraRecordStorage
 				.usingRecordReaderFactoryConverterFactoryDbToCoraFactoryRecordUpdaterFactoryAndMainTableFactory(
 						recordReaderFactory, divaDbToCoraConverterFactory, divaDbToCoraFactory,
-						recordUpdaterFactory, dbMainTableFactory);
+						dbMainTableFactory);
 	}
 
 	private RecordReaderFactoryImp createRecordReaderFactory() {

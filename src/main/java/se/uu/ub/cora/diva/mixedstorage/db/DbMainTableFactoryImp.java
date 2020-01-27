@@ -20,7 +20,6 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.DbOrganisationMainTable;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.ReferenceTableFactory;
 import se.uu.ub.cora.sqldatabase.RecordUpdater;
 import se.uu.ub.cora.sqldatabase.RecordUpdaterFactory;
 
