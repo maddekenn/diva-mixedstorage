@@ -55,6 +55,7 @@ public class DivaDbToCoraOrganisationConverterTest {
 		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactorySpy);
 		rowFromDb = new HashMap<>();
 		rowFromDb.put("id", "someOrgId");
+		rowFromDb.put("type_code", "unit");
 		converter = new DivaDbToCoraOrganisationConverter();
 	}
 
@@ -136,29 +137,10 @@ public class DivaDbToCoraOrganisationConverterTest {
 	}
 
 	@Test
-	public void testTypeCodeUnit() {
-		assertCorrectTypeCodeForTypeId("root", 49);
-		assertCorrectTypeCodeForTypeId("university", 50);
-		assertCorrectTypeCodeForTypeId("school", 51);
-		assertCorrectTypeCodeForTypeId("faculty", 52);
-		assertCorrectTypeCodeForTypeId("centre", 53);
-		assertCorrectTypeCodeForTypeId("department", 54);
-		assertCorrectTypeCodeForTypeId("unit", 55);
-		assertCorrectTypeCodeForTypeId("section", 56);
-		assertCorrectTypeCodeForTypeId("domain", 57);
-		assertCorrectTypeCodeForTypeId("researchGroup", 58);
-		assertCorrectTypeCodeForTypeId("researchProgram", 59);
-		assertCorrectTypeCodeForTypeId("researchProject", 60);
-		assertCorrectTypeCodeForTypeId("division", 61);
-		assertCorrectTypeCodeForTypeId("museum", 62);
-		assertCorrectTypeCodeForTypeId("researchInstitute", 63);
-		assertCorrectTypeCodeForTypeId("authority", 64);
-		assertCorrectTypeCodeForTypeId("company", 65);
-		assertCorrectTypeCodeForTypeId("other", 66);
-	}
+	public void testTypeCode() {
+		String typeCode = "university";
+		rowFromDb.put("type_code", typeCode);
 
-	private void assertCorrectTypeCodeForTypeId(String typeCode, int typeId) {
-		rowFromDb.put("organisation_type_id", typeId);
 		DataGroup organisation = converter.fromMap(rowFromDb);
 		assertEquals(organisation.getFirstAtomicValueWithNameInData("organisationType"), typeCode);
 	}
