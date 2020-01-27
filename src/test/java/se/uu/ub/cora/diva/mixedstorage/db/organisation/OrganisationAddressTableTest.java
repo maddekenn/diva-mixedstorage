@@ -41,7 +41,7 @@ import se.uu.ub.cora.diva.mixedstorage.db.RecordDeleterSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordUpdaterFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordUpdaterSpy;
 
-public class OrganisationAddressRelatedTableTest {
+public class OrganisationAddressTableTest {
 
 	private RecordReaderRelatedTableFactorySpy recordReaderFactory;
 	private RecordDeleterSpy recordDeleter;
@@ -196,8 +196,8 @@ public class OrganisationAddressRelatedTableTest {
 		assertEquals(values.get("postbox"), getAtomicValueOrEmptyString(organisation, "box"));
 		assertEquals(values.get("postnumber"),
 				getAtomicValueOrEmptyString(organisation, "postcode"));
-		assertEquals(values.get("country_code"),
-				getAtomicValueOrEmptyString(organisation, "country"));
+		String countryCode = getAtomicValueOrEmptyString(organisation, "country");
+		assertEquals(values.get("country_code"), countryCode.toLowerCase());
 	}
 
 	private String getAtomicValueOrEmptyString(DataGroup organisation, String nameInData) {

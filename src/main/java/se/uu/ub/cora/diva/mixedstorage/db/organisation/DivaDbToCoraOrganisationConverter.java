@@ -205,8 +205,6 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 	private void addCountryConvertedToUpperCaseOrSetDefault() {
 		if (valueExistsForKey("country_code")) {
 			addCountryConvertedToUpperCase();
-		} else {
-			setDefaultCountryCode();
 		}
 	}
 
@@ -214,11 +212,6 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 		String uppercaseValue = ((String) dbRow.get("country_code")).toUpperCase();
 		organisation.addChild(
 				DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("country", uppercaseValue));
-	}
-
-	private void setDefaultCountryCode() {
-		organisation
-				.addChild(DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("country", "SE"));
 	}
 
 	private void possiblyCreateAndAddOrganisationNumber() {

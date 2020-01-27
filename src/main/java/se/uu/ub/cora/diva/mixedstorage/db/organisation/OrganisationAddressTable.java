@@ -116,9 +116,9 @@ public class OrganisationAddressTable implements ReferenceTable {
 	}
 
 	private void deleteAddressAndUpdateOrganisation(int addressId) {
+		updateOrganisationWithNoAddressId();
 		Map<String, Object> deleteConditions = createConditionWithAddressId(addressId);
 		recordDeleter.deleteFromTableUsingConditions(ORGANISATION_ADDRESS, deleteConditions);
-		updateOrganisationWithNoAddressId();
 	}
 
 	private Map<String, Object> createConditionWithAddressId(int addressId) {
@@ -159,7 +159,8 @@ public class OrganisationAddressTable implements ReferenceTable {
 		values.put(STREET, getAtomicValueOrEmptyString(organisation, STREET));
 		values.put("postbox", getAtomicValueOrEmptyString(organisation, "box"));
 		values.put("postnumber", getAtomicValueOrEmptyString(organisation, "postcode"));
-		values.put("country_code", getAtomicValueOrEmptyString(organisation, "country"));
+		values.put("country_code",
+				getAtomicValueOrEmptyString(organisation, "country").toLowerCase());
 		return values;
 	}
 

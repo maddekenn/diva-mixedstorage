@@ -214,9 +214,7 @@ public class DivaDbToCoraOrganisationConverterTest {
 		assertFalse(organisation.containsChildWithNameInData("street"));
 		assertFalse(organisation.containsChildWithNameInData("box"));
 		assertFalse(organisation.containsChildWithNameInData("postcode"));
-
-		// default value, since country is mandatory
-		assertEquals(organisation.getFirstAtomicValueWithNameInData("country"), "SE");
+		assertFalse(organisation.containsChildWithNameInData("country"));
 	}
 
 	@Test
