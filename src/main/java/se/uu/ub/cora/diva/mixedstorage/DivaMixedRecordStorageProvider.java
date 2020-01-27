@@ -133,7 +133,7 @@ public class DivaMixedRecordStorageProvider
 		DbMainTableFactoryImp dbMainTableFactory = createDbMainTableFactory(recordReaderFactory,
 				recordUpdaterFactory);
 		return DivaDbToCoraRecordStorage
-				.usingRecordReaderFactoryConverterFactoryDbToCoraFactoryRecordUpdaterFactoryAndMainTableFactory(
+				.usingRecordReaderFactoryConverterFactoryDbToCoraFactoryAndMainTableFactory(
 						recordReaderFactory, divaDbToCoraConverterFactory, divaDbToCoraFactory,
 						dbMainTableFactory);
 	}

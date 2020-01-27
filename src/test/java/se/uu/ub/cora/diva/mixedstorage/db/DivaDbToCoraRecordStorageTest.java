@@ -55,7 +55,7 @@ public class DivaDbToCoraRecordStorageTest {
 		dataToDbTranslaterFactory = new DataToDbTranslaterFactorySpy();
 		dbMainTableFactory = new DbMainTableFactorySpy();
 		divaToCoraRecordStorage = DivaDbToCoraRecordStorage
-				.usingRecordReaderFactoryConverterFactoryDbToCoraFactoryRecordUpdaterFactoryAndMainTableFactory(
+				.usingRecordReaderFactoryConverterFactoryDbToCoraFactoryAndMainTableFactory(
 						recordReaderFactory, converterFactory, divaDbToCoraFactory,
 						dbMainTableFactory);
 	}

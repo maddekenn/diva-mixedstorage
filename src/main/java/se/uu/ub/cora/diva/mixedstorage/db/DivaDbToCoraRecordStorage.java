@@ -52,7 +52,7 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 
 	}
 
-	public static DivaDbToCoraRecordStorage usingRecordReaderFactoryConverterFactoryDbToCoraFactoryRecordUpdaterFactoryAndMainTableFactory(
+	public static DivaDbToCoraRecordStorage usingRecordReaderFactoryConverterFactoryDbToCoraFactoryAndMainTableFactory(
 			RecordReaderFactory recordReaderFactory, DivaDbToCoraConverterFactory converterFactory,
 			DivaDbToCoraFactory divaDbToCoraFactory, DbMainTableFactory dbMainTableFactory) {
 		return new DivaDbToCoraRecordStorage(recordReaderFactory, converterFactory,
