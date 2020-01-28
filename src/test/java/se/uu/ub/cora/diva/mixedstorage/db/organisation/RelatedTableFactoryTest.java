@@ -51,8 +51,6 @@ public class RelatedTableFactoryTest {
 		OrganisationAlternativeNameRelatedTable factoredTable = (OrganisationAlternativeNameRelatedTable) factory
 				.factor("organisationAlternativeName");
 		assertSame(factoredTable.getRecordReader(), recordReaderFactory.factored);
-		assertSame(factoredTable.getRecordDeleter(), recordDeleterFactory.factored);
-		assertSame(factoredTable.getRecordCreator(), recordCreatorFactory.factored);
 	}
 
 	@Test

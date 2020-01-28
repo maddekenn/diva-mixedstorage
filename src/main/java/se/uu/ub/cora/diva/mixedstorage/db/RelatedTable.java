@@ -19,11 +19,13 @@
 package se.uu.ub.cora.diva.mixedstorage.db;
 
 import java.util.List;
+import java.util.Map;
 
 import se.uu.ub.cora.data.DataGroup;
 
 public interface RelatedTable {
 
-	List<DbStatement> handleDbForDataGroup(DataGroup organisation);
+	List<DbStatement> handleDbForDataGroup(DataGroup organisation,
+			List<Map<String, Object>> dbRows);
 
 }

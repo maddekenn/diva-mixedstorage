@@ -41,19 +41,20 @@ public class OrganisationAlternativeNameRelatedTable implements RelatedTable {
 	private RecordReader recordReader;
 	private Map<String, Object> alternativeNameRow;
 
-	public OrganisationAlternativeNameRelatedTable(RecordReader recordReader,
-			Map<String, Object> alternativeNameRow) {
+	public OrganisationAlternativeNameRelatedTable(RecordReader recordReader) {
 		this.recordReader = recordReader;
-		this.alternativeNameRow = alternativeNameRow;
 	}
 
 	@Override
-	public List<DbStatement> handleDbForDataGroup(DataGroup organisation) {
+	public List<DbStatement> handleDbForDataGroup(DataGroup organisation,
+			List<Map<String, Object>> alternativeNameRows) {
 		throwExceptionIfAlternativeNameIsMissing(organisation);
+		throwErrorIfMoreThanOneAlternativeNameInDb(alternativeNameRows);
+		alternativeNameRow = getRowIfOnlyOneOrEmptyMap(alternativeNameRows);
 		String organisationId = getOrganisationId(organisation);
 		List<DbStatement> dbStatements = new ArrayList<>();
 
-		handleAlternativeName(organisation, organisationId, alternativeNameRow, dbStatements);
+		handleAlternativeName(organisation, organisationId, dbStatements);
 
 		return dbStatements;
 	}
@@ -75,6 +76,18 @@ public class OrganisationAlternativeNameRelatedTable implements RelatedTable {
 		return alternativeNameGroup.containsChildWithNameInData("organisationName");
 	}
 
+	private void throwErrorIfMoreThanOneAlternativeNameInDb(
+			List<Map<String, Object>> alternativeNameRows) {
+		if (alternativeNameRows.size() > 1) {
+			throw DbException
+					.withMessage("Organisation can not have more than one alternative name");
+		}
+	}
+
+	private Map<String, Object> getRowIfOnlyOneOrEmptyMap(List<Map<String, Object>> readRows) {
+		return readRows.size() == 1 ? readRows.get(0) : Collections.emptyMap();
+	}
+
 	private String getOrganisationId(DataGroup organisation) {
 		String organisationId = DataToDbHelper.extractIdFromDataGroup(organisation);
 		DataToDbHelper.throwDbExceptionIfIdNotAnIntegerValue(organisationId);
@@ -82,10 +95,10 @@ public class OrganisationAlternativeNameRelatedTable implements RelatedTable {
 	}
 
 	private void handleAlternativeName(DataGroup organisation, String organisationId,
-			Map<String, Object> readRow, List<DbStatement> dbStatements) {
+			List<DbStatement> dbStatements) {
 
-		if (alternativeNameExistsInDatabase(readRow)) {
-			handleUpdate(organisation, readRow, organisationId, dbStatements);
+		if (alternativeNameExistsInDatabase(alternativeNameRow)) {
+			handleUpdate(organisation, organisationId, dbStatements);
 		} else {
 			handleInsert(dbStatements, organisation, organisationId);
 		}
@@ -95,20 +108,19 @@ public class OrganisationAlternativeNameRelatedTable implements RelatedTable {
 		return !readRow.isEmpty();
 	}
 
-	private void handleUpdate(DataGroup organisation, Map<String, Object> readRow,
-			String organisationId, List<DbStatement> dbStatements) {
-		boolean nameInDataGroupDiffersFromNameInDb = nameInDbNotSameAsNameInDataGroup(readRow,
+	private void handleUpdate(DataGroup organisation, String organisationId,
+			List<DbStatement> dbStatements) {
+		boolean nameInDataGroupDiffersFromNameInDb = nameInDbNotSameAsNameInDataGroup(
 				organisation);
 		if (nameInDataGroupDiffersFromNameInDb) {
-			int nameId = (int) readRow.get(ORGANISATION_NAME_ID);
+			int nameId = (int) alternativeNameRow.get(ORGANISATION_NAME_ID);
 			updateAlternativeName(dbStatements, organisation, organisationId, nameId);
 		}
 	}
 
-	private boolean nameInDbNotSameAsNameInDataGroup(Map<String, Object> readRow,
-			DataGroup organisation) {
+	private boolean nameInDbNotSameAsNameInDataGroup(DataGroup organisation) {
 		String nameOfOrganisation = getAlternativeNameFromOrganisation(organisation);
-		String organisationNameInDb = (String) readRow.get(ORGANISATION_NAME);
+		String organisationNameInDb = (String) alternativeNameRow.get(ORGANISATION_NAME);
 		return !nameOfOrganisation.equals(organisationNameInDb);
 	}
 

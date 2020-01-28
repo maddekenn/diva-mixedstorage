@@ -18,6 +18,10 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import se.uu.ub.cora.data.DataGroup;
 
 public class RelatedTableSpy implements RelatedTable {
@@ -25,8 +29,10 @@ public class RelatedTableSpy implements RelatedTable {
 	public DataGroup dataGroup;
 
 	@Override
-	public void handleDbForDataGroup(DataGroup dataGroup) {
+	public List<DbStatement> handleDbForDataGroup(DataGroup dataGroup,
+			List<Map<String, Object>> dbRows) {
 		this.dataGroup = dataGroup;
+		return Collections.emptyList();
 
 	}
 

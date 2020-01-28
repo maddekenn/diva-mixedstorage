@@ -43,25 +43,30 @@ public class OrganisationAlternativeNameRelatedTableTest {
 
 	private RecordReaderRelatedTableSpy recordReader;
 	private RelatedTable alternativeName;
+	private List<Map<String, Object>> alternativeNameRows;
 
 	@BeforeMethod
 	public void setUp() {
 		recordReader = new RecordReaderRelatedTableSpy();
+		initAlternativeNameRows();
+		alternativeName = new OrganisationAlternativeNameRelatedTable(recordReader);
+	}
+
+	private void initAlternativeNameRows() {
+		alternativeNameRows = new ArrayList<>();
 		Map<String, Object> alternativeNameRow = new HashMap<>();
 		alternativeNameRow.put("organisation_name_id", 234);
 		alternativeNameRow.put("organisation_id", 678);
 		alternativeNameRow.put("organisation_name", "some english name");
 		alternativeNameRow.put("locale", "en");
-		alternativeName = new OrganisationAlternativeNameRelatedTable(recordReader,
-				alternativeNameRow);
-
+		alternativeNameRows.add(alternativeNameRow);
 	}
 
 	@Test(expectedExceptions = DbException.class, expectedExceptionsMessageRegExp = ""
 			+ "Organisation must have alternative name")
 	public void testNoNameInDataGroupThrowsException() {
 		DataGroup organisation = createDataGroupWithId("678");
-		alternativeName.handleDbForDataGroup(organisation);
+		alternativeName.handleDbForDataGroup(organisation, alternativeNameRows);
 	}
 
 	private DataGroup createDataGroupWithId(String id) {
@@ -72,20 +77,25 @@ public class OrganisationAlternativeNameRelatedTableTest {
 		return dataGroup;
 	}
 
-	private void addNameToReturnFromSpy(String tableName, int nameId, int organisationId) {
-		List<Map<String, Object>> rowsInSpy = new ArrayList<>();
-		if (recordReader.rowsToReturn.containsKey(tableName)) {
-			rowsInSpy = recordReader.rowsToReturn.get(tableName);
-		} else {
-			recordReader.rowsToReturn.put(tableName, rowsInSpy);
-		}
+	@Test(expectedExceptions = DbException.class, expectedExceptionsMessageRegExp = ""
+			+ "Organisation must have alternative name")
+	public void testIncompleteNameInDataGroupThrowsException() {
+		DataGroup organisation = createDataGroupWithId("678");
+		DataGroupSpy alternativeNameGroup = new DataGroupSpy("alternativeName");
+		organisation.addChild(alternativeNameGroup);
 
-		Map<String, Object> rowToReturn = new HashMap<>();
-		rowToReturn.put("organisation_name_id", nameId);
-		rowToReturn.put("organisation_id", organisationId);
-		rowToReturn.put("organisation_name", "some english name");
-		rowToReturn.put("locale", "en");
-		rowsInSpy.add(rowToReturn);
+		alternativeName.handleDbForDataGroup(organisation, alternativeNameRows);
+	}
+
+	@Test(expectedExceptions = DbException.class, expectedExceptionsMessageRegExp = ""
+			+ "Organisation can not have more than one alternative name")
+	public void testMoreThanOneNameInDbRows() {
+		DataGroup organisation = createDataGroupWithId("678");
+		addAlternativeName(organisation, "some english name");
+		Map<String, Object> secondNameRow = new HashMap<>();
+		secondNameRow.put("organisation_name_id", 234234);
+		alternativeNameRows.add(secondNameRow);
+		alternativeName.handleDbForDataGroup(organisation, alternativeNameRows);
 	}
 
 	@Test
@@ -93,9 +103,8 @@ public class OrganisationAlternativeNameRelatedTableTest {
 		DataGroup organisation = createDataGroupWithId("678");
 		addAlternativeName(organisation, "some english name");
 
-		addNameToReturnFromSpy("organisation_name", 234, 678);
-
-		List<DbStatement> dbStatments = alternativeName.handleDbForDataGroup(organisation);
+		List<DbStatement> dbStatments = alternativeName.handleDbForDataGroup(organisation,
+				alternativeNameRows);
 		assertEquals(dbStatments.size(), 0);
 	}
 
@@ -105,9 +114,8 @@ public class OrganisationAlternativeNameRelatedTableTest {
 		String newAlternativeName = "some other english name";
 		addAlternativeName(organisation, newAlternativeName);
 
-		addNameToReturnFromSpy("organisation_name", 234, 678);
-
-		List<DbStatement> dbStatements = alternativeName.handleDbForDataGroup(organisation);
+		List<DbStatement> dbStatements = alternativeName.handleDbForDataGroup(organisation,
+				alternativeNameRows);
 		assertEquals(dbStatements.size(), 1);
 		DbStatement dbStatement = dbStatements.get(0);
 		assertEquals(dbStatement.getOperation(), "update");
@@ -143,8 +151,7 @@ public class OrganisationAlternativeNameRelatedTableTest {
 
 	@Test
 	public void testNoNameInDbButNameInDataGroup() {
-		alternativeName = new OrganisationAlternativeNameRelatedTable(recordReader,
-				Collections.emptyMap());
+		alternativeName = new OrganisationAlternativeNameRelatedTable(recordReader);
 
 		DataGroup organisation = createDataGroupWithId("678");
 		DataGroupSpy alternativeNameGroup = new DataGroupSpy("alternativeName");
@@ -153,7 +160,8 @@ public class OrganisationAlternativeNameRelatedTableTest {
 		alternativeNameGroup.addChild(new DataAtomicSpy("language", "en"));
 		organisation.addChild(alternativeNameGroup);
 
-		List<DbStatement> dbStatements = alternativeName.handleDbForDataGroup(organisation);
+		List<DbStatement> dbStatements = alternativeName.handleDbForDataGroup(organisation,
+				Collections.emptyList());
 
 		assertEquals(dbStatements.size(), 1);
 		DbStatement dbStatement = dbStatements.get(0);
