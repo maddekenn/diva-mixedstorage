@@ -31,8 +31,6 @@ import se.uu.ub.cora.diva.mixedstorage.db.DataToDbHelper;
 import se.uu.ub.cora.diva.mixedstorage.db.DbException;
 import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
-import se.uu.ub.cora.sqldatabase.RecordCreator;
-import se.uu.ub.cora.sqldatabase.RecordDeleter;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 
 public class OrganisationAlternativeNameRelatedTable implements RelatedTable {
@@ -41,65 +39,32 @@ public class OrganisationAlternativeNameRelatedTable implements RelatedTable {
 	private static final String ORGANISATION_NAME = "organisation_name";
 	private static final String ALTERNATIVE_NAME = "alternativeName";
 	private RecordReader recordReader;
-	private RecordDeleter recordDeleter;
-	private RecordCreator recordCreator;
 	private Map<String, Object> alternativeNameRow;
 
 	public OrganisationAlternativeNameRelatedTable(RecordReader recordReader,
-			RecordDeleter recordDeleter, RecordCreator recordCreator,
 			Map<String, Object> alternativeNameRow) {
 		this.recordReader = recordReader;
-		this.recordDeleter = recordDeleter;
-		this.recordCreator = recordCreator;
 		this.alternativeNameRow = alternativeNameRow;
 	}
 
 	@Override
 	public List<DbStatement> handleDbForDataGroup(DataGroup organisation) {
 		throwExceptionIfAlternativeNameIsMissing(organisation);
-
-		String organisationId = DataToDbHelper.extractIdFromDataGroup(organisation);
-		DataToDbHelper.throwDbExceptionIfIdNotAnIntegerValue(organisationId);
-
+		String organisationId = getOrganisationId(organisation);
 		List<DbStatement> dbStatements = new ArrayList<>();
 
-		readAndHandleAlternativeName(organisation, organisationId, dbStatements);
+		handleAlternativeName(organisation, organisationId, alternativeNameRow, dbStatements);
+
 		return dbStatements;
 	}
 
 	private void throwExceptionIfAlternativeNameIsMissing(DataGroup organisation) {
-		if (!organisationContainsAlternativeName(organisation)) {
-			throw DbException.withMessage("Organisation must contain alternative name");
+		if (!organisationHaveAlternativeName(organisation)) {
+			throw DbException.withMessage("Organisation must have alternative name");
 		}
 	}
 
-	private void readAndHandleAlternativeName(DataGroup organisation, String organisationId,
-			List<DbStatement> dbStatements) {
-		handleAlternativeName(organisation, organisationId, alternativeNameRow, dbStatements);
-	}
-
-	private void handleAlternativeName(DataGroup organisation, String organisationId,
-			Map<String, Object> readRow, List<DbStatement> dbStatements) {
-		boolean organisationContainsAlternativeName = organisationContainsAlternativeName(
-				organisation);
-
-		if (alternativeNameExistsInDatabase(readRow)) {
-			handleUpdate(organisation, organisationId, readRow, organisationContainsAlternativeName,
-					dbStatements);
-		} else {
-			possiblyInsertAlternativeName(organisation, organisationId,
-					organisationContainsAlternativeName, dbStatements);
-		}
-	}
-
-	private void possiblyInsertAlternativeName(DataGroup organisation, String organisationId,
-			boolean organisationContainsAlternativeName, List<DbStatement> dbStatements) {
-		if (organisationContainsAlternativeName) {
-			insertNewAlternativeName(dbStatements, organisation, organisationId);
-		}
-	}
-
-	private boolean organisationContainsAlternativeName(DataGroup organisation) {
+	private boolean organisationHaveAlternativeName(DataGroup organisation) {
 		return organisation.containsChildWithNameInData(ALTERNATIVE_NAME)
 				&& alternativeNameContainsValueForName(organisation);
 
@@ -110,30 +75,46 @@ public class OrganisationAlternativeNameRelatedTable implements RelatedTable {
 		return alternativeNameGroup.containsChildWithNameInData("organisationName");
 	}
 
+	private String getOrganisationId(DataGroup organisation) {
+		String organisationId = DataToDbHelper.extractIdFromDataGroup(organisation);
+		DataToDbHelper.throwDbExceptionIfIdNotAnIntegerValue(organisationId);
+		return organisationId;
+	}
+
+	private void handleAlternativeName(DataGroup organisation, String organisationId,
+			Map<String, Object> readRow, List<DbStatement> dbStatements) {
+
+		if (alternativeNameExistsInDatabase(readRow)) {
+			handleUpdate(organisation, readRow, organisationId, dbStatements);
+		} else {
+			handleInsert(dbStatements, organisation, organisationId);
+		}
+	}
+
 	private boolean alternativeNameExistsInDatabase(Map<String, Object> readRow) {
 		return !readRow.isEmpty();
 	}
 
-	private void handleUpdate(DataGroup organisation, String organisationId,
-			Map<String, Object> readRow, boolean organisationContainsAlternativeName,
-			List<DbStatement> dbStatements) {
-		if (organisationContainsAlternativeName) {
-			compareAndHandleExistingAlternativeName(organisation, readRow, organisationId,
-					dbStatements);
-		} else {
-			deleteAlternativeName(readRow);
-		}
-	}
-
-	private void compareAndHandleExistingAlternativeName(DataGroup organisation,
-			Map<String, Object> readRow, String organisationId, List<DbStatement> dbStatements) {
+	private void handleUpdate(DataGroup organisation, Map<String, Object> readRow,
+			String organisationId, List<DbStatement> dbStatements) {
 		boolean nameInDataGroupDiffersFromNameInDb = nameInDbNotSameAsNameInDataGroup(readRow,
 				organisation);
 		if (nameInDataGroupDiffersFromNameInDb) {
 			int nameId = (int) readRow.get(ORGANISATION_NAME_ID);
 			updateAlternativeName(dbStatements, organisation, organisationId, nameId);
 		}
+	}
 
+	private boolean nameInDbNotSameAsNameInDataGroup(Map<String, Object> readRow,
+			DataGroup organisation) {
+		String nameOfOrganisation = getAlternativeNameFromOrganisation(organisation);
+		String organisationNameInDb = (String) readRow.get(ORGANISATION_NAME);
+		return !nameOfOrganisation.equals(organisationNameInDb);
+	}
+
+	private String getAlternativeNameFromOrganisation(DataGroup organisation) {
+		DataGroup alternativeNameGroup = organisation.getFirstGroupWithNameInData(ALTERNATIVE_NAME);
+		return alternativeNameGroup.getFirstAtomicValueWithNameInData("organisationName");
 	}
 
 	private void updateAlternativeName(List<DbStatement> dbStatements, DataGroup organisation,
@@ -153,57 +134,27 @@ public class OrganisationAlternativeNameRelatedTable implements RelatedTable {
 		return values;
 	}
 
-	private boolean nameInDbNotSameAsNameInDataGroup(Map<String, Object> readRow,
-			DataGroup organisation) {
-		String nameOfOrganisation = getAlternativeNameFromOrganisation(organisation);
-		String organisationNameInDb = (String) readRow.get(ORGANISATION_NAME);
-		return !nameOfOrganisation.equals(organisationNameInDb);
-	}
-
-	private void deleteAlternativeName(Map<String, Object> readRow) {
-		Map<String, Object> deleteConditions = new HashMap<>();
-		int nameId = (int) readRow.get(ORGANISATION_NAME_ID);
-		deleteConditions.put(ORGANISATION_NAME_ID, nameId);
-		recordDeleter.deleteFromTableUsingConditions(ORGANISATION_NAME, deleteConditions);
-	}
-
-	private void insertNewAlternativeName(List<DbStatement> dbStatements, DataGroup organisation,
-			String organisationId) {
-		Map<String, Object> values = generateValues(organisation, organisationId);
-		addPrimaryKeyForInsert(values);
-		dbStatements
-				.add(new DbStatement("insert", ORGANISATION_NAME, values, Collections.emptyMap()));
-	}
-
-	private void addPrimaryKeyForInsert(Map<String, Object> values) {
-		Map<String, Object> nextValue = recordReader.readNextValueFromSequence("name_sequence");
-		values.put(ORGANISATION_NAME_ID, nextValue.get("nextval"));
-	}
-
 	private Timestamp getCurrentTimestamp() {
 		Date today = new Date();
 		long time = today.getTime();
 		return new Timestamp(time);
 	}
 
-	private String getAlternativeNameFromOrganisation(DataGroup organisation) {
-		DataGroup alternativeNameGroup = organisation.getFirstGroupWithNameInData(ALTERNATIVE_NAME);
-		return alternativeNameGroup.getFirstAtomicValueWithNameInData("organisationName");
+	private void handleInsert(List<DbStatement> dbStatements, DataGroup organisation,
+			String organisationId) {
+		Map<String, Object> values = generateValues(organisation, organisationId);
+		addOrganisationNameIdNextValue(values);
+		dbStatements
+				.add(new DbStatement("insert", ORGANISATION_NAME, values, Collections.emptyMap()));
 	}
 
-	public RecordReader getRecordReader() {
-		// needed for test
+	private void addOrganisationNameIdNextValue(Map<String, Object> values) {
+		Map<String, Object> nextValue = recordReader.readNextValueFromSequence("name_sequence");
+		values.put(ORGANISATION_NAME_ID, nextValue.get("nextval"));
+	}
+
+	RecordReader getRecordReader() {
+		// Only needed for test
 		return recordReader;
 	}
-
-	public RecordDeleter getRecordDeleter() {
-		// needed for test
-		return recordDeleter;
-	}
-
-	public RecordCreator getRecordCreator() {
-		// needed for test
-		return recordCreator;
-	}
-
 }

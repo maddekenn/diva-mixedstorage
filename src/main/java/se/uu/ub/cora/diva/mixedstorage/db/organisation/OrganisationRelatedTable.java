@@ -39,7 +39,7 @@ public abstract class OrganisationRelatedTable {
 		organisationId = Integer.valueOf(organisationIdAsString);
 	}
 
-	protected List<Map<String, Object>> readCurrentRowsFromDatabaseUsingTableName(
+	protected List<Map<String, Object>> getExistingParents(
 			String tableName) {
 		Map<String, Object> conditions = createConditionsFoReadingCurrentRows();
 		return recordReader.readFromTableUsingConditions(tableName, conditions);

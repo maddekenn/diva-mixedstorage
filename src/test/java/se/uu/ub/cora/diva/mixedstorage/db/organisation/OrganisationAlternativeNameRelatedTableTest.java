@@ -37,34 +37,28 @@ import se.uu.ub.cora.diva.mixedstorage.DataAtomicSpy;
 import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.DbException;
 import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
-import se.uu.ub.cora.diva.mixedstorage.db.RecordCreatorSpy;
-import se.uu.ub.cora.diva.mixedstorage.db.RecordDeleterSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
 
 public class OrganisationAlternativeNameRelatedTableTest {
 
 	private RecordReaderRelatedTableSpy recordReader;
-	private RecordDeleterSpy recordDeleter;
-	private RecordCreatorSpy recordCreator;
 	private RelatedTable alternativeName;
 
 	@BeforeMethod
 	public void setUp() {
 		recordReader = new RecordReaderRelatedTableSpy();
-		recordDeleter = new RecordDeleterSpy();
-		recordCreator = new RecordCreatorSpy();
 		Map<String, Object> alternativeNameRow = new HashMap<>();
 		alternativeNameRow.put("organisation_name_id", 234);
 		alternativeNameRow.put("organisation_id", 678);
 		alternativeNameRow.put("organisation_name", "some english name");
 		alternativeNameRow.put("locale", "en");
-		alternativeName = new OrganisationAlternativeNameRelatedTable(recordReader, recordDeleter,
-				recordCreator, alternativeNameRow);
+		alternativeName = new OrganisationAlternativeNameRelatedTable(recordReader,
+				alternativeNameRow);
 
 	}
 
 	@Test(expectedExceptions = DbException.class, expectedExceptionsMessageRegExp = ""
-			+ "Organisation must contain alternative name")
+			+ "Organisation must have alternative name")
 	public void testNoNameInDataGroupThrowsException() {
 		DataGroup organisation = createDataGroupWithId("678");
 		alternativeName.handleDbForDataGroup(organisation);
@@ -149,8 +143,8 @@ public class OrganisationAlternativeNameRelatedTableTest {
 
 	@Test
 	public void testNoNameInDbButNameInDataGroup() {
-		alternativeName = new OrganisationAlternativeNameRelatedTable(recordReader, recordDeleter,
-				recordCreator, Collections.emptyMap());
+		alternativeName = new OrganisationAlternativeNameRelatedTable(recordReader,
+				Collections.emptyMap());
 
 		DataGroup organisation = createDataGroupWithId("678");
 		DataGroupSpy alternativeNameGroup = new DataGroupSpy("alternativeName");

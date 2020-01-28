@@ -55,7 +55,7 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 	public void handleDbForDataGroup(DataGroup organisation) {
 		setIdAsInt(organisation);
 
-		List<Map<String, Object>> allCurrentPredecessorsInDb = readCurrentRowsFromDatabaseUsingTableName(
+		List<Map<String, Object>> allCurrentPredecessorsInDb = getExistingParents(
 				ORGANISATION_PREDECESSOR);
 		populateCollectionWithPredecessorsFromDataGroup(organisation);
 		Set<String> predecessorIdsInDataGroup = createSetWithPredecessorsInDataGroupIds();

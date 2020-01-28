@@ -18,6 +18,7 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
 import se.uu.ub.cora.sqldatabase.RecordCreator;
 import se.uu.ub.cora.sqldatabase.RecordDeleter;
@@ -39,27 +41,61 @@ public class OrganisationParentRelatedTable extends OrganisationRelatedTable
 	private RecordDeleter recordDeleter;
 	private RecordCreator recordCreator;
 
-	public OrganisationParentRelatedTable(RecordReader recordReader, RecordDeleter recordDeleter,
-			RecordCreator recordCreator) {
+	public OrganisationParentRelatedTable(RecordReader recordReader) {
 		this.recordReader = recordReader;
-		this.recordDeleter = recordDeleter;
-		this.recordCreator = recordCreator;
 	}
 
 	@Override
-	public void handleDbForDataGroup(DataGroup organisation) {
-		setIdAsInt(organisation);
+	public List<DbStatement> handleDbForDataGroup(DataGroup organisation) {
+		List<DbStatement> dbStatements = new ArrayList<>();
+		List<Map<String, Object>> existingParents = getExistingParents(ORGANISATION_PARENT);
+		Set<String> newParents = getParentIdsInDataGroup(organisation);
 
-		List<Map<String, Object>> allCurrentParentsInDb = readCurrentRowsFromDatabaseUsingTableName(
-				ORGANISATION_PARENT);
-		Set<String> parentIdsInDataGroup = getParentIdsInDataGroup(organisation);
-
-		if (parentIdsInDataGroup.isEmpty()) {
-			deleteParents(allCurrentParentsInDb);
-		} else {
-			handleDeleteAndCreate(allCurrentParentsInDb, parentIdsInDataGroup);
+		if (existingParents.size() == 0 && newParents.size() == 0) {
+			return dbStatements;
 		}
 
+		handleExistingParents(dbStatements, existingParents);
+		handleNewParents(dbStatements, existingParents, newParents);
+
+		return dbStatements;
+	}
+	// @Override
+	// public List<DbStatement> handleDbForDataGroup(DataGroup organisation) {
+	// setIdAsInt(organisation);
+	//
+	// List<DbStatement> dbStatements = new ArrayList<>();
+	//
+	// List<Map<String, Object>> allCurrentParentsInDb = readCurrentRowsFromDatabaseUsingTableName(
+	// ORGANISATION_PARENT);
+	// Set<String> parentIdsInDataGroup = getParentIdsInDataGroup(organisation);
+	//
+	// if (parentIdsInDataGroup.isEmpty()) {
+	// deleteParents(allCurrentParentsInDb);
+	// } else {
+	// handleDeleteAndCreate(allCurrentParentsInDb, parentIdsInDataGroup);
+	// }
+	// return dbStatements;
+	//
+	// }
+
+	private void handleNewParents(List<DbStatement> dbStatements,
+			List<Map<String, Object>> existingParents, Set<String> newParents) {
+		// TODO Auto-generated method stub
+		if (newParents.isEmpty())
+			deleteParents(dbStatements, existingParents);
+	}
+
+	private void deleteParents(List<DbStatement> dbStatements, List<Map<String, Object>> parents) {
+		for (Map<String, Object> readRow : parents) {
+			int parentId = (int) readRow.get(ORGANISATION_PARENT_ID);
+			DbStatement dbStatement = new DbStatement("delete", ORGANISATION_PARENT, null, null);
+			dbStatements.add(dbStatement);
+		}
+	}
+
+	private void handleExistingParents(List<DbStatement> dbStatements,
+			List<Map<String, Object>> existingParents) {
 	}
 
 	@Override
@@ -82,13 +118,6 @@ public class OrganisationParentRelatedTable extends OrganisationRelatedTable
 	private String extractParentId(DataGroup parent) {
 		DataGroup organisationLink = parent.getFirstGroupWithNameInData("organisationLink");
 		return organisationLink.getFirstAtomicValueWithNameInData("linkedRecordId");
-	}
-
-	private void deleteParents(List<Map<String, Object>> parents) {
-		for (Map<String, Object> readRow : parents) {
-			int parentId = (int) readRow.get(ORGANISATION_PARENT_ID);
-			deleteParent(organisationId, parentId);
-		}
 	}
 
 	private void deleteParent(int organisationId, int parentId) {
@@ -153,4 +182,5 @@ public class OrganisationParentRelatedTable extends OrganisationRelatedTable
 		// needed for test
 		return recordCreator;
 	}
+
 }
