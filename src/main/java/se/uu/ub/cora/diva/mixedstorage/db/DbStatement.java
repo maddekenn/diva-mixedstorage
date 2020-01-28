@@ -18,12 +18,37 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
-import java.util.List;
+import java.util.Map;
 
-import se.uu.ub.cora.data.DataGroup;
+public class DbStatement {
 
-public interface RelatedTable {
+	private final String operation;
+	private final String tableName;
+	private final Map<String, Object> values;
+	private final Map<String, Object> conditions;
 
-	List<DbStatement> handleDbForDataGroup(DataGroup organisation);
+	public DbStatement(String operation, String tableName, Map<String, Object> values,
+			Map<String, Object> conditions) {
+		this.operation = operation;
+		this.tableName = tableName;
+		this.values = values;
+		this.conditions = conditions;
+	}
+
+	public String getOperation() {
+		return operation;
+	}
+
+	public String getTableName() {
+		return tableName;
+	}
+
+	public Map<String, Object> getValues() {
+		return values;
+	}
+
+	public Map<String, Object> getConditions() {
+		return conditions;
+	}
 
 }

@@ -50,7 +50,7 @@ public class DbOrganisationMainTable implements DbMainTable {
 				dataToDbTranslater.getValues(), dataToDbTranslater.getConditions());
 		RelatedTable alternativeName = relatedTableFactory.factor("organisationAlternativeName");
 		alternativeName.handleDbForDataGroup(dataGroup);
-
+		// action (insert, delete update, read), tablename, values ev conditions
 		RelatedTable parent = relatedTableFactory.factor("organisationParent");
 		parent.handleDbForDataGroup(dataGroup);
 

@@ -18,12 +18,25 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
-import java.util.List;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertSame;
 
-import se.uu.ub.cora.data.DataGroup;
+import java.util.HashMap;
+import java.util.Map;
 
-public interface RelatedTable {
+import org.testng.annotations.Test;
 
-	List<DbStatement> handleDbForDataGroup(DataGroup organisation);
+public class DbStatementTest {
+
+	@Test
+	public void testInit() {
+		Map<String, Object> values = new HashMap<>();
+		Map<String, Object> conditions = new HashMap<>();
+		DbStatement dbStatement = new DbStatement("insert", "organisation", values, conditions);
+		assertEquals(dbStatement.getOperation(), "insert");
+		assertEquals(dbStatement.getTableName(), "organisation");
+		assertSame(dbStatement.getValues(), values);
+		assertSame(dbStatement.getConditions(), conditions);
+	}
 
 }

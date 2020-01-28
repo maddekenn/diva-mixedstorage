@@ -19,12 +19,12 @@
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +35,8 @@ import org.testng.annotations.Test;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.DataAtomicSpy;
 import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
+import se.uu.ub.cora.diva.mixedstorage.db.DbException;
+import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordCreatorSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordDeleterSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
@@ -51,16 +53,21 @@ public class OrganisationAlternativeNameRelatedTableTest {
 		recordReader = new RecordReaderRelatedTableSpy();
 		recordDeleter = new RecordDeleterSpy();
 		recordCreator = new RecordCreatorSpy();
+		Map<String, Object> alternativeNameRow = new HashMap<>();
+		alternativeNameRow.put("organisation_name_id", 234);
+		alternativeNameRow.put("organisation_id", 678);
+		alternativeNameRow.put("organisation_name", "some english name");
+		alternativeNameRow.put("locale", "en");
 		alternativeName = new OrganisationAlternativeNameRelatedTable(recordReader, recordDeleter,
-				recordCreator);
+				recordCreator, alternativeNameRow);
 
 	}
 
-	@Test
-	public void testInit() {
+	@Test(expectedExceptions = DbException.class, expectedExceptionsMessageRegExp = ""
+			+ "Organisation must contain alternative name")
+	public void testNoNameInDataGroupThrowsException() {
 		DataGroup organisation = createDataGroupWithId("678");
 		alternativeName.handleDbForDataGroup(organisation);
-		assertCorrectDataSentToRecordReader();
 	}
 
 	private DataGroup createDataGroupWithId(String id) {
@@ -69,44 +76,6 @@ public class OrganisationAlternativeNameRelatedTableTest {
 		recordInfo.addChild(new DataAtomicSpy("id", id));
 		dataGroup.addChild(recordInfo);
 		return dataGroup;
-	}
-
-	@Test
-	public void testNoNameInDbNoNameInDataGroup() {
-		DataGroup organisation = createDataGroupWithId("678");
-		alternativeName.handleDbForDataGroup(organisation);
-		assertCorrectDataSentToRecordReader();
-		assertFalse(recordDeleter.deleteWasCalled);
-		assertFalse(recordCreator.insertWasCalled);
-	}
-
-	@Test
-	public void testNoNameInDbIncompleteNameInDataGroup() {
-		DataGroup organisation = createDataGroupWithId("678");
-		DataGroupSpy alternativeNameGroup = new DataGroupSpy("alternativeName");
-		organisation.addChild(alternativeNameGroup);
-
-		alternativeName.handleDbForDataGroup(organisation);
-		assertCorrectDataSentToRecordReader();
-		assertFalse(recordDeleter.deleteWasCalled);
-		assertFalse(recordCreator.insertWasCalled);
-	}
-
-	@Test
-	public void testOneNameInDbButNoNameInDataGroup() {
-		DataGroup organisation = createDataGroupWithId("678");
-
-		addNameToReturnFromSpy("organisation_name", 234, 678);
-
-		alternativeName.handleDbForDataGroup(organisation);
-		assertCorrectDataSentToRecordReader();
-		assertTrue(recordDeleter.deleteWasCalled);
-
-		assertEquals(recordDeleter.usedTableName, "organisation_name");
-		assertEquals(recordDeleter.usedConditions.get("organisation_name_id"), 234);
-
-		assertFalse(recordCreator.insertWasCalled);
-
 	}
 
 	private void addNameToReturnFromSpy(String tableName, int nameId, int organisationId) {
@@ -132,53 +101,43 @@ public class OrganisationAlternativeNameRelatedTableTest {
 
 		addNameToReturnFromSpy("organisation_name", 234, 678);
 
-		alternativeName.handleDbForDataGroup(organisation);
-		assertCorrectDataSentToRecordReader();
-		assertFalse(recordDeleter.deleteWasCalled);
-
-		assertFalse(recordCreator.insertWasCalled);
-
-	}
-
-	private void assertCorrectDataSentToRecordReader() {
-		assertEquals(recordReader.usedTableName, "organisation_name");
-		assertEquals(recordReader.usedConditions.get(0).get("locale"), "en");
-		assertEquals(recordReader.usedConditions.get(0).get("organisation_id"), 678);
+		List<DbStatement> dbStatments = alternativeName.handleDbForDataGroup(organisation);
+		assertEquals(dbStatments.size(), 0);
 	}
 
 	@Test
 	public void testOneNameInDbDifferentNameInDataGroup() {
 		DataGroup organisation = createDataGroupWithId("678");
-		addAlternativeName(organisation, "some other english name");
+		String newAlternativeName = "some other english name";
+		addAlternativeName(organisation, newAlternativeName);
 
 		addNameToReturnFromSpy("organisation_name", 234, 678);
 
-		alternativeName.handleDbForDataGroup(organisation);
-		assertCorrectDataSentToRecordReader();
+		List<DbStatement> dbStatements = alternativeName.handleDbForDataGroup(organisation);
+		assertEquals(dbStatements.size(), 1);
+		DbStatement dbStatement = dbStatements.get(0);
+		assertEquals(dbStatement.getOperation(), "update");
+		assertEquals(dbStatement.getTableName(), "organisation_name");
 
-		assertTrue(recordDeleter.deleteWasCalled);
+		Map<String, Object> values = dbStatement.getValues();
+		assertEquals(values.get("locale"), "en");
+		assertEquals(values.get("organisation_id"), 678);
 
-		assertTrue(recordCreator.insertWasCalled);
-		assertCorrectValuesSentToInsert("some other english name");
+		String lastUpdatedString = extractTimestampFromValues(values);
+		assertTrue(lastUpdatedString
+				.matches("\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{1,3}"));
+		assertEquals(values.get("organisation_name"), newAlternativeName);
+
+		Map<String, Object> conditions = dbStatement.getConditions();
+		assertEquals(conditions.get("organisation_name_id"), 234);
 
 	}
 
-	private void assertCorrectValuesSentToInsert(String name) {
-		assertEquals(recordReader.sequenceName, "name_sequence");
-		assertEquals(recordCreator.usedTableName, "organisation_name");
-		assertEquals(recordCreator.values.get("organisation_name_id"),
-				recordReader.nextVal.get("nextval"));
-		assertEquals(recordCreator.values.get("locale"), "en");
-		assertEquals(recordCreator.values.get("organisation_id"), 678);
-
-		Timestamp lastUpdated = (Timestamp) recordCreator.values.get("last_updated");
+	private String extractTimestampFromValues(Map<String, Object> values) {
+		Timestamp lastUpdated = (Timestamp) values.get("last_updated");
 		String lastUpdatedString = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
 				.format(lastUpdated);
-
-		assertTrue(lastUpdatedString
-				.matches("\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{1,3}"));
-
-		assertEquals(recordCreator.values.get("organisation_name"), name);
+		return lastUpdatedString;
 	}
 
 	private void addAlternativeName(DataGroup organisation, String name) {
@@ -190,17 +149,35 @@ public class OrganisationAlternativeNameRelatedTableTest {
 
 	@Test
 	public void testNoNameInDbButNameInDataGroup() {
+		alternativeName = new OrganisationAlternativeNameRelatedTable(recordReader, recordDeleter,
+				recordCreator, Collections.emptyMap());
+
 		DataGroup organisation = createDataGroupWithId("678");
 		DataGroupSpy alternativeNameGroup = new DataGroupSpy("alternativeName");
-		alternativeNameGroup.addChild(new DataAtomicSpy("organisationName", "some english name"));
+		String newAlternativeName = "some english name";
+		alternativeNameGroup.addChild(new DataAtomicSpy("organisationName", newAlternativeName));
 		alternativeNameGroup.addChild(new DataAtomicSpy("language", "en"));
 		organisation.addChild(alternativeNameGroup);
 
-		alternativeName.handleDbForDataGroup(organisation);
-		assertCorrectDataSentToRecordReader();
-		assertFalse(recordDeleter.deleteWasCalled);
+		List<DbStatement> dbStatements = alternativeName.handleDbForDataGroup(organisation);
 
-		assertTrue(recordCreator.insertWasCalled);
-		assertCorrectValuesSentToInsert("some english name");
+		assertEquals(dbStatements.size(), 1);
+		DbStatement dbStatement = dbStatements.get(0);
+		assertEquals(dbStatement.getOperation(), "insert");
+		assertEquals(dbStatement.getTableName(), "organisation_name");
+
+		Map<String, Object> values = dbStatement.getValues();
+
+		assertEquals(values.get("organisation_name_id"), recordReader.nextVal.get("nextval"));
+
+		assertEquals(values.get("locale"), "en");
+		assertEquals(values.get("organisation_id"), 678);
+
+		String lastUpdatedString = extractTimestampFromValues(values);
+		assertTrue(lastUpdatedString
+				.matches("\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{1,3}"));
+		assertEquals(values.get("organisation_name"), newAlternativeName);
+
+		assertTrue(dbStatement.getConditions().isEmpty());
 	}
 }
