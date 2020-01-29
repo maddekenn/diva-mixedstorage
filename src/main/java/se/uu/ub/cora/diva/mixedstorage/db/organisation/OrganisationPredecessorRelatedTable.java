@@ -36,6 +36,9 @@ import se.uu.ub.cora.sqldatabase.RecordReader;
 public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTable
 		implements RelatedTable {
 
+	private static final String DESCRIPTION = "description";
+	private static final String INSERT = "insert";
+	private static final String DELETE = "delete";
 	private static final String ORGANISATION_COMMENT = "organisationComment";
 	private static final String ORGANISATION_PREDECESSOR_DESCRIPTION = "organisation_predecessor_description";
 	private static final String PREDECESSOR_ID = "predecessor_id";
@@ -65,9 +68,6 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 			mapWithPredecessorAsKey.put(predecessorId, dbRow);
 		}
 		List<DbStatement> dbStatements = new ArrayList<>();
-
-		// List<Map<String, Object>> allCurrentPredecessorsInDb = getExistingParents(
-		// ORGANISATION_PREDECESSOR);
 		populateCollectionWithPredecessorsFromDataGroup(organisation);
 		Set<String> predecessorIdsInDataGroup = createSetWithPredecessorsInDataGroupIds();
 
@@ -109,11 +109,8 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 		} else {
 			Set<String> originalIdsFromDataGroup = Set.copyOf(idsFromDataGroup);
 			addDataFromDataGroupNotAlreadyInDb(dbStatements, idsFromDataGroup, idsInDatabase);
-
-			// deletePredecessors(dbStatements, existingPredecessors);
 			removeRowsNoLongerPresentInDataGroup(dbStatements, idsInDatabase,
 					originalIdsFromDataGroup);
-			//
 			handlePredecessorDescriptions(dbStatements, existsInDbAndDataGroup);
 		}
 	}
@@ -145,8 +142,8 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 	private DbStatement createDeleteForPredecessorDescription(int predecessorId) {
 		Map<String, Object> deleteConditions = createConditionWithOrganisationId();
 		deleteConditions.put(PREDECESSOR_ID, predecessorId);
-		return new DbStatement("delete", ORGANISATION_PREDECESSOR_DESCRIPTION,
-				Collections.emptyMap(), deleteConditions);
+		return new DbStatement(DELETE, ORGANISATION_PREDECESSOR_DESCRIPTION, Collections.emptyMap(),
+				deleteConditions);
 
 	}
 
@@ -159,7 +156,7 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 	private DbStatement createDeleteForPredecessor(int predecessorId) {
 		Map<String, Object> deleteConditions = createConditionWithOrganisationId();
 		deleteConditions.put(ORGANISATION_PREDECESSOR_ID, predecessorId);
-		return new DbStatement("delete", ORGANISATION_PREDECESSOR, Collections.emptyMap(),
+		return new DbStatement(DELETE, ORGANISATION_PREDECESSOR, Collections.emptyMap(),
 				deleteConditions);
 	}
 
@@ -177,9 +174,7 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 	protected void addToDb(List<DbStatement> dbStatments, Set<String> predecessorIdsInDataGroup) {
 		for (String predecessorId : predecessorIdsInDataGroup) {
 			Map<String, Object> values = createValuesForPredecessorInsert(predecessorId);
-			// recordCreator.insertIntoTableUsingNameAndColumnsWithValues(ORGANISATION_PREDECESSOR,
-			// values);
-			dbStatments.add(new DbStatement("insert", ORGANISATION_PREDECESSOR, values,
+			dbStatments.add(new DbStatement(INSERT, ORGANISATION_PREDECESSOR, values,
 					Collections.emptyMap()));
 			possiblyAddPredecessorDescription(dbStatments, predecessorId);
 
@@ -191,11 +186,8 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 		DataGroup dataGroup = predecessorsInDataGroup.get(predecessorId);
 		if (dataGroup.containsChildWithNameInData(ORGANISATION_COMMENT)) {
 			String comment = dataGroup.getFirstAtomicValueWithNameInData(ORGANISATION_COMMENT);
-			// createNewDescriptionInDb(predecessorId, comment);
 			Map<String, Object> values = createValuesForDescriptionCreate(predecessorId, comment);
-			recordCreator.insertIntoTableUsingNameAndColumnsWithValues(
-					ORGANISATION_PREDECESSOR_DESCRIPTION, values);
-			dbStatments.add(new DbStatement("insert", ORGANISATION_PREDECESSOR_DESCRIPTION, values,
+			dbStatments.add(new DbStatement(INSERT, ORGANISATION_PREDECESSOR_DESCRIPTION, values,
 					Collections.emptyMap()));
 
 		}
@@ -210,7 +202,7 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 
 		descriptionValues.put(ORGANISATION_PREDECESSOR_ID, nextValue.get("nextval"));
 		descriptionValues.put("last_updated", getCurrentTimestamp());
-		descriptionValues.put("description", comment);
+		descriptionValues.put(DESCRIPTION, comment);
 		return descriptionValues;
 	}
 
@@ -248,10 +240,8 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 			String predecessorId) {
 		DataGroup dataGroup = predecessorsInDataGroup.get(predecessorId);
 		Map<String, Object> conditions = createConditionsForPredecessorDescription(predecessorId);
-		// TODO:ska hämtas ur existingPredecessors
 		Map<String, Object> readDescription = mapWithPredecessorAsKey
 				.get(Integer.valueOf(predecessorId));
-		// Map<String, Object> readDescription = readCurrentDescriptionFromDb(conditions);
 		if (dataGroup.containsChildWithNameInData(ORGANISATION_COMMENT)) {
 			handleDeleteAndCreatedForDescription(dbStatements, predecessorId, dataGroup, conditions,
 					readDescription);
@@ -265,10 +255,10 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 			Map<String, Object> readDescription) {
 		String descriptionInDataGroup = dataGroup
 				.getFirstAtomicValueWithNameInData(ORGANISATION_COMMENT);
-		if (readDescription.isEmpty()) {
+		if (!predecessorHasDescription(readDescription)) {
 			createNewDescriptionInDb(dbStatements, id, descriptionInDataGroup);
 		} else {
-			String description = (String) readDescription.get("description");
+			String description = (String) readDescription.get(DESCRIPTION);
 			if (!description.equals(descriptionInDataGroup)) {
 				deleteDescriptionFromDbUsingConditions(dbStatements, conditions);
 				createNewDescriptionInDb(dbStatements, id, descriptionInDataGroup);
@@ -278,24 +268,26 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 
 	private void deleteDescriptionInDbIfExists(List<DbStatement> dbStatements,
 			Map<String, Object> conditions, Map<String, Object> readDescription) {
-		if (!readDescription.isEmpty()) {
+		if (predecessorHasDescription(readDescription)) {
 			deleteDescriptionFromDbUsingConditions(dbStatements, conditions);
 		}
 	}
 
+	private boolean predecessorHasDescription(Map<String, Object> readDescription) {
+		return readDescription.get(DESCRIPTION) != null;
+	}
+
 	private void deleteDescriptionFromDbUsingConditions(List<DbStatement> dbStatements,
 			Map<String, Object> conditions) {
-		recordDeleter.deleteFromTableUsingConditions(ORGANISATION_PREDECESSOR_DESCRIPTION,
-				conditions);
-		dbStatements.add(new DbStatement("", "", Collections.emptyMap(), conditions));
+		dbStatements.add(new DbStatement(DELETE, ORGANISATION_PREDECESSOR_DESCRIPTION,
+				Collections.emptyMap(), conditions));
 	}
 
 	private void createNewDescriptionInDb(List<DbStatement> dbStatements, String id,
 			String descriptionInDataGroup) {
 		Map<String, Object> values = createValuesForDescriptionCreate(id, descriptionInDataGroup);
-		recordCreator.insertIntoTableUsingNameAndColumnsWithValues(
-				ORGANISATION_PREDECESSOR_DESCRIPTION, values);
-		dbStatements.add(new DbStatement("", "", values, Collections.emptyMap()));
+		dbStatements.add(new DbStatement(INSERT, ORGANISATION_PREDECESSOR_DESCRIPTION, values,
+				Collections.emptyMap()));
 	}
 
 	private Map<String, Object> createConditionsForPredecessorDescription(String id) {
@@ -303,16 +295,6 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 		conditions.put(ORGANISATION_ID, organisationId);
 		conditions.put(PREDECESSOR_ID, Integer.valueOf(id));
 		return conditions;
-	}
-
-	private Map<String, Object> readCurrentDescriptionFromDb(Map<String, Object> conditions) {
-		List<Map<String, Object>> readRows = recordReader
-				.readFromTableUsingConditions(ORGANISATION_PREDECESSOR_DESCRIPTION, conditions);
-		return getRowIfOnlyOneOrEmptyMap(readRows);
-	}
-
-	private Map<String, Object> getRowIfOnlyOneOrEmptyMap(List<Map<String, Object>> readRows) {
-		return readRows.size() == 1 ? readRows.get(0) : Collections.emptyMap();
 	}
 
 	public RecordReader getRecordReader() {

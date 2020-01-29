@@ -56,7 +56,6 @@ public class OrganisationPredecessorRelatedTableTest {
 		initPredecessorRows();
 		predecessor = new OrganisationPredecessorRelatedTable(recordReader, recordDeleter,
 				recordCreator);
-
 	}
 
 	private void initPredecessorRows() {
@@ -66,28 +65,6 @@ public class OrganisationPredecessorRelatedTableTest {
 		predeccessorRow.put("organisation_predecessor_id", 234);
 		predecssorRows.add(predeccessorRow);
 	}
-	// addRowToReturnFromSpy("organisation_predecessor", 678, 234, "organisation_predecessor_id");
-
-	private void addRowToReturnFromSpy(String tableName, int organisationId, int predecessorId,
-			String dbKey) {
-		List<Map<String, Object>> rowsInSpy = new ArrayList<>();
-		if (recordReader.rowsToReturn.containsKey(tableName)) {
-			rowsInSpy = recordReader.rowsToReturn.get(tableName);
-		} else {
-			recordReader.rowsToReturn.put(tableName, rowsInSpy);
-		}
-		Map<String, Object> rowToReturn = new HashMap<>();
-		rowToReturn.put("organisation_id", organisationId);
-		rowToReturn.put(dbKey, predecessorId);
-		rowsInSpy.add(rowToReturn);
-	}
-
-	// @Test
-	// public void testInit() {
-	// DataGroup organisation = createDataGroupWithId("678");
-	// predecessor.handleDbForDataGroup(organisation);
-	// assertCorrectDataSentToRecordReader();
-	// }
 
 	private DataGroup createDataGroupWithId(String id) {
 		DataGroup dataGroup = new DataGroupSpy("organisation");
@@ -95,11 +72,6 @@ public class OrganisationPredecessorRelatedTableTest {
 		recordInfo.addChild(new DataAtomicSpy("id", id));
 		dataGroup.addChild(recordInfo);
 		return dataGroup;
-	}
-
-	private void assertCorrectDataSentToRecordReader() {
-		assertEquals(recordReader.usedTableName, "organisation_predecessor");
-		assertEquals(recordReader.usedConditions.get(0).get("organisation_id"), 678);
 	}
 
 	@Test
@@ -152,11 +124,6 @@ public class OrganisationPredecessorRelatedTableTest {
 		assertTrue(dbStatements.isEmpty());
 	}
 
-	private void assertCorrecReadPredecessorUsingIndexAndOrgId(int index, int orgId) {
-		assertEquals(recordReader.usedTableNames.get(index), "organisation_predecessor");
-		assertEquals(recordReader.usedConditions.get(index).get("organisation_id"), orgId);
-	}
-
 	private void addPredecessor(DataGroup organisation, String predecessorId, String repeatId) {
 		DataGroup predecessorGroup = createPredecessorGroupWithRepeatId(repeatId);
 		DataGroupSpy predecessorLink = createPredecessorLink(predecessorId);
@@ -190,8 +157,6 @@ public class OrganisationPredecessorRelatedTableTest {
 	public void testOnePredecessorInDbDifferentPredecessorInDataGroupDeleteAndInsert() {
 		DataGroup organisation = createDataGroupWithId("678");
 		addPredecessor(organisation, "22234", "0");
-
-		addRowToReturnFromSpy("organisation_predecessor", 678, 234, "organisation_predecessor_id");
 
 		List<DbStatement> dbStatements = predecessor.handleDbForDataGroup(organisation,
 				predecssorRows);
@@ -269,33 +234,6 @@ public class OrganisationPredecessorRelatedTableTest {
 		return predecessorRow;
 	}
 
-	private void assertTwoPredecessorsWasDeleted() {
-		assertEquals(recordDeleter.listOfUsedConditions.size(), 2);
-		Map<String, Object> conditionsForFirstDelete = recordDeleter.listOfUsedConditions.get(0);
-		assertEquals(recordDeleter.usedTableNames.get(0), "organisation_predecessor");
-		assertEquals(conditionsForFirstDelete.get("organisation_id"), 678);
-		assertEquals(conditionsForFirstDelete.get("organisation_predecessor_id"), 2444);
-
-		Map<String, Object> conditionsForSecondDelete = recordDeleter.listOfUsedConditions.get(1);
-		assertEquals(recordDeleter.usedTableNames.get(1), "organisation_predecessor");
-		assertEquals(conditionsForSecondDelete.get("organisation_id"), 678);
-		assertEquals(conditionsForSecondDelete.get("organisation_predecessor_id"), 2222);
-	}
-
-	private void assertTwoPredecessorsWasCreated() {
-		assertEquals(recordCreator.listOfValues.size(), 2);
-
-		Map<String, Object> conditionsForFirstCreate = recordCreator.listOfValues.get(0);
-		assertEquals(recordCreator.usedTableNames.get(0), "organisation_predecessor");
-		assertEquals(conditionsForFirstCreate.get("organisation_id"), 678);
-		assertEquals(conditionsForFirstCreate.get("organisation_predecessor_id"), 23);
-
-		Map<String, Object> conditionsForSecondCreate = recordCreator.listOfValues.get(1);
-		assertEquals(recordCreator.usedTableNames.get(1), "organisation_predecessor");
-		assertEquals(conditionsForSecondCreate.get("organisation_id"), 678);
-		assertEquals(conditionsForSecondCreate.get("organisation_predecessor_id"), 44444);
-	}
-
 	/***************************
 	 * With description
 	 **************************************************/
@@ -369,12 +307,6 @@ public class OrganisationPredecessorRelatedTableTest {
 		multiplePredecessors.add(predecessorRow);
 	}
 
-	private void assertFirstDeleteWasPredecessorDescription() {
-		assertEquals(recordDeleter.usedTableNames.get(0), "organisation_predecessor_description");
-		assertEquals(recordDeleter.listOfUsedConditions.get(0).get("organisation_id"), 678);
-		assertEquals(recordDeleter.listOfUsedConditions.get(0).get("predecessor_id"), 234);
-	}
-
 	@Test
 	public void testOnePredecessorInDbSamePredecessorInDataGroupSameComment() {
 		DataGroup organisation = createDataGroupWithId("678");
@@ -398,127 +330,59 @@ public class OrganisationPredecessorRelatedTableTest {
 		predecessorRow.put("predecessordescriptionid", 7778);
 		predecessorRow.put("description", "some OTHER description");
 
-		// addRowToReturnFromSpy("organisation_predecessor", 678, 234,
-		// "organisation_predecessor_id");
-		// addRowToReturnFromSpy("organisation_predecessor_description", 678, 234,
-		// "predecessor_id");
-		// Map<String, Object> descriptionMapInSpy = recordReader.rowsToReturn
-		// .get("organisation_predecessor_description").get(0);
-		// descriptionMapInSpy.put("description", "some OTHER description");
+		List<DbStatement> dbStatements = predecessor.handleDbForDataGroup(organisation,
+				predecssorRows);
+		assertEquals(dbStatements.size(), 2);
+		assertCorrectDeleteForPredecessorDescription(dbStatements.get(0), 678, 234);
+		assertCorrectPredecessorDescriptionInsert(dbStatements.get(1), 678, 234,
+				"some description");
+
+	}
+
+	@Test
+	public void testOnePredecessorInDbSamePredecessorInDataGroupNoCommentInDataGroup() {
+		DataGroup organisation = createDataGroupWithId("678");
+		addPredecessor(organisation, "234", "0");
+
+		Map<String, Object> predecessorRow = predecssorRows.get(0);
+		predecessorRow.put("predecessordescriptionid", 7778);
+		predecessorRow.put("description", "some OTHER description");
+
+		List<DbStatement> dbStatements = predecessor.handleDbForDataGroup(organisation,
+				predecssorRows);
+		assertEquals(dbStatements.size(), 1);
+		assertCorrectDeleteForPredecessorDescription(dbStatements.get(0), 678, 234);
+	}
+
+	@Test
+	public void testOnePredecessorInDbSamePredecessorInDataGroupNoCommentInDb() {
+		DataGroup organisation = createDataGroupWithId("678");
+		addPredecessorWithDescription(organisation, "234", "0");
+
+		List<DbStatement> dbStatements = predecessor.handleDbForDataGroup(organisation,
+				predecssorRows);
+		assertEquals(dbStatements.size(), 1);
+		assertCorrectPredecessorDescriptionInsert(dbStatements.get(0), 678, 234,
+				"some description");
+	}
+
+	@Test
+	public void testOnePredecessorInDbWithDescriptionSameAndAddedPredecessorInDataGroupWithDescription() {
+		DataGroup organisation = createDataGroupWithId("678");
+		addPredecessorWithDescription(organisation, "22234", "0");
+		addPredecessorWithDescription(organisation, "234", "1");
+
+		Map<String, Object> predecessorRow = predecssorRows.get(0);
+		predecessorRow.put("predecessordescriptionid", 7778);
+		predecessorRow.put("description", "some description");
 
 		List<DbStatement> dbStatements = predecessor.handleDbForDataGroup(organisation,
 				predecssorRows);
 		assertEquals(dbStatements.size(), 2);
+		assertCorrectPredecessorInsert(dbStatements.get(0), 678, 22234);
+		assertCorrectPredecessorDescriptionInsert(dbStatements.get(1), 678, 22234,
+				"some description");
 
-		// assertPredecessorAndDescriptionWasRead();
-		// assertDescriptionWasDeleted();
-		// assertNewDescriptionWasCreated();
 	}
-
-	// @Test
-	// public void testOnePredecessorInDbSamePredecessorInDataGroupNoCommentInDataGroup() {
-	// DataGroup organisation = createDataGroupWithId("678");
-	// addPredecessor(organisation, "234", "0");
-	//
-	// addRowToReturnFromSpy("organisation_predecessor", 678, 234, "organisation_predecessor_id");
-	// addRowToReturnFromSpy("organisation_predecessor_description", 678, 234, "predecessor_id");
-	// Map<String, Object> descriptionMapInSpy = recordReader.rowsToReturn
-	// .get("organisation_predecessor_description").get(0);
-	// descriptionMapInSpy.put("description", "some OTHER description");
-	//
-	// predecessor.handleDbForDataGroup(organisation);
-	//
-	// assertPredecessorAndDescriptionWasRead();
-	// assertDescriptionWasDeleted();
-	// assertFalse(recordCreator.insertWasCalled);
-	// }
-
-	// @Test
-	// public void testOnePredecessorInDbSamePredecessorInDataGroupNoCommentInDb() {
-	// DataGroup organisation = createDataGroupWithId("678");
-	// addPredecessorWithDescription(organisation, "234", "0");
-	//
-	// addRowToReturnFromSpy("organisation_predecessor", 678, 234, "organisation_predecessor_id");
-	//
-	// predecessor.handleDbForDataGroup(organisation);
-	//
-	// assertPredecessorAndDescriptionWasRead();
-	// assertFalse(recordDeleter.deleteWasCalled);
-	// assertNewDescriptionWasCreated();
-	// }
-
-	private void assertPredecessorAndDescriptionWasRead() {
-		assertEquals(recordReader.usedTableNames.size(), 2);
-		assertCorrecReadPredecessorUsingIndexAndOrgId(0, 678);
-
-		assertEquals(recordReader.usedTableNames.get(1), "organisation_predecessor_description");
-		assertEquals(recordReader.usedConditions.get(1).get("organisation_id"), 678);
-		assertEquals(recordReader.usedConditions.get(1).get("predecessor_id"), 234);
-	}
-
-	private void assertDescriptionWasDeleted() {
-		assertTrue(recordDeleter.deleteWasCalled);
-		assertEquals(recordDeleter.usedTableNames.size(), 1);
-		assertFirstDeleteWasPredecessorDescription();
-	}
-
-	private void assertNewDescriptionWasCreated() {
-		assertEquals(recordCreator.usedTableNames.size(), 1);
-		assertEquals(recordCreator.usedTableNames.get(0), "organisation_predecessor_description");
-		assertEquals(recordCreator.listOfValues.get(0).get("predecessor_id"), 234);
-		assertEquals(recordCreator.listOfValues.get(0).get("description"), "some description");
-
-		Timestamp lastUpdated = (Timestamp) recordCreator.listOfValues.get(0).get("last_updated");
-
-		String lastUpdatedString = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
-				.format(lastUpdated);
-		assertTrue(lastUpdatedString
-				.matches("\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{1,3}"));
-
-		assertEquals(recordReader.sequenceName, "organisation_predecessor_description_sequence");
-		assertEquals(recordCreator.values.get("organisation_predecessor_id"),
-				recordReader.nextVal.get("nextval"));
-	}
-
-	// @Test
-	// public void
-	// testOnePredecessorInDbWithDescriptionSameAndAddedPredecessorInDataGroupWithDescription() {
-	// DataGroup organisation = createDataGroupWithId("678");
-	// addPredecessorWithDescription(organisation, "22234", "0");
-	// addPredecessorWithDescription(organisation, "234", "1");
-	//
-	// addRowToReturnFromSpy("organisation_predecessor", 678, 234, "organisation_predecessor_id");
-	// addRowToReturnFromSpy("organisation_predecessor_description", 678, 234, "predecessor_id");
-	//
-	// Map<String, Object> descriptionMapInSpy = recordReader.rowsToReturn
-	// .get("organisation_predecessor_description").get(0);
-	// descriptionMapInSpy.put("description", "some description");
-	//
-	// predecessor.handleDbForDataGroup(organisation);
-	// assertCorrecReadPredecessorUsingIndexAndOrgId(0, 678);
-	//
-	// assertFalse(recordDeleter.deleteWasCalled);
-	// assertTrue(recordCreator.insertWasCalled);
-	// Map<String, Object> conditionsForFirstCreate = recordCreator.listOfValues.get(0);
-	//
-	// assertEquals(recordCreator.usedTableNames.get(0), "organisation_predecessor");
-	// assertEquals(conditionsForFirstCreate.get("organisation_id"), 678);
-	// assertEquals(conditionsForFirstCreate.get("organisation_predecessor_id"), 22234);
-	//
-	// assertEquals(recordCreator.usedTableNames.get(1), "organisation_predecessor_description");
-	// Map<String, Object> conditionsForDescription = recordCreator.listOfValues.get(1);
-	// assertEquals(conditionsForDescription.get("organisation_id"), 678);
-	// assertEquals(conditionsForDescription.get("predecessor_id"), 22234);
-	// assertEquals(conditionsForDescription.get("organisation_predecessor_id"),
-	// recordReader.nextVal.get("nextval"));
-	// Timestamp lastUpdated = (Timestamp) conditionsForDescription.get("last_updated");
-	//
-	// String lastUpdatedString = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
-	// .format(lastUpdated);
-	// assertTrue(lastUpdatedString
-	// .matches("\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{1,3}"));
-	// assertEquals(conditionsForDescription.get("description"), "some description");
-	//
-	// }
 
 }
