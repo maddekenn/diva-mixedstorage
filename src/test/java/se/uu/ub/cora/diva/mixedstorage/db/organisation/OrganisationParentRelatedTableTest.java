@@ -19,8 +19,10 @@
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,19 +40,21 @@ public class OrganisationParentRelatedTableTest {
 
 	private RecordReaderRelatedTableSpy recordReader;
 	private RelatedTable parent;
+	private List<Map<String, Object>> parentRows;
 
 	@BeforeMethod
 	public void setUp() {
 		recordReader = new RecordReaderRelatedTableSpy();
 		parent = new OrganisationParentRelatedTable(recordReader);
-
+		initParentRows();
 	}
 
-	@Test
-	public void testInit() {
-		DataGroup organisation = createDataGroupWithId("678");
-		parent.handleDbForDataGroup(organisation);
-		assertCorrectDataSentToRecordReader();
+	private void initParentRows() {
+		parentRows = new ArrayList<>();
+		Map<String, Object> parentRow = new HashMap<>();
+		parentRow.put("organisation_id", 678);
+		parentRow.put("organisation_parent_id", 234);
+		parentRows.add(parentRow);
 	}
 
 	private DataGroup createDataGroupWithId(String id) {
@@ -61,52 +65,21 @@ public class OrganisationParentRelatedTableTest {
 		return dataGroup;
 	}
 
-	private void assertCorrectDataSentToRecordReader() {
-		assertEquals(recordReader.usedTableName, "organisation_parent");
-		assertEquals(recordReader.usedConditions.get(0).get("organisation_id"), 678);
-	}
-
 	@Test
 	public void testNoParentInDbNoParentInDataGroup() {
 		DataGroup organisation = createDataGroupWithId("678");
-		List<DbStatement> handleDbForDataGroup = parent.handleDbForDataGroup(organisation);
-		// assertCorrectDataSentToRecordReader();
-		assertEquals(handleDbForDataGroup.size(), 0);
-		// assertFalse(recordDeleter.deleteWasCalled);
-		// assertFalse(recordCreator.insertWasCalled);
+		List<DbStatement> dbStatements = parent.handleDbForDataGroup(organisation,
+				Collections.emptyList());
+		assertTrue(dbStatements.isEmpty());
 	}
 
 	@Test
 	public void testOneParentInDbButNoParentInDataGroup() {
 		DataGroup organisation = createDataGroupWithId("678");
+		List<DbStatement> dbStatements = parent.handleDbForDataGroup(organisation, parentRows);
+		assertEquals(dbStatements.size(), 1);
+		assertCorrectDelete(dbStatements.get(0), 234);
 
-		addRowToReturnFromSpy("organisation_parent", 678, 234);
-
-		List<DbStatement> handleDbForDataGroup = parent.handleDbForDataGroup(organisation);
-		assertEquals(handleDbForDataGroup.size(), 1);
-		assertEquals(handleDbForDataGroup.get(0).getOperation(), "delete");
-		assertEquals(handleDbForDataGroup.get(0).getTableName(), "organisation_parent");
-		// assertTrue(recordDeleter.deleteWasCalled);
-		//
-		// assertEquals(recordDeleter.usedTableName, "organisation_parent");
-		// assertEquals(recordDeleter.usedConditions.get("organisation_id"), 678);
-		// assertEquals(recordDeleter.usedConditions.get("organisation_parent_id"), 234);
-		//
-		// assertFalse(recordCreator.insertWasCalled);
-
-	}
-
-	private void addRowToReturnFromSpy(String tableName, int organisationId, int parentId) {
-		List<Map<String, Object>> rowsInSpy = new ArrayList<>();
-		if (recordReader.rowsToReturn.containsKey(tableName)) {
-			rowsInSpy = recordReader.rowsToReturn.get(tableName);
-		} else {
-			recordReader.rowsToReturn.put(tableName, rowsInSpy);
-		}
-		Map<String, Object> rowToReturn = new HashMap<>();
-		rowToReturn.put("organisation_id", organisationId);
-		rowToReturn.put("organisation_parent_id", parentId);
-		rowsInSpy.add(rowToReturn);
 	}
 
 	@Test
@@ -114,13 +87,8 @@ public class OrganisationParentRelatedTableTest {
 		DataGroup organisation = createDataGroupWithId("678");
 		addParent(organisation, "234", "0");
 
-		addRowToReturnFromSpy("organisation_parent", 678, 234);
-
-		parent.handleDbForDataGroup(organisation);
-		assertCorrectDataSentToRecordReader();
-		// assertFalse(recordDeleter.deleteWasCalled);
-		//
-		// assertFalse(recordCreator.insertWasCalled);
+		List<DbStatement> dbStatements = parent.handleDbForDataGroup(organisation, parentRows);
+		assertTrue(dbStatements.isEmpty());
 
 	}
 
@@ -139,30 +107,13 @@ public class OrganisationParentRelatedTableTest {
 		DataGroup organisation = createDataGroupWithId("678");
 		addParent(organisation, "22234", "0");
 
-		addRowToReturnFromSpy("organisation_parent", 678, 234);
+		List<DbStatement> dbStatements = parent.handleDbForDataGroup(organisation, parentRows);
 
-		parent.handleDbForDataGroup(organisation);
-		assertCorrectDataSentToRecordReader();
+		assertEquals(dbStatements.size(), 2);
 
-		// assertTrue(recordDeleter.deleteWasCalled);
-		// Map<String, Object> conditionsForFirstDelete = recordDeleter.listOfUsedConditions.get(0);
-		// assertEquals(recordDeleter.usedTableNames.get(0), "organisation_parent");
-		// assertEquals(conditionsForFirstDelete.get("organisation_id"), 678);
-		// assertEquals(conditionsForFirstDelete.get("organisation_parent_id"), 234);
-		//
-		// assertTrue(recordCreator.insertWasCalled);
-		// Map<String, Object> conditionsForFirstCreate = recordCreator.listOfValues.get(0);
-		//
-		// assertEquals(recordCreator.usedTableNames.get(0), "organisation_parent");
-		// assertEquals(conditionsForFirstCreate.get("organisation_id"), 678);
-		// assertEquals(conditionsForFirstCreate.get("organisation_parent_id"), 22234);
+		assertCorrectInsert(dbStatements.get(0), 22234);
+		assertCorrectDelete(dbStatements.get(1), 234);
 
-	}
-
-	private void assertCorrectValuesSentToInsert(int parentId) {
-		// assertEquals(recordCreator.usedTableName, "organisation_parent");
-		// assertEquals(recordCreator.values.get("organisation_id"), 678);
-		// assertEquals(recordCreator.values.get("organisation_parent_id"), parentId);
 	}
 
 	@Test
@@ -170,12 +121,9 @@ public class OrganisationParentRelatedTableTest {
 		DataGroup organisation = createDataGroupWithId("678");
 		addParent(organisation, "234", "0");
 
-		parent.handleDbForDataGroup(organisation);
-		assertCorrectDataSentToRecordReader();
-		// assertFalse(recordDeleter.deleteWasCalled);
-		//
-		// assertTrue(recordCreator.insertWasCalled);
-		assertCorrectValuesSentToInsert(234);
+		List<DbStatement> dbStatements = parent.handleDbForDataGroup(organisation,
+				Collections.emptyList());
+		assertCorrectInsert(dbStatements.get(0), 234);
 	}
 
 	@Test
@@ -186,39 +134,45 @@ public class OrganisationParentRelatedTableTest {
 		addParent(organisation, "22234", "2");
 		addParent(organisation, "44444", "2");
 
-		addRowToReturnFromSpy("organisation_parent", 678, 234);
-		addRowToReturnFromSpy("organisation_parent", 678, 22234);
-		addRowToReturnFromSpy("organisation_parent", 678, 2444);
-		addRowToReturnFromSpy("organisation_parent", 678, 2222);
+		List<Map<String, Object>> multipleParents = new ArrayList<>();
+		addParenRow(multipleParents, 678, 234);
+		addParenRow(multipleParents, 678, 22234);
+		addParenRow(multipleParents, 678, 2444);
+		addParenRow(multipleParents, 678, 2222);
 
-		parent.handleDbForDataGroup(organisation);
-		assertCorrectDataSentToRecordReader();
+		List<DbStatement> dbStatements = parent.handleDbForDataGroup(organisation, multipleParents);
+		assertEquals(dbStatements.size(), 4);
 
-		// assertTrue(recordDeleter.deleteWasCalled);
-		// assertEquals(recordDeleter.listOfUsedConditions.size(), 2);
-		// Map<String, Object> conditionsForFirstDelete = recordDeleter.listOfUsedConditions.get(0);
-		// assertEquals(recordDeleter.usedTableNames.get(0), "organisation_parent");
-		// assertEquals(conditionsForFirstDelete.get("organisation_id"), 678);
-		// assertEquals(conditionsForFirstDelete.get("organisation_parent_id"), 2444);
-		//
-		// Map<String, Object> conditionsForSecondDelete =
-		// recordDeleter.listOfUsedConditions.get(1);
-		// assertEquals(recordDeleter.usedTableNames.get(1), "organisation_parent");
-		// assertEquals(conditionsForSecondDelete.get("organisation_id"), 678);
-		// assertEquals(conditionsForSecondDelete.get("organisation_parent_id"), 2222);
-		//
-		// assertTrue(recordCreator.insertWasCalled);
-		// assertEquals(recordCreator.listOfValues.size(), 2);
-		//
-		// Map<String, Object> conditionsForFirstCreate = recordCreator.listOfValues.get(0);
-		// assertEquals(recordCreator.usedTableNames.get(0), "organisation_parent");
-		// assertEquals(conditionsForFirstCreate.get("organisation_id"), 678);
-		// assertEquals(conditionsForFirstCreate.get("organisation_parent_id"), 23);
-		//
-		// Map<String, Object> conditionsForSecondCreate = recordCreator.listOfValues.get(1);
-		// assertEquals(recordCreator.usedTableNames.get(1), "organisation_parent");
-		// assertEquals(conditionsForSecondCreate.get("organisation_id"), 678);
-		// assertEquals(conditionsForSecondCreate.get("organisation_parent_id"), 44444);
+		assertCorrectInsert(dbStatements.get(0), 23);
+		assertCorrectInsert(dbStatements.get(1), 44444);
 
+		assertCorrectDelete(dbStatements.get(2), 2444);
+		assertCorrectDelete(dbStatements.get(3), 2222);
+
+	}
+
+	private void assertCorrectInsert(DbStatement insertStatement, int parentId) {
+		assertEquals(insertStatement.getOperation(), "insert");
+		assertEquals(insertStatement.getTableName(), "organisation_parent");
+		Map<String, Object> insertValues = insertStatement.getValues();
+		assertEquals(insertValues.get("organisation_id"), 678);
+		assertEquals(insertValues.get("organisation_parent_id"), parentId);
+	}
+
+	private void assertCorrectDelete(DbStatement deleteStatement, int parentId) {
+		assertEquals(deleteStatement.getOperation(), "delete");
+		assertEquals(deleteStatement.getTableName(), "organisation_parent");
+		Map<String, Object> deleteConditions = deleteStatement.getConditions();
+		assertEquals(deleteConditions.get("organisation_id"), 678);
+		assertEquals(deleteConditions.get("organisation_parent_id"), parentId);
+	}
+
+	private void addParenRow(List<Map<String, Object>> multipleParents, int organisationId,
+			int parentId) {
+
+		Map<String, Object> parentRow = new HashMap<>();
+		parentRow.put("organisation_id", organisationId);
+		parentRow.put("organisation_parent_id", parentId);
+		multipleParents.add(parentRow);
 	}
 }

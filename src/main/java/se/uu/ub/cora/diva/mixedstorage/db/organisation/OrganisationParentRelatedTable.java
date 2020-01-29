@@ -19,6 +19,7 @@
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -46,63 +47,55 @@ public class OrganisationParentRelatedTable extends OrganisationRelatedTable
 	}
 
 	@Override
-	public List<DbStatement> handleDbForDataGroup(DataGroup organisation) {
-		List<DbStatement> dbStatements = new ArrayList<>();
-		List<Map<String, Object>> existingParents = getExistingParents(ORGANISATION_PARENT);
-		Set<String> newParents = getParentIdsInDataGroup(organisation);
+	public List<DbStatement> handleDbForDataGroup(DataGroup organisation,
+			List<Map<String, Object>> existingParents) {
 
-		if (existingParents.size() == 0 && newParents.size() == 0) {
+		setIdAsInt(organisation);
+		List<DbStatement> dbStatements = new ArrayList<>();
+		Set<String> parentsInDataGroup = getParentIdsInDataGroup(organisation);
+
+		if (noAlternativeNamesToHandle(existingParents, parentsInDataGroup)) {
 			return dbStatements;
 		}
 
-		handleExistingParents(dbStatements, existingParents);
-		handleNewParents(dbStatements, existingParents, newParents);
+		if (noParentsInDataGroup(parentsInDataGroup)) {
+			createDeleteStatements(dbStatements, existingParents);
+		} else {
+			handleDeleteAndCreate(dbStatements, existingParents, parentsInDataGroup);
+		}
 
 		return dbStatements;
 	}
-	// @Override
-	// public List<DbStatement> handleDbForDataGroup(DataGroup organisation) {
-	// setIdAsInt(organisation);
-	//
-	// List<DbStatement> dbStatements = new ArrayList<>();
-	//
-	// List<Map<String, Object>> allCurrentParentsInDb = readCurrentRowsFromDatabaseUsingTableName(
-	// ORGANISATION_PARENT);
-	// Set<String> parentIdsInDataGroup = getParentIdsInDataGroup(organisation);
-	//
-	// if (parentIdsInDataGroup.isEmpty()) {
-	// deleteParents(allCurrentParentsInDb);
-	// } else {
-	// handleDeleteAndCreate(allCurrentParentsInDb, parentIdsInDataGroup);
-	// }
-	// return dbStatements;
-	//
-	// }
 
-	private void handleNewParents(List<DbStatement> dbStatements,
-			List<Map<String, Object>> existingParents, Set<String> newParents) {
-		// TODO Auto-generated method stub
-		if (newParents.isEmpty())
-			deleteParents(dbStatements, existingParents);
+	private boolean noAlternativeNamesToHandle(List<Map<String, Object>> existingParents,
+			Set<String> parentsInDataGroup) {
+		return existingParents.isEmpty() && noParentsInDataGroup(parentsInDataGroup);
 	}
 
-	private void deleteParents(List<DbStatement> dbStatements, List<Map<String, Object>> parents) {
+	private boolean noParentsInDataGroup(Set<String> parentsInDataGroup) {
+		return parentsInDataGroup.isEmpty();
+	}
+
+	private void createDeleteStatements(List<DbStatement> dbStatements,
+			List<Map<String, Object>> parents) {
 		for (Map<String, Object> readRow : parents) {
 			int parentId = (int) readRow.get(ORGANISATION_PARENT_ID);
-			DbStatement dbStatement = new DbStatement("delete", ORGANISATION_PARENT, null, null);
-			dbStatements.add(dbStatement);
+			dbStatements.add(createDeleteStatement(parentId));
 		}
 	}
 
-	private void handleExistingParents(List<DbStatement> dbStatements,
-			List<Map<String, Object>> existingParents) {
+	private DbStatement createDeleteStatement(int parentId) {
+		Map<String, Object> deleteConditions = new HashMap<>();
+		deleteConditions.put(ORGANISATION_ID, organisationId);
+		deleteConditions.put(ORGANISATION_PARENT_ID, parentId);
+		return new DbStatement("delete", ORGANISATION_PARENT, Collections.emptyMap(),
+				deleteConditions);
 	}
 
 	@Override
 	protected Map<String, Object> createConditionsFoReadingCurrentRows() {
-		Map<String, Object> conditions = new HashMap<>();
-		conditions.put(ORGANISATION_ID, organisationId);
-		return conditions;
+		// TODO:ta bort när det inte längre måste implementeras
+		return Collections.emptyMap();
 	}
 
 	private Set<String> getParentIdsInDataGroup(DataGroup organisation) {
@@ -120,13 +113,6 @@ public class OrganisationParentRelatedTable extends OrganisationRelatedTable
 		return organisationLink.getFirstAtomicValueWithNameInData("linkedRecordId");
 	}
 
-	private void deleteParent(int organisationId, int parentId) {
-		Map<String, Object> deleteConditions = new HashMap<>();
-		deleteConditions.put(ORGANISATION_ID, organisationId);
-		deleteConditions.put(ORGANISATION_PARENT_ID, parentId);
-		recordDeleter.deleteFromTableUsingConditions(ORGANISATION_PARENT, deleteConditions);
-	}
-
 	@Override
 	protected Set<String> getIdsForCurrentRowsInDatabase(
 			List<Map<String, Object>> allCurrentParentsInDb) {
@@ -138,11 +124,17 @@ public class OrganisationParentRelatedTable extends OrganisationRelatedTable
 	}
 
 	@Override
-	protected void addToDb(Set<String> parentIdsInDataGroup) {
+	protected void addToDb(List<DbStatement> dbStatements, Set<String> parentIdsInDataGroup) {
 		for (String parentId : parentIdsInDataGroup) {
-			Map<String, Object> values = createValuesForParentInsert(parentId);
-			recordCreator.insertIntoTableUsingNameAndColumnsWithValues(ORGANISATION_PARENT, values);
+			DbStatement dbStatement = createInsertStatement(parentId);
+			dbStatements.add(dbStatement);
 		}
+	}
+
+	private DbStatement createInsertStatement(String parentId) {
+		Map<String, Object> values = createValuesForParentInsert(parentId);
+		return new DbStatement("insert", ORGANISATION_PARENT, values,
+				Collections.emptyMap());
 	}
 
 	private Map<String, Object> createValuesForParentInsert(String parentId) {
@@ -153,18 +145,19 @@ public class OrganisationParentRelatedTable extends OrganisationRelatedTable
 	}
 
 	@Override
-	protected void addDataFromDataGroupNotAlreadyInDb(Set<String> parentIdsInDataGroup,
-			Set<String> parentIdsInDatabase) {
+	protected void addDataFromDataGroupNotAlreadyInDb(List<DbStatement> dbStatements,
+			Set<String> parentIdsInDataGroup, Set<String> parentIdsInDatabase) {
 		parentIdsInDataGroup.removeAll(parentIdsInDatabase);
-		addToDb(parentIdsInDataGroup);
+		addToDb(dbStatements, parentIdsInDataGroup);
 	}
 
 	@Override
-	protected void removeRowsNoLongerPresentInDataGroup(Set<String> parentIdsInDatabase,
-			Set<String> originalParentsInDataGroup) {
+	protected void removeRowsNoLongerPresentInDataGroup(List<DbStatement> dbStatements,
+			Set<String> parentIdsInDatabase, Set<String> originalParentsInDataGroup) {
 		parentIdsInDatabase.removeAll(originalParentsInDataGroup);
 		for (String parentId : parentIdsInDatabase) {
-			deleteParent(organisationId, Integer.valueOf(parentId));
+			dbStatements
+					.add(createDeleteStatement(Integer.valueOf(parentId)));
 		}
 	}
 

@@ -54,11 +54,10 @@ public class RelatedTableFactoryImp implements RelatedTableFactory {
 		RecordDeleter recordDeleter = recordDeleterFactory.factor();
 		RecordCreator recordCreator = recordCreatorFactory.factor();
 		if ("organisationAlternativeName".equals(relatedTableName)) {
-			return new OrganisationAlternativeNameRelatedTable(recordReader, recordDeleter,
-					recordCreator);
+			return new OrganisationAlternativeNameRelatedTable(recordReader);
 		}
 		if ("organisationParent".equals(relatedTableName)) {
-			return new OrganisationParentRelatedTable(recordReader, recordDeleter, recordCreator);
+			return new OrganisationParentRelatedTable(recordReader);
 		}
 		if ("organisationPredecessor".equals(relatedTableName)) {
 			return new OrganisationPredecessorRelatedTable(recordReader, recordDeleter,

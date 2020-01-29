@@ -26,6 +26,7 @@ import java.util.Set;
 
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbHelper;
+import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 
 public abstract class OrganisationRelatedTable {
@@ -39,24 +40,24 @@ public abstract class OrganisationRelatedTable {
 		organisationId = Integer.valueOf(organisationIdAsString);
 	}
 
-	protected List<Map<String, Object>> getExistingParents(
-			String tableName) {
+	protected List<Map<String, Object>> getExistingParents(String tableName) {
 		Map<String, Object> conditions = createConditionsFoReadingCurrentRows();
 		return recordReader.readFromTableUsingConditions(tableName, conditions);
 	}
 
 	protected abstract Map<String, Object> createConditionsFoReadingCurrentRows();
 
-	protected void handleDeleteAndCreate(List<Map<String, Object>> allCurrentRowsInDb,
-			Set<String> idsFromDataGroup) {
+	protected void handleDeleteAndCreate(List<DbStatement> dbStatements,
+			List<Map<String, Object>> allCurrentRowsInDb, Set<String> idsFromDataGroup) {
 		Set<String> idsInDatabase = getIdsForCurrentRowsInDatabase(allCurrentRowsInDb);
 
 		if (idsInDatabase.isEmpty()) {
-			addToDb(idsFromDataGroup);
+			addToDb(dbStatements, idsFromDataGroup);
 		} else {
 			Set<String> originalIdsFromDataGroup = Set.copyOf(idsFromDataGroup);
-			addDataFromDataGroupNotAlreadyInDb(idsFromDataGroup, idsInDatabase);
-			removeRowsNoLongerPresentInDataGroup(idsInDatabase, originalIdsFromDataGroup);
+			addDataFromDataGroupNotAlreadyInDb(dbStatements, idsFromDataGroup, idsInDatabase);
+			removeRowsNoLongerPresentInDataGroup(dbStatements, idsInDatabase,
+					originalIdsFromDataGroup);
 		}
 	}
 
@@ -67,13 +68,13 @@ public abstract class OrganisationRelatedTable {
 
 	}
 
-	protected abstract void removeRowsNoLongerPresentInDataGroup(Set<String> idsInDatabase,
-			Set<String> originalIdsFromDataGroup);
+	protected abstract void removeRowsNoLongerPresentInDataGroup(List<DbStatement> dbStatements,
+			Set<String> idsInDatabase, Set<String> originalIdsFromDataGroup);
 
-	protected abstract void addDataFromDataGroupNotAlreadyInDb(Set<String> idsFromDataGroup,
-			Set<String> idsInDatabase);
+	protected abstract void addDataFromDataGroupNotAlreadyInDb(List<DbStatement> dbStatements,
+			Set<String> idsFromDataGroup, Set<String> idsInDatabase);
 
-	protected abstract void addToDb(Set<String> idsFromDataGroup);
+	protected abstract void addToDb(List<DbStatement> dbStatements, Set<String> idsFromDataGroup);
 
 	protected abstract Set<String> getIdsForCurrentRowsInDatabase(
 			List<Map<String, Object>> allCurrentRowsInDb);
