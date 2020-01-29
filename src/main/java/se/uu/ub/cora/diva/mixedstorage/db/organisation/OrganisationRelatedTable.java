@@ -40,13 +40,6 @@ public abstract class OrganisationRelatedTable {
 		organisationId = Integer.valueOf(organisationIdAsString);
 	}
 
-	protected List<Map<String, Object>> getExistingParents(String tableName) {
-		Map<String, Object> conditions = createConditionsFoReadingCurrentRows();
-		return recordReader.readFromTableUsingConditions(tableName, conditions);
-	}
-
-	protected abstract Map<String, Object> createConditionsFoReadingCurrentRows();
-
 	protected void handleDeleteAndCreate(List<DbStatement> dbStatements,
 			List<Map<String, Object>> allCurrentRowsInDb, Set<String> idsFromDataGroup) {
 		Set<String> idsInDatabase = getIdsForCurrentRowsInDatabase(allCurrentRowsInDb);

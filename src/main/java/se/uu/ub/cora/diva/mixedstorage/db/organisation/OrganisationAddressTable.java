@@ -19,6 +19,8 @@
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -26,12 +28,12 @@ import java.util.Map;
 
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbHelper;
+import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
 import se.uu.ub.cora.diva.mixedstorage.db.ReferenceTable;
 import se.uu.ub.cora.sqldatabase.RecordCreator;
 import se.uu.ub.cora.sqldatabase.RecordDeleter;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
-import se.uu.ub.cora.sqldatabase.RecordUpdater;
 import se.uu.ub.cora.sqldatabase.RecordUpdaterFactory;
 
 public class OrganisationAddressTable implements ReferenceTable {
@@ -57,34 +59,40 @@ public class OrganisationAddressTable implements ReferenceTable {
 	}
 
 	@Override
-	public void handleDbForDataGroup(DataGroup organisation) {
+	public List<DbStatement> handleDbForDataGroup(DataGroup organisation,
+			List<Map<String, Object>> rowsFromDb) {
 		setIdAsInt(organisation);
 		List<Map<String, Object>> readOrg = readOrganisationFromDb();
+		List<DbStatement> dbStatements = new ArrayList<>();
 
 		Object addressIdInOrganisation = readOrg.get(0).get(ADDRESS_ID);
 		if (addressExistsInDatabase(addressIdInOrganisation)) {
-			deleteOrUpdateAddress(organisation, addressIdInOrganisation);
+			deleteOrUpdateAddress(dbStatements, organisation, addressIdInOrganisation);
 		} else {
-			possiblyInsertAddress(organisation);
+			possiblyInsertAddress(dbStatements, organisation);
 
 		}
+		return dbStatements;
 	}
 
-	private void deleteOrUpdateAddress(DataGroup organisation, Object addressIdInOrganisation) {
+	private void deleteOrUpdateAddress(List<DbStatement> dbStatements, DataGroup organisation,
+			Object addressIdInOrganisation) {
 		int addressId = (int) addressIdInOrganisation;
 		if (noAddressInDataGroup(organisation)) {
-			deleteAddressAndUpdateOrganisation(addressId);
+			deleteAddressAndUpdateOrganisation(dbStatements, addressId);
 		} else {
-			updateAddress(organisation, addressId);
+			updateAddress(dbStatements, organisation, addressId);
 		}
 	}
 
-	private void updateAddress(DataGroup organisation, int addressId) {
-		RecordUpdater addressUpdater = recordUpdaterFactory.factor();
+	private void updateAddress(List<DbStatement> dbStatements, DataGroup organisation,
+			int addressId) {
 		Map<String, Object> values = createValuesForAddressInsertOrUpdate(organisation);
 		Map<String, Object> conditions = createConditionWithAddressId(addressId);
-		addressUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions(ORGANISATION_ADDRESS,
-				values, conditions);
+		// RecordUpdater addressUpdater = recordUpdaterFactory.factor();
+		// addressUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions(ORGANISATION_ADDRESS,
+		// values, conditions);
+		dbStatements.add(new DbStatement("update", ORGANISATION_ADDRESS, values, conditions));
 	}
 
 	private void setIdAsInt(DataGroup organisation) {
@@ -116,10 +124,12 @@ public class OrganisationAddressTable implements ReferenceTable {
 				|| organisation.containsChildWithNameInData("country");
 	}
 
-	private void deleteAddressAndUpdateOrganisation(int addressId) {
-		updateOrganisationWithNoAddressId();
+	private void deleteAddressAndUpdateOrganisation(List<DbStatement> dbStatements, int addressId) {
+		updateOrganisationWithNoAddressId(dbStatements);
 		Map<String, Object> deleteConditions = createConditionWithAddressId(addressId);
-		recordDeleter.deleteFromTableUsingConditions(ORGANISATION_ADDRESS, deleteConditions);
+		// recordDeleter.deleteFromTableUsingConditions(ORGANISATION_ADDRESS, deleteConditions);
+		dbStatements.add(new DbStatement("delete", ORGANISATION_ADDRESS, Collections.emptyMap(),
+				deleteConditions));
 	}
 
 	private Map<String, Object> createConditionWithAddressId(int addressId) {
@@ -128,10 +138,10 @@ public class OrganisationAddressTable implements ReferenceTable {
 		return conditionsForAddress;
 	}
 
-	private void updateOrganisationWithNoAddressId() {
+	private void updateOrganisationWithNoAddressId(List<DbStatement> dbStatements) {
 		Map<String, Object> values = createValuesForNullAddressId();
 		Map<String, Object> updateConditions = createConditionsWithOrganisationId();
-		updateAddressColumnInOrganisation(values, updateConditions);
+		updateAddressColumnInOrganisation(dbStatements, values, updateConditions);
 	}
 
 	private Map<String, Object> createValuesForNullAddressId() {
@@ -146,11 +156,9 @@ public class OrganisationAddressTable implements ReferenceTable {
 		return updateConditions;
 	}
 
-	private void updateAddressColumnInOrganisation(Map<String, Object> values,
-			Map<String, Object> updateConditions) {
-		RecordUpdater recordUpdater = recordUpdaterFactory.factor();
-		recordUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions("organisation", values,
-				updateConditions);
+	private void updateAddressColumnInOrganisation(List<DbStatement> dbStatements,
+			Map<String, Object> values, Map<String, Object> updateConditions) {
+		dbStatements.add(new DbStatement("update", "organisation", values, updateConditions));
 	}
 
 	private Map<String, Object> createValuesForAddressInsertOrUpdate(DataGroup organisation) {
@@ -178,7 +186,7 @@ public class OrganisationAddressTable implements ReferenceTable {
 
 	}
 
-	private void possiblyInsertAddress(DataGroup organisation) {
+	private void possiblyInsertAddress(List<DbStatement> dbStatements, DataGroup organisation) {
 		if (organisationDataGroupContainsAddress(organisation)) {
 
 			RecordReader sequenceReader = recordReaderFactory.factor();
@@ -189,7 +197,8 @@ public class OrganisationAddressTable implements ReferenceTable {
 			Map<String, Object> values = new HashMap<>();
 			values.put(ADDRESS_ID, nextValue.get("nextval"));
 
-			updateAddressColumnInOrganisation(values, createConditionsWithOrganisationId());
+			updateAddressColumnInOrganisation(dbStatements, values,
+					createConditionsWithOrganisationId());
 		}
 	}
 

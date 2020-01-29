@@ -92,12 +92,6 @@ public class OrganisationParentRelatedTable extends OrganisationRelatedTable
 				deleteConditions);
 	}
 
-	@Override
-	protected Map<String, Object> createConditionsFoReadingCurrentRows() {
-		// TODO:ta bort när det inte längre måste implementeras
-		return Collections.emptyMap();
-	}
-
 	private Set<String> getParentIdsInDataGroup(DataGroup organisation) {
 		Set<String> parentIds = new HashSet<>();
 		List<DataGroup> parents = organisation.getAllGroupsWithNameInData("parentOrganisation");
@@ -133,8 +127,7 @@ public class OrganisationParentRelatedTable extends OrganisationRelatedTable
 
 	private DbStatement createInsertStatement(String parentId) {
 		Map<String, Object> values = createValuesForParentInsert(parentId);
-		return new DbStatement("insert", ORGANISATION_PARENT, values,
-				Collections.emptyMap());
+		return new DbStatement("insert", ORGANISATION_PARENT, values, Collections.emptyMap());
 	}
 
 	private Map<String, Object> createValuesForParentInsert(String parentId) {
@@ -156,8 +149,7 @@ public class OrganisationParentRelatedTable extends OrganisationRelatedTable
 			Set<String> parentIdsInDatabase, Set<String> originalParentsInDataGroup) {
 		parentIdsInDatabase.removeAll(originalParentsInDataGroup);
 		for (String parentId : parentIdsInDatabase) {
-			dbStatements
-					.add(createDeleteStatement(Integer.valueOf(parentId)));
+			dbStatements.add(createDeleteStatement(Integer.valueOf(parentId)));
 		}
 	}
 

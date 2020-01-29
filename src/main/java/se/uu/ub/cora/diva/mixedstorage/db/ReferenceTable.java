@@ -18,6 +18,9 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import java.util.List;
+import java.util.Map;
+
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.sqldatabase.RecordCreator;
 import se.uu.ub.cora.sqldatabase.RecordDeleter;
@@ -25,7 +28,8 @@ import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
 public interface ReferenceTable {
 
-	void handleDbForDataGroup(DataGroup organisation);
+	List<DbStatement> handleDbForDataGroup(DataGroup organisation,
+			List<Map<String, Object>> rowsFromDb);
 
 	RecordReaderFactory getRecordReaderFactory();
 

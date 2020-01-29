@@ -58,7 +58,7 @@ public class DbOrganisationMainTable implements DbMainTable {
 		predecessor.handleDbForDataGroup(dataGroup, null);
 
 		ReferenceTable addressTable = referenceTableFactory.factor("organisationAddress");
-		addressTable.handleDbForDataGroup(dataGroup);
+		addressTable.handleDbForDataGroup(dataGroup, null);
 
 	}
 

@@ -18,7 +18,12 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
 import se.uu.ub.cora.diva.mixedstorage.db.ReferenceTable;
 import se.uu.ub.cora.sqldatabase.RecordCreator;
 import se.uu.ub.cora.sqldatabase.RecordDeleter;
@@ -29,9 +34,10 @@ public class ReferenceTableSpy implements ReferenceTable {
 	public DataGroup organisationSentToSpy;
 
 	@Override
-	public void handleDbForDataGroup(DataGroup organisation) {
+	public List<DbStatement> handleDbForDataGroup(DataGroup organisation,
+			List<Map<String, Object>> rowsFromDb) {
 		this.organisationSentToSpy = organisation;
-
+		return Collections.emptyList();
 	}
 
 	@Override

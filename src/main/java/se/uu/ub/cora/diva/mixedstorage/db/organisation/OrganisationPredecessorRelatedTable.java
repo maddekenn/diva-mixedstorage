@@ -108,11 +108,6 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 		}
 	}
 
-	@Override
-	protected Map<String, Object> createConditionsFoReadingCurrentRows() {
-		return createConditionWithOrganisationId();
-	}
-
 	private String extractPredecessorId(DataGroup predecessor) {
 		DataGroup organisationLink = predecessor.getFirstGroupWithNameInData("organisationLink");
 		return organisationLink.getFirstAtomicValueWithNameInData("linkedRecordId");
