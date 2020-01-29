@@ -49,13 +49,13 @@ public class DbOrganisationMainTable implements DbMainTable {
 		recordUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions("organisation",
 				dataToDbTranslater.getValues(), dataToDbTranslater.getConditions());
 		RelatedTable alternativeName = relatedTableFactory.factor("organisationAlternativeName");
-		alternativeName.handleDbForDataGroup(dataGroup);
+		alternativeName.handleDbForDataGroup(dataGroup, null);
 		// action (insert, delete update, read), tablename, values ev conditions
 		RelatedTable parent = relatedTableFactory.factor("organisationParent");
-		parent.handleDbForDataGroup(dataGroup);
+		parent.handleDbForDataGroup(dataGroup, null);
 
 		RelatedTable predecessor = relatedTableFactory.factor("organisationPredecessor");
-		predecessor.handleDbForDataGroup(dataGroup);
+		predecessor.handleDbForDataGroup(dataGroup, null);
 
 		ReferenceTable addressTable = referenceTableFactory.factor("organisationAddress");
 		addressTable.handleDbForDataGroup(dataGroup);

@@ -18,6 +18,7 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
 import se.uu.ub.cora.sqldatabase.RecordCreator;
 import se.uu.ub.cora.sqldatabase.RecordDeleter;
@@ -43,6 +45,7 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 	private RecordDeleter recordDeleter;
 	private RecordCreator recordCreator;
 	private Map<String, DataGroup> predecessorsInDataGroup;
+	private Map<Integer, Map<String, Object>> mapWithPredecessorAsKey;
 
 	public OrganisationPredecessorRelatedTable(RecordReader recordReader,
 			RecordDeleter recordDeleter, RecordCreator recordCreator) {
@@ -52,20 +55,29 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 	}
 
 	@Override
-	public void handleDbForDataGroup(DataGroup organisation) {
+	public List<DbStatement> handleDbForDataGroup(DataGroup organisation,
+			List<Map<String, Object>> existingPredecessors) {
 		setIdAsInt(organisation);
 
-		List<Map<String, Object>> allCurrentPredecessorsInDb = getExistingParents(
-				ORGANISATION_PREDECESSOR);
+		mapWithPredecessorAsKey = new HashMap<>();
+		for (Map<String, Object> dbRow : existingPredecessors) {
+			int predecessorId = (int) dbRow.get(ORGANISATION_PREDECESSOR_ID);
+			mapWithPredecessorAsKey.put(predecessorId, dbRow);
+		}
+		List<DbStatement> dbStatements = new ArrayList<>();
+
+		// List<Map<String, Object>> allCurrentPredecessorsInDb = getExistingParents(
+		// ORGANISATION_PREDECESSOR);
 		populateCollectionWithPredecessorsFromDataGroup(organisation);
 		Set<String> predecessorIdsInDataGroup = createSetWithPredecessorsInDataGroupIds();
 
 		if (predecessorIdsInDataGroup.isEmpty()) {
-			deletePredecessors(allCurrentPredecessorsInDb);
+			deletePredecessors(dbStatements, existingPredecessors);
 		} else {
-			handleDeleteAndCreate(allCurrentPredecessorsInDb, predecessorIdsInDataGroup);
+			handleDeleteAndCreate(dbStatements, existingPredecessors, predecessorIdsInDataGroup);
 
 		}
+		return dbStatements;
 	}
 
 	private void populateCollectionWithPredecessorsFromDataGroup(DataGroup organisation) {
@@ -85,20 +97,24 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 	}
 
 	@Override
-	protected void handleDeleteAndCreate(List<Map<String, Object>> allCurrentRowsInDb,
-			Set<String> idsFromDataGroup) {
-		Set<String> idsInDatabase = getIdsForCurrentRowsInDatabase(allCurrentRowsInDb);
+	protected void handleDeleteAndCreate(List<DbStatement> dbStatements,
+			List<Map<String, Object>> existingPredecessors, Set<String> idsFromDataGroup) {
+
+		Set<String> idsInDatabase = getIdsForCurrentRowsInDatabase(existingPredecessors);
 		Set<String> existsInDbAndDataGroup = createSetWithPredecessorsInDataGroupIds();
 		existsInDbAndDataGroup.retainAll(idsInDatabase);
 
 		if (idsInDatabase.isEmpty()) {
-			addToDb(idsFromDataGroup);
+			addToDb(dbStatements, idsFromDataGroup);
 		} else {
 			Set<String> originalIdsFromDataGroup = Set.copyOf(idsFromDataGroup);
-			addDataFromDataGroupNotAlreadyInDb(idsFromDataGroup, idsInDatabase);
-			removeRowsNoLongerPresentInDataGroup(idsInDatabase, originalIdsFromDataGroup);
+			addDataFromDataGroupNotAlreadyInDb(dbStatements, idsFromDataGroup, idsInDatabase);
 
-			handlePredecessorDescriptions(existsInDbAndDataGroup);
+			// deletePredecessors(dbStatements, existingPredecessors);
+			removeRowsNoLongerPresentInDataGroup(dbStatements, idsInDatabase,
+					originalIdsFromDataGroup);
+			//
+			handlePredecessorDescriptions(dbStatements, existsInDbAndDataGroup);
 		}
 	}
 
@@ -112,18 +128,26 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 		return organisationLink.getFirstAtomicValueWithNameInData("linkedRecordId");
 	}
 
-	private void deletePredecessors(List<Map<String, Object>> predecessors) {
+	private void deletePredecessors(List<DbStatement> dbStatements,
+			List<Map<String, Object>> predecessors) {
 		for (Map<String, Object> readRow : predecessors) {
 			int predecessorId = (int) readRow.get(ORGANISATION_PREDECESSOR_ID);
-			deletePredecessorDescription(predecessorId);
-			deletePredecessor(predecessorId);
+			createDeleteForPredecessorAndDescription(dbStatements, predecessorId);
 		}
 	}
 
-	private void deletePredecessorDescription(int predecessorId) {
+	private void createDeleteForPredecessorAndDescription(List<DbStatement> dbStatements,
+			int predecessorId) {
+		dbStatements.add(createDeleteForPredecessorDescription(predecessorId));
+		dbStatements.add(createDeleteForPredecessor(predecessorId));
+	}
+
+	private DbStatement createDeleteForPredecessorDescription(int predecessorId) {
 		Map<String, Object> deleteConditions = createConditionWithOrganisationId();
 		deleteConditions.put(PREDECESSOR_ID, predecessorId);
-		deleteDescriptionFromDbUsingConditions(deleteConditions);
+		return new DbStatement("delete", ORGANISATION_PREDECESSOR_DESCRIPTION,
+				Collections.emptyMap(), deleteConditions);
+
 	}
 
 	private Map<String, Object> createConditionWithOrganisationId() {
@@ -132,10 +156,11 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 		return deleteConditions;
 	}
 
-	private void deletePredecessor(int predecessorId) {
+	private DbStatement createDeleteForPredecessor(int predecessorId) {
 		Map<String, Object> deleteConditions = createConditionWithOrganisationId();
 		deleteConditions.put(ORGANISATION_PREDECESSOR_ID, predecessorId);
-		recordDeleter.deleteFromTableUsingConditions(ORGANISATION_PREDECESSOR, deleteConditions);
+		return new DbStatement("delete", ORGANISATION_PREDECESSOR, Collections.emptyMap(),
+				deleteConditions);
 	}
 
 	@Override
@@ -149,21 +174,29 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 	}
 
 	@Override
-	protected void addToDb(Set<String> predecessorIdsInDataGroup) {
+	protected void addToDb(List<DbStatement> dbStatments, Set<String> predecessorIdsInDataGroup) {
 		for (String predecessorId : predecessorIdsInDataGroup) {
 			Map<String, Object> values = createValuesForPredecessorInsert(predecessorId);
-			recordCreator.insertIntoTableUsingNameAndColumnsWithValues(ORGANISATION_PREDECESSOR,
-					values);
-			possiblyAddPredecessorDescription(predecessorId);
+			// recordCreator.insertIntoTableUsingNameAndColumnsWithValues(ORGANISATION_PREDECESSOR,
+			// values);
+			dbStatments.add(new DbStatement("insert", ORGANISATION_PREDECESSOR, values,
+					Collections.emptyMap()));
+			possiblyAddPredecessorDescription(dbStatments, predecessorId);
 
 		}
 	}
 
-	private void possiblyAddPredecessorDescription(String predecessorId) {
+	private void possiblyAddPredecessorDescription(List<DbStatement> dbStatments,
+			String predecessorId) {
 		DataGroup dataGroup = predecessorsInDataGroup.get(predecessorId);
 		if (dataGroup.containsChildWithNameInData(ORGANISATION_COMMENT)) {
 			String comment = dataGroup.getFirstAtomicValueWithNameInData(ORGANISATION_COMMENT);
-			createNewDescriptionInDb(predecessorId, comment);
+			// createNewDescriptionInDb(predecessorId, comment);
+			Map<String, Object> values = createValuesForDescriptionCreate(predecessorId, comment);
+			recordCreator.insertIntoTableUsingNameAndColumnsWithValues(
+					ORGANISATION_PREDECESSOR_DESCRIPTION, values);
+			dbStatments.add(new DbStatement("insert", ORGANISATION_PREDECESSOR_DESCRIPTION, values,
+					Collections.emptyMap()));
 
 		}
 	}
@@ -182,18 +215,18 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 	}
 
 	@Override
-	protected void addDataFromDataGroupNotAlreadyInDb(Set<String> predecessorIdsInDataGroup,
-			Set<String> predecessorIdsInDatabase) {
+	protected void addDataFromDataGroupNotAlreadyInDb(List<DbStatement> dbStatements,
+			Set<String> predecessorIdsInDataGroup, Set<String> predecessorIdsInDatabase) {
 		predecessorIdsInDataGroup.removeAll(predecessorIdsInDatabase);
-		addToDb(predecessorIdsInDataGroup);
+		addToDb(dbStatements, predecessorIdsInDataGroup);
 	}
 
 	@Override
-	protected void removeRowsNoLongerPresentInDataGroup(Set<String> predecessorsIdsInDatabase,
-			Set<String> originalPredecessorsInDataGroup) {
+	protected void removeRowsNoLongerPresentInDataGroup(List<DbStatement> dbStatements,
+			Set<String> predecessorsIdsInDatabase, Set<String> originalPredecessorsInDataGroup) {
 		predecessorsIdsInDatabase.removeAll(originalPredecessorsInDataGroup);
 		for (String predecessorId : predecessorsIdsInDatabase) {
-			deletePredecessor(Integer.valueOf(predecessorId));
+			createDeleteForPredecessorAndDescription(dbStatements, Integer.valueOf(predecessorId));
 		}
 	}
 
@@ -203,55 +236,66 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 		return values;
 	}
 
-	private void handlePredecessorDescriptions(Set<String> existsInDbAndDataGroup) {
+	private void handlePredecessorDescriptions(List<DbStatement> dbStatements,
+			Set<String> existsInDbAndDataGroup) {
 
 		for (String id : existsInDbAndDataGroup) {
-			handlePredecessorDescriptionForPredecessorId(id);
+			handlePredecessorDescriptionForPredecessorId(dbStatements, id);
 		}
 	}
 
-	private void handlePredecessorDescriptionForPredecessorId(String id) {
-		DataGroup dataGroup = predecessorsInDataGroup.get(id);
-		Map<String, Object> conditions = createConditionsForPredecessorDescription(id);
-		Map<String, Object> readDescription = readCurrentDescriptionFromDb(conditions);
+	private void handlePredecessorDescriptionForPredecessorId(List<DbStatement> dbStatements,
+			String predecessorId) {
+		DataGroup dataGroup = predecessorsInDataGroup.get(predecessorId);
+		Map<String, Object> conditions = createConditionsForPredecessorDescription(predecessorId);
+		// TODO:ska hämtas ur existingPredecessors
+		Map<String, Object> readDescription = mapWithPredecessorAsKey
+				.get(Integer.valueOf(predecessorId));
+		// Map<String, Object> readDescription = readCurrentDescriptionFromDb(conditions);
 		if (dataGroup.containsChildWithNameInData(ORGANISATION_COMMENT)) {
-			handleDeleteAndCreatedForDescription(id, dataGroup, conditions, readDescription);
+			handleDeleteAndCreatedForDescription(dbStatements, predecessorId, dataGroup, conditions,
+					readDescription);
 		} else {
-			deleteDescriptionInDbIfExists(conditions, readDescription);
+			deleteDescriptionInDbIfExists(dbStatements, conditions, readDescription);
 		}
 	}
 
-	private void handleDeleteAndCreatedForDescription(String id, DataGroup dataGroup,
-			Map<String, Object> conditions, Map<String, Object> readDescription) {
+	private void handleDeleteAndCreatedForDescription(List<DbStatement> dbStatements, String id,
+			DataGroup dataGroup, Map<String, Object> conditions,
+			Map<String, Object> readDescription) {
 		String descriptionInDataGroup = dataGroup
 				.getFirstAtomicValueWithNameInData(ORGANISATION_COMMENT);
 		if (readDescription.isEmpty()) {
-			createNewDescriptionInDb(id, descriptionInDataGroup);
+			createNewDescriptionInDb(dbStatements, id, descriptionInDataGroup);
 		} else {
 			String description = (String) readDescription.get("description");
 			if (!description.equals(descriptionInDataGroup)) {
-				deleteDescriptionFromDbUsingConditions(conditions);
-				createNewDescriptionInDb(id, descriptionInDataGroup);
+				deleteDescriptionFromDbUsingConditions(dbStatements, conditions);
+				createNewDescriptionInDb(dbStatements, id, descriptionInDataGroup);
 			}
 		}
 	}
 
-	private void deleteDescriptionInDbIfExists(Map<String, Object> conditions,
-			Map<String, Object> readDescription) {
+	private void deleteDescriptionInDbIfExists(List<DbStatement> dbStatements,
+			Map<String, Object> conditions, Map<String, Object> readDescription) {
 		if (!readDescription.isEmpty()) {
-			deleteDescriptionFromDbUsingConditions(conditions);
+			deleteDescriptionFromDbUsingConditions(dbStatements, conditions);
 		}
 	}
 
-	private void deleteDescriptionFromDbUsingConditions(Map<String, Object> conditions) {
+	private void deleteDescriptionFromDbUsingConditions(List<DbStatement> dbStatements,
+			Map<String, Object> conditions) {
 		recordDeleter.deleteFromTableUsingConditions(ORGANISATION_PREDECESSOR_DESCRIPTION,
 				conditions);
+		dbStatements.add(new DbStatement("", "", Collections.emptyMap(), conditions));
 	}
 
-	private void createNewDescriptionInDb(String id, String descriptionInDataGroup) {
+	private void createNewDescriptionInDb(List<DbStatement> dbStatements, String id,
+			String descriptionInDataGroup) {
 		Map<String, Object> values = createValuesForDescriptionCreate(id, descriptionInDataGroup);
 		recordCreator.insertIntoTableUsingNameAndColumnsWithValues(
 				ORGANISATION_PREDECESSOR_DESCRIPTION, values);
+		dbStatements.add(new DbStatement("", "", values, Collections.emptyMap()));
 	}
 
 	private Map<String, Object> createConditionsForPredecessorDescription(String id) {
