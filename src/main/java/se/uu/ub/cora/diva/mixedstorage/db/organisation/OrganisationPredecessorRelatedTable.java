@@ -29,8 +29,6 @@ import java.util.Set;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
-import se.uu.ub.cora.sqldatabase.RecordCreator;
-import se.uu.ub.cora.sqldatabase.RecordDeleter;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 
 public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTable
@@ -45,16 +43,11 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 	private static final String ORGANISATION_PREDECESSOR_ID = "organisation_predecessor_id";
 	private static final String ORGANISATION_ID = "organisation_id";
 	private static final String ORGANISATION_PREDECESSOR = "organisation_predecessor";
-	private RecordDeleter recordDeleter;
-	private RecordCreator recordCreator;
 	private Map<String, DataGroup> predecessorsInDataGroup;
 	private Map<Integer, Map<String, Object>> mapWithPredecessorAsKey;
 
-	public OrganisationPredecessorRelatedTable(RecordReader recordReader,
-			RecordDeleter recordDeleter, RecordCreator recordCreator) {
+	public OrganisationPredecessorRelatedTable(RecordReader recordReader) {
 		this.recordReader = recordReader;
-		this.recordDeleter = recordDeleter;
-		this.recordCreator = recordCreator;
 	}
 
 	@Override
@@ -299,16 +292,6 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 
 	public RecordReader getRecordReader() {
 		return recordReader;
-	}
-
-	public RecordDeleter getRecordDeleter() {
-		// needed for test
-		return recordDeleter;
-	}
-
-	public RecordCreator getRecordCreator() {
-		// needed for test
-		return recordCreator;
 	}
 
 }

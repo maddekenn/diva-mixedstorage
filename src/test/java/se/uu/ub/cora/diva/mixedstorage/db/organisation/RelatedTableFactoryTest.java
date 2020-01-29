@@ -65,8 +65,6 @@ public class RelatedTableFactoryTest {
 		OrganisationPredecessorRelatedTable factoredTable = (OrganisationPredecessorRelatedTable) factory
 				.factor("organisationPredecessor");
 		assertSame(factoredTable.getRecordReader(), recordReaderFactory.factored);
-		assertSame(factoredTable.getRecordDeleter(), recordDeleterFactory.factored);
-		assertSame(factoredTable.getRecordCreator(), recordCreatorFactory.factored);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""

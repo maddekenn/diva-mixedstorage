@@ -60,8 +60,7 @@ public class RelatedTableFactoryImp implements RelatedTableFactory {
 			return new OrganisationParentRelatedTable(recordReader);
 		}
 		if ("organisationPredecessor".equals(relatedTableName)) {
-			return new OrganisationPredecessorRelatedTable(recordReader, recordDeleter,
-					recordCreator);
+			return new OrganisationPredecessorRelatedTable(recordReader);
 		}
 
 		throw NotImplementedException
