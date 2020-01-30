@@ -62,7 +62,8 @@ public class OrganisationAddressTable implements ReferenceTable {
 	public List<DbStatement> handleDbForDataGroup(DataGroup organisation,
 			List<Map<String, Object>> rowsFromDb) {
 		setIdAsInt(organisation);
-		List<Map<String, Object>> readOrg = readOrganisationFromDb();
+		// List<Map<String, Object>> readOrg = readOrganisationFromDb();
+		List<Map<String, Object>> readOrg = rowsFromDb;
 		List<DbStatement> dbStatements = new ArrayList<>();
 
 		Object addressIdInOrganisation = readOrg.get(0).get(ADDRESS_ID);
@@ -192,7 +193,7 @@ public class OrganisationAddressTable implements ReferenceTable {
 			RecordReader sequenceReader = recordReaderFactory.factor();
 			Map<String, Object> nextValue = sequenceReader
 					.readNextValueFromSequence("address_sequence");
-			insertAddress(organisation, nextValue.get("nextval"));
+			createInsertForAddress(dbStatements, organisation, nextValue.get("nextval"));
 
 			Map<String, Object> values = new HashMap<>();
 			values.put(ADDRESS_ID, nextValue.get("nextval"));
@@ -202,10 +203,13 @@ public class OrganisationAddressTable implements ReferenceTable {
 		}
 	}
 
-	private void insertAddress(DataGroup organisation, Object object) {
+	private void createInsertForAddress(List<DbStatement> dbStatements, DataGroup organisation,
+			Object object) {
 		Map<String, Object> valuesForInsert = createValuesForInsert(organisation, object);
-		recordCreator.insertIntoTableUsingNameAndColumnsWithValues(ORGANISATION_ADDRESS,
-				valuesForInsert);
+		// recordCreator.insertIntoTableUsingNameAndColumnsWithValues(ORGANISATION_ADDRESS,
+		// valuesForInsert);
+		dbStatements.add(new DbStatement("insert", ORGANISATION_ADDRESS, valuesForInsert,
+				Collections.emptyMap()));
 	}
 
 	private Map<String, Object> createValuesForInsert(DataGroup organisation, Object object) {

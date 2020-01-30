@@ -21,8 +21,6 @@ package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -76,17 +74,10 @@ public class OrganisationAddressTableTest {
 	public void testNoAddressInDataGroupNoInAddressDatabase() {
 		DataGroup organisation = createDataGroupWithId("678");
 		int organisationId = 678;
-		addOrganisationToReturnFromSpy("organisation", organisationId, -1);
+		// addOrganisationToReturnFromSpy("organisation", organisationId, -1);
 		List<DbStatement> dbStatements = address.handleDbForDataGroup(organisation,
 				Collections.emptyList());
 		assertTrue(dbStatements.isEmpty());
-	}
-
-	private void assertFirstReadRowIsOrganisation(int organisationId) {
-		RecordReaderAddressSpy organisationReader = recordReaderFactory.factoredReaders.get(0);
-		assertEquals(organisationReader.usedTableNames.get(0), "organisation");
-		assertEquals(recordReaderFactory.factoredReaders.get(0).usedConditions.get(0)
-				.get("organisation_id"), organisationId);
 	}
 
 	private DataGroup createDataGroupWithId(String id) {
@@ -159,15 +150,6 @@ public class OrganisationAddressTableTest {
 		assertTrue(dbStatement.getValues().isEmpty());
 	}
 
-	private void assertConditionsForDeleteContainsIdFromRead() {
-		Map<String, Object> organisationRow = recordReaderFactory.factoredReaders
-				.get(0).rowsToReturn.get("organisation").get(0);
-
-		int addressIdReturnedFromOrganisationReadSpy = (int) organisationRow.get("address_id");
-		assertEquals(recordDeleter.usedConditions.get("address_id"),
-				addressIdReturnedFromOrganisationReadSpy);
-	}
-
 	private void addOrganisationAddressToReturnFromSpy(String tableName, int addressId) {
 		Map<String, Object> rowToReturn = createMapInSpyForTableName(tableName);
 		rowToReturn.put("address_id", addressId);
@@ -193,16 +175,8 @@ public class OrganisationAddressTableTest {
 	private void assertCorrectDataForAddressUpdate(DataGroup organisation, DbStatement dbStatement,
 			int addressId) {
 		assertEquals(dbStatement.getOperation(), "update");
-		assertEquals(dbStatement.getTableName(), "organisation_address");
 
-		Map<String, Object> values = dbStatement.getValues();
-		assertEquals(values.get("city"), getAtomicValueOrEmptyString(organisation, "city"));
-		assertEquals(values.get("street"), getAtomicValueOrEmptyString(organisation, "street"));
-		assertEquals(values.get("postbox"), getAtomicValueOrEmptyString(organisation, "box"));
-		assertEquals(values.get("postnumber"),
-				getAtomicValueOrEmptyString(organisation, "postcode"));
-		String countryCode = getAtomicValueOrEmptyString(organisation, "country");
-		assertEquals(values.get("country_code"), countryCode.toLowerCase());
+		assertCorrectCommonValuesForUpdateAndInsert(organisation, dbStatement);
 
 		Map<String, Object> conditions = dbStatement.getConditions();
 		assertEquals(conditions.get("address_id"), addressId);
@@ -225,15 +199,10 @@ public class OrganisationAddressTableTest {
 	// assertFalse(recordDeleter.deleteWasCalled);
 	// }
 
-	private void assertValuesForCreateOrUpdateAddressAreCorrect(DataGroup organisation,
-			Map<String, Object> values) {
-
-		Timestamp lastUpdated = (Timestamp) values.get("last_updated");
-		String lastUpdatedString = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
-				.format(lastUpdated);
-		assertTrue(lastUpdatedString
-				.matches("\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{1,3}"));
-
+	private void assertCorrectCommonValuesForUpdateAndInsert(DataGroup organisation,
+			DbStatement dbStatement) {
+		assertEquals(dbStatement.getTableName(), "organisation_address");
+		Map<String, Object> values = dbStatement.getValues();
 		assertEquals(values.get("city"), getAtomicValueOrEmptyString(organisation, "city"));
 		assertEquals(values.get("street"), getAtomicValueOrEmptyString(organisation, "street"));
 		assertEquals(values.get("postbox"), getAtomicValueOrEmptyString(organisation, "box"));
@@ -264,94 +233,108 @@ public class OrganisationAddressTableTest {
 		DbStatement dbStatement = dbStatements.get(0);
 		assertCorrectDataForAddressUpdate(organisation, dbStatement, 4);
 
-		// assertCorrectDatabaseQueriesWhenUpdatingAddress(organisationId, organisation);
 	}
 
-	// @Test
-	// public void testPostboxInDataGroupAndAddressInDatabase() {
-	// int organisationId = 678;
-	// DataGroup organisation = createDataGroupWithId("678");
-	// organisation.addChild(new DataAtomicSpy("box", "box21"));
-	//
-	// addOrganisationToReturnFromSpy("organisation", organisationId, 4);
-	// addOrganisationAddressToReturnFromSpy("organisation_address", 4);
-	//
-	// address.handleDbForDataGroup(organisation);
-	//
-	// assertCorrectDatabaseQueriesWhenUpdatingAddress(organisationId, organisation);
-	// }
+	@Test
+	public void testPostboxInDataGroupAndAddressInDatabase() {
+		int organisationId = 678;
+		DataGroup organisation = createDataGroupWithId("678");
+		organisation.addChild(new DataAtomicSpy("box", "box21"));
 
-	// @Test
-	// public void testPostnumberInDataGroupAndAddressInDatabase() {
-	// int organisationId = 678;
-	// DataGroup organisation = createDataGroupWithId("678");
-	// organisation.addChild(new DataAtomicSpy("postcode", "90210"));
-	//
-	// addOrganisationToReturnFromSpy("organisation", organisationId, 4);
-	// addOrganisationAddressToReturnFromSpy("organisation_address", 4);
-	//
-	// address.handleDbForDataGroup(organisation);
-	//
-	// assertCorrectDatabaseQueriesWhenUpdatingAddress(organisationId, organisation);
-	// }
+		addOrganisationToReturnFromSpy("organisation", organisationId, 4);
+		addOrganisationAddressToReturnFromSpy("organisation_address", 4);
 
-	// @Test
-	// public void testCountryCodeInDataGroupAndAddressInDatabase() {
-	// int organisationId = 678;
-	// DataGroup organisation = createDataGroupWithId("678");
-	// organisation.addChild(new DataAtomicSpy("country", "SE"));
-	//
-	// addOrganisationToReturnFromSpy("organisation", organisationId, 4);
-	// addOrganisationAddressToReturnFromSpy("organisation_address", 4);
-	//
-	// address.handleDbForDataGroup(organisation);
-	//
-	// assertCorrectDatabaseQueriesWhenUpdatingAddress(organisationId, organisation);
-	// }
+		List<DbStatement> dbStatements = address.handleDbForDataGroup(organisation,
+				organisationRows);
+		assertEquals(dbStatements.size(), 1);
+		DbStatement dbStatement = dbStatements.get(0);
+		assertCorrectDataForAddressUpdate(organisation, dbStatement, 4);
+	}
 
-	// @Test
-	// public void testCompleteAddressInDataGroupAndAddressInDatabase() {
-	// int organisationId = 678;
-	// DataGroup organisation = createDataGroupWithId("678");
-	// organisation.addChild(new DataAtomicSpy("city", "City of rock and roll"));
-	// organisation.addChild(new DataAtomicSpy("country", "SE"));
-	// organisation.addChild(new DataAtomicSpy("postcode", "90210"));
-	// organisation.addChild(new DataAtomicSpy("box", "box21"));
-	// organisation.addChild(new DataAtomicSpy("street", "Hill street"));
-	//
-	// addOrganisationToReturnFromSpy("organisation", organisationId, 4);
-	// addOrganisationAddressToReturnFromSpy("organisation_address", 4);
-	//
-	// address.handleDbForDataGroup(organisation);
-	//
-	// assertCorrectDatabaseQueriesWhenUpdatingAddress(organisationId, organisation);
-	// }
+	@Test
+	public void testPostnumberInDataGroupAndAddressInDatabase() {
+		int organisationId = 678;
+		DataGroup organisation = createDataGroupWithId("678");
+		organisation.addChild(new DataAtomicSpy("postcode", "90210"));
 
-	// @Test
-	// public void testAddressInDataGroupButNOAddressInDatabase() {
-	// int organisationId = 678;
-	// DataGroup organisation = createDataGroupWithId("678");
-	// organisation.addChild(new DataAtomicSpy("box", "box21"));
-	//
-	// addOrganisationToReturnFromSpy("organisation", organisationId, -1);
-	//
-	// address.handleDbForDataGroup(organisation);
-	// assertTrue(recordCreator.insertWasCalled);
-	//
-	// assertEquals(recordCreator.usedTableName, "organisation_address");
-	//
-	// RecordReaderAddressSpy sequenceReader = recordReaderFactory.factoredReaders.get(1);
-	// assertEquals(sequenceReader.sequenceName, "address_sequence");
-	// int generatedAddressKey = (int) sequenceReader.nextVal.get("nextval");
-	// assertEquals(recordCreator.values.get("address_id"), generatedAddressKey);
-	//
-	// assertValuesForCreateOrUpdateAddressAreCorrect(organisation, recordCreator.values);
-	//
-	// RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
-	//
-	// assertEquals(factoredUpdater.tableName, "organisation");
-	// assertEquals(factoredUpdater.values.get("address_id"), generatedAddressKey);
-	// assertEquals(factoredUpdater.conditions.get("organisation_id"), 678);
-	//
-	// }
+		addOrganisationToReturnFromSpy("organisation", organisationId, 4);
+		addOrganisationAddressToReturnFromSpy("organisation_address", 4);
+
+		List<DbStatement> dbStatements = address.handleDbForDataGroup(organisation,
+				organisationRows);
+		assertEquals(dbStatements.size(), 1);
+		DbStatement dbStatement = dbStatements.get(0);
+		assertCorrectDataForAddressUpdate(organisation, dbStatement, 4);
+	}
+
+	@Test
+	public void testCountryCodeInDataGroupAndAddressInDatabase() {
+		int organisationId = 678;
+		DataGroup organisation = createDataGroupWithId("678");
+		organisation.addChild(new DataAtomicSpy("country", "SE"));
+
+		addOrganisationToReturnFromSpy("organisation", organisationId, 4);
+		addOrganisationAddressToReturnFromSpy("organisation_address", 4);
+
+		List<DbStatement> dbStatements = address.handleDbForDataGroup(organisation,
+				organisationRows);
+		assertEquals(dbStatements.size(), 1);
+		DbStatement dbStatement = dbStatements.get(0);
+		assertCorrectDataForAddressUpdate(organisation, dbStatement, 4);
+	}
+
+	@Test
+	public void testCompleteAddressInDataGroupAndAddressInDatabase() {
+		int organisationId = 678;
+		DataGroup organisation = createDataGroupWithId("678");
+		organisation.addChild(new DataAtomicSpy("city", "City of rock and roll"));
+		organisation.addChild(new DataAtomicSpy("country", "SE"));
+		organisation.addChild(new DataAtomicSpy("postcode", "90210"));
+		organisation.addChild(new DataAtomicSpy("box", "box21"));
+		organisation.addChild(new DataAtomicSpy("street", "Hill street"));
+
+		addOrganisationToReturnFromSpy("organisation", organisationId, 4);
+		addOrganisationAddressToReturnFromSpy("organisation_address", 4);
+
+		List<DbStatement> dbStatements = address.handleDbForDataGroup(organisation,
+				organisationRows);
+		assertEquals(dbStatements.size(), 1);
+		DbStatement dbStatement = dbStatements.get(0);
+		assertCorrectDataForAddressUpdate(organisation, dbStatement, 4);
+	}
+
+	@Test
+	public void testAddressInDataGroupButNOAddressInDatabase() {
+		int organisationId = 678;
+		DataGroup organisation = createDataGroupWithId("678");
+		organisation.addChild(new DataAtomicSpy("box", "box21"));
+
+		addOrganisationToReturnFromSpy("organisation", organisationId, -1);
+
+		List<DbStatement> dbStatements = address.handleDbForDataGroup(organisation,
+				Collections.emptyList());
+		assertEquals(dbStatements.size(), 2);
+
+		RecordReaderAddressSpy sequenceReader = recordReaderFactory.factoredReaders.get(1);
+		int generatedAddressKey = (int) sequenceReader.nextVal.get("nextval");
+
+		assertEquals(sequenceReader.sequenceName, "address_sequence");
+		assertCorrectDataForAddressInsert(organisation, dbStatements.get(0), 4,
+				generatedAddressKey);
+
+		DbStatement orgUpdateStatement = dbStatements.get(1);
+		assertCorrectOperationTableAndConditionForUpdateOrg(organisationId, orgUpdateStatement);
+		Map<String, Object> values = orgUpdateStatement.getValues();
+		assertEquals(values.get("address_id"), generatedAddressKey);
+
+	}
+
+	private void assertCorrectDataForAddressInsert(DataGroup organisation, DbStatement dbStatement,
+			int addressId, int generatedAddressKey) {
+		assertEquals(dbStatement.getOperation(), "insert");
+		Map<String, Object> values = dbStatement.getValues();
+
+		assertEquals(values.get("address_id"), generatedAddressKey);
+		assertCorrectCommonValuesForUpdateAndInsert(organisation, dbStatement);
+	}
 }
