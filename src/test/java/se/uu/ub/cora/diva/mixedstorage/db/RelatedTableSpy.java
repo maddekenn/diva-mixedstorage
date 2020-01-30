@@ -27,11 +27,13 @@ import se.uu.ub.cora.data.DataGroup;
 public class RelatedTableSpy implements RelatedTable {
 
 	public DataGroup dataGroup;
+	public List<Map<String, Object>> dbRows;
 
 	@Override
 	public List<DbStatement> handleDbForDataGroup(DataGroup dataGroup,
 			List<Map<String, Object>> dbRows) {
 		this.dataGroup = dataGroup;
+		this.dbRows = dbRows;
 		return Collections.emptyList();
 
 	}

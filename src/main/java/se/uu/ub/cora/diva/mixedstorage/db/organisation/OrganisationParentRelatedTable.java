@@ -54,7 +54,7 @@ public class OrganisationParentRelatedTable extends OrganisationRelatedTable
 		List<DbStatement> dbStatements = new ArrayList<>();
 		Set<String> parentsInDataGroup = getParentIdsInDataGroup(organisation);
 
-		if (noAlternativeNamesToHandle(existingParents, parentsInDataGroup)) {
+		if (noParentsToHandle(existingParents, parentsInDataGroup)) {
 			return dbStatements;
 		}
 
@@ -67,7 +67,7 @@ public class OrganisationParentRelatedTable extends OrganisationRelatedTable
 		return dbStatements;
 	}
 
-	private boolean noAlternativeNamesToHandle(List<Map<String, Object>> existingParents,
+	private boolean noParentsToHandle(List<Map<String, Object>> existingParents,
 			Set<String> parentsInDataGroup) {
 		return existingParents.isEmpty() && noParentsInDataGroup(parentsInDataGroup);
 	}

@@ -32,7 +32,11 @@ public class DataToDbTranslaterSpy implements DataToDbTranslater {
 	@Override
 	public void translate(DataGroup dataGroup) {
 		this.dataGroup = dataGroup;
+		DataGroup recordInfo = dataGroup.getFirstGroupWithNameInData("recordInfo");
+		String organistaionId = recordInfo.getFirstAtomicValueWithNameInData("id");
+
 		conditions = new HashMap<>();
+		conditions.put("organisation_id", Integer.parseInt(organistaionId));
 		conditions.put("someConditionKeyFromSpy", "someConditionValueFromSpy");
 		values = new HashMap<>();
 		values.put("someValuesKeyFromSpy", "someValuesValueFromSpy");

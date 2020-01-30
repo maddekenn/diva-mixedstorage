@@ -18,6 +18,9 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
@@ -29,11 +32,13 @@ public class RecordReaderFactorySpy implements RecordReaderFactory {
 	public int numOfPredecessorsToReturn = 0;
 	public int numOfSuccessorsToReturn = 0;
 	public int numOfParentsToReturn = 0;
+	public List<RecordReaderSpy> factoredReaders = new ArrayList<>();
 
 	@Override
 	public RecordReader factor() {
 		factorWasCalled = true;
 		factored = new RecordReaderSpy();
+		factoredReaders.add(factored);
 		factored.numOfPredecessorsToReturn = numOfPredecessorsToReturn;
 		factored.numOfSuccessorsToReturn = numOfSuccessorsToReturn;
 		factored.numOfParentsToReturn = numOfParentsToReturn;

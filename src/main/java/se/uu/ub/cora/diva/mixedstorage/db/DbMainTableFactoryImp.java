@@ -44,7 +44,7 @@ public class DbMainTableFactoryImp implements DbMainTableFactory {
 		if (tableName.equals("organisation")) {
 			RecordUpdater recordUpdater = recordUpdaterFactory.factor();
 			DataToDbTranslater translater = translaterFactory.factorForTableName("organisation");
-			return new DbOrganisationMainTable(translater, recordUpdater, relatedTableFactory,
+			return new DbOrganisationMainTable(translater, null, recordUpdater, relatedTableFactory,
 					referenceTableFactory);
 		}
 		throw NotImplementedException.withMessage("Main table not implemented for " + tableName);

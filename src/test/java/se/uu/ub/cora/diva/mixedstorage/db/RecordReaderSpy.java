@@ -31,6 +31,7 @@ public class RecordReaderSpy implements RecordReader {
 
 	public String usedTableName;
 	public List<String> usedTableNames = new ArrayList<>();
+	public List<List<Map<String, Object>>> returnedListCollection = new ArrayList<>();
 	public List<Map<String, Object>> returnedList = new ArrayList<>();
 	public int noOfRecordsToReturn = 1;
 	public Map<String, Object> usedConditions;
@@ -54,6 +55,7 @@ public class RecordReaderSpy implements RecordReader {
 			map.put("someKey" + i, "someValue" + i);
 			returnedList.add(map);
 		}
+		returnedListCollection.add(returnedList);
 		return returnedList;
 	}
 
@@ -83,6 +85,7 @@ public class RecordReaderSpy implements RecordReader {
 		}
 		oneRowRead = map;
 		returnedList.add(map);
+		returnedListCollection.add(returnedList);
 		return map;
 	}
 
@@ -105,12 +108,15 @@ public class RecordReaderSpy implements RecordReader {
 		// listToReturn.addAll(successorsToReturn);
 
 		if ("divaOrganisationParent".equals(tableName)) {
+			returnedListCollection.add(parentsToReturn);
 			return parentsToReturn;
 		}
 
 		if (conditions.containsKey("organisation_id")) {
+			returnedListCollection.add(predecessorsToReturn);
 			return predecessorsToReturn;
 		}
+		returnedListCollection.add(successorsToReturn);
 		return successorsToReturn;
 	}
 
