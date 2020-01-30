@@ -56,9 +56,6 @@ public class ReferenceTableFactoryTest {
 				.factor("organisationAddress");
 		assertTrue(factored instanceof OrganisationAddressTable);
 		assertEquals(factored.getRecordReaderFactory(), recordReaderFactory);
-		assertEquals(factored.getRecordCreator(), recordCreatorFactory.factored);
-		assertEquals(factored.getRecordDeleter(), recordDeleterFactory.factored);
-		assertEquals(factored.getRecordUpdaterFactory(), recordUpdaterFactory);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""

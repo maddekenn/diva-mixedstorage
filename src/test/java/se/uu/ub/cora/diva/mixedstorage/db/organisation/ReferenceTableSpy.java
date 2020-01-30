@@ -25,8 +25,6 @@ import java.util.Map;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
 import se.uu.ub.cora.diva.mixedstorage.db.ReferenceTable;
-import se.uu.ub.cora.sqldatabase.RecordCreator;
-import se.uu.ub.cora.sqldatabase.RecordDeleter;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
 public class ReferenceTableSpy implements ReferenceTable {
@@ -42,18 +40,6 @@ public class ReferenceTableSpy implements ReferenceTable {
 
 	@Override
 	public RecordReaderFactory getRecordReaderFactory() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public RecordDeleter getRecordDeleter() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public RecordCreator getRecordCreator() {
 		// TODO Auto-generated method stub
 		return null;
 	}

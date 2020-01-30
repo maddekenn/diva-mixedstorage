@@ -30,11 +30,8 @@ import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbHelper;
 import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
 import se.uu.ub.cora.diva.mixedstorage.db.ReferenceTable;
-import se.uu.ub.cora.sqldatabase.RecordCreator;
-import se.uu.ub.cora.sqldatabase.RecordDeleter;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
-import se.uu.ub.cora.sqldatabase.RecordUpdaterFactory;
 
 public class OrganisationAddressTable implements ReferenceTable {
 
@@ -43,30 +40,20 @@ public class OrganisationAddressTable implements ReferenceTable {
 	private static final String ORGANISATION_ADDRESS = "organisation_address";
 	private static final String ADDRESS_ID = "address_id";
 	private RecordReaderFactory recordReaderFactory;
-	private RecordDeleter recordDeleter;
-	private RecordUpdaterFactory recordUpdaterFactory;
 	private int organisationId;
-	private RecordCreator recordCreator;
 
-	public OrganisationAddressTable(RecordCreator recordCreator,
-			RecordReaderFactory recordReaderFactory, RecordUpdaterFactory recordUpdaterFactory,
-			RecordDeleter recordDeleter) {
+	public OrganisationAddressTable(RecordReaderFactory recordReaderFactory) {
 		this.recordReaderFactory = recordReaderFactory;
-		this.recordDeleter = recordDeleter;
-		this.recordCreator = recordCreator;
-		this.recordUpdaterFactory = recordUpdaterFactory;
-
 	}
 
 	@Override
 	public List<DbStatement> handleDbForDataGroup(DataGroup organisation,
-			List<Map<String, Object>> rowsFromDb) {
+			List<Map<String, Object>> organisationsFromDb) {
 		setIdAsInt(organisation);
-		// List<Map<String, Object>> readOrg = readOrganisationFromDb();
-		List<Map<String, Object>> readOrg = rowsFromDb;
+
 		List<DbStatement> dbStatements = new ArrayList<>();
 
-		Object addressIdInOrganisation = readOrg.get(0).get(ADDRESS_ID);
+		Object addressIdInOrganisation = organisationsFromDb.get(0).get(ADDRESS_ID);
 		if (addressExistsInDatabase(addressIdInOrganisation)) {
 			deleteOrUpdateAddress(dbStatements, organisation, addressIdInOrganisation);
 		} else {
@@ -90,9 +77,6 @@ public class OrganisationAddressTable implements ReferenceTable {
 			int addressId) {
 		Map<String, Object> values = createValuesForAddressInsertOrUpdate(organisation);
 		Map<String, Object> conditions = createConditionWithAddressId(addressId);
-		// RecordUpdater addressUpdater = recordUpdaterFactory.factor();
-		// addressUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions(ORGANISATION_ADDRESS,
-		// values, conditions);
 		dbStatements.add(new DbStatement("update", ORGANISATION_ADDRESS, values, conditions));
 	}
 
@@ -100,13 +84,6 @@ public class OrganisationAddressTable implements ReferenceTable {
 		String organisationIdAsString = DataToDbHelper.extractIdFromDataGroup(organisation);
 		DataToDbHelper.throwDbExceptionIfIdNotAnIntegerValue(organisationIdAsString);
 		organisationId = Integer.valueOf(organisationIdAsString);
-	}
-
-	private List<Map<String, Object>> readOrganisationFromDb() {
-		RecordReader organisationReader = recordReaderFactory.factor();
-		Map<String, Object> conditions = new HashMap<>();
-		conditions.put("organisation_id", organisationId);
-		return organisationReader.readFromTableUsingConditions("organisation", conditions);
 	}
 
 	private boolean addressExistsInDatabase(Object addressIdInOrganisation) {
@@ -128,7 +105,6 @@ public class OrganisationAddressTable implements ReferenceTable {
 	private void deleteAddressAndUpdateOrganisation(List<DbStatement> dbStatements, int addressId) {
 		updateOrganisationWithNoAddressId(dbStatements);
 		Map<String, Object> deleteConditions = createConditionWithAddressId(addressId);
-		// recordDeleter.deleteFromTableUsingConditions(ORGANISATION_ADDRESS, deleteConditions);
 		dbStatements.add(new DbStatement("delete", ORGANISATION_ADDRESS, Collections.emptyMap(),
 				deleteConditions));
 	}
@@ -206,8 +182,6 @@ public class OrganisationAddressTable implements ReferenceTable {
 	private void createInsertForAddress(List<DbStatement> dbStatements, DataGroup organisation,
 			Object object) {
 		Map<String, Object> valuesForInsert = createValuesForInsert(organisation, object);
-		// recordCreator.insertIntoTableUsingNameAndColumnsWithValues(ORGANISATION_ADDRESS,
-		// valuesForInsert);
 		dbStatements.add(new DbStatement("insert", ORGANISATION_ADDRESS, valuesForInsert,
 				Collections.emptyMap()));
 	}
@@ -223,22 +197,4 @@ public class OrganisationAddressTable implements ReferenceTable {
 		// needed for test
 		return recordReaderFactory;
 	}
-
-	@Override
-	public RecordCreator getRecordCreator() {
-		// needed for test
-		return recordCreator;
-	}
-
-	@Override
-	public RecordDeleter getRecordDeleter() {
-		// needed for test
-		return recordDeleter;
-	}
-
-	public RecordUpdaterFactory getRecordUpdaterFactory() {
-		// needed for test
-		return recordUpdaterFactory;
-	}
-
 }

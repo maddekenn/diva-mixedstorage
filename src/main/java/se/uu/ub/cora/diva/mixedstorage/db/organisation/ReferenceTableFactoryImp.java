@@ -49,8 +49,7 @@ public class ReferenceTableFactoryImp implements ReferenceTableFactory {
 		if ("organisationAddress".equals(tableName)) {
 			RecordCreator recordCreator = recordCreatorFactory.factor();
 			RecordDeleter factoredDeleter = recordDeleterFactory.factor();
-			return new OrganisationAddressTable(recordCreator, recordReaderFactory,
-					recordUpdaterFactory, factoredDeleter);
+			return new OrganisationAddressTable(recordReaderFactory);
 		}
 		throw NotImplementedException
 				.withMessage("Reference table not implemented for " + tableName);

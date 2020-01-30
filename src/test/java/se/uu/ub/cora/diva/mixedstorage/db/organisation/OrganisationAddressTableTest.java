@@ -22,7 +22,6 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,30 +33,19 @@ import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.DataAtomicSpy;
 import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
-import se.uu.ub.cora.diva.mixedstorage.db.RecordCreatorSpy;
-import se.uu.ub.cora.diva.mixedstorage.db.RecordDeleterSpy;
-import se.uu.ub.cora.diva.mixedstorage.db.RecordUpdaterFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.ReferenceTable;
 
 public class OrganisationAddressTableTest {
 
 	private RecordReaderRelatedTableFactorySpy recordReaderFactory;
-	private RecordDeleterSpy recordDeleter;
-	private RecordCreatorSpy recordCreator;
-	private RecordUpdaterFactorySpy recordUpdaterFactory;
 	private ReferenceTable address;
 	private List<Map<String, Object>> organisationRows;
 
 	@BeforeMethod
 	public void setUp() {
 		recordReaderFactory = new RecordReaderRelatedTableFactorySpy();
-		recordUpdaterFactory = new RecordUpdaterFactorySpy();
-		recordDeleter = new RecordDeleterSpy();
-		recordCreator = new RecordCreatorSpy();
 		initOrganisationRows();
-
-		address = new OrganisationAddressTable(recordCreator, recordReaderFactory,
-				recordUpdaterFactory, recordDeleter);
+		address = new OrganisationAddressTable(recordReaderFactory);
 
 	}
 
@@ -73,11 +61,18 @@ public class OrganisationAddressTableTest {
 	@Test
 	public void testNoAddressInDataGroupNoInAddressDatabase() {
 		DataGroup organisation = createDataGroupWithId("678");
-		int organisationId = 678;
-		// addOrganisationToReturnFromSpy("organisation", organisationId, -1);
+		setUpOrganisationRowWithoutAddress();
 		List<DbStatement> dbStatements = address.handleDbForDataGroup(organisation,
-				Collections.emptyList());
+				organisationRows);
 		assertTrue(dbStatements.isEmpty());
+	}
+
+	private void setUpOrganisationRowWithoutAddress() {
+		organisationRows = new ArrayList<>();
+
+		Map<String, Object> organisationRow = new HashMap<>();
+		organisationRow.put("organisation_id", 678);
+		organisationRows.add(organisationRow);
 	}
 
 	private DataGroup createDataGroupWithId(String id) {
@@ -88,34 +83,10 @@ public class OrganisationAddressTableTest {
 		return dataGroup;
 	}
 
-	private void addOrganisationToReturnFromSpy(String tableName, int organisationId,
-			int addressId) {
-		Map<String, Object> rowToReturn = createMapInSpyForTableName(tableName);
-		if (addressId > 0) {
-			rowToReturn.put("address_id", addressId);
-		}
-		rowToReturn.put("organisation_id", organisationId);
-	}
-
-	private Map<String, Object> createMapInSpyForTableName(String tableName) {
-		List<Map<String, Object>> rowsInSpy = new ArrayList<>();
-		if (recordReaderFactory.rowsToReturn.containsKey(tableName)) {
-			rowsInSpy = recordReaderFactory.rowsToReturn.get(tableName);
-		} else {
-			recordReaderFactory.rowsToReturn.put(tableName, rowsInSpy);
-		}
-
-		Map<String, Object> rowToReturn = new HashMap<>();
-		rowsInSpy.add(rowToReturn);
-		return rowToReturn;
-	}
-
 	@Test
 	public void testNoAddressInDataGroupButAddressInDatabase() {
 		int organisationId = 678;
 		DataGroup organisation = createDataGroupWithId("678");
-		addOrganisationToReturnFromSpy("organisation", organisationId, 4);
-		addOrganisationAddressToReturnFromSpy("organisation_address", 4);
 
 		List<DbStatement> dbStatements = address.handleDbForDataGroup(organisation,
 				organisationRows);
@@ -150,19 +121,10 @@ public class OrganisationAddressTableTest {
 		assertTrue(dbStatement.getValues().isEmpty());
 	}
 
-	private void addOrganisationAddressToReturnFromSpy(String tableName, int addressId) {
-		Map<String, Object> rowToReturn = createMapInSpyForTableName(tableName);
-		rowToReturn.put("address_id", addressId);
-	}
-
 	@Test
 	public void testCityInDataGroupAndAddressInDatabase() {
-		int organisationId = 678;
 		DataGroup organisation = createDataGroupWithId("678");
 		organisation.addChild(new DataAtomicSpy("city", "City of rock and roll"));
-
-		addOrganisationToReturnFromSpy("organisation", organisationId, 4);
-		addOrganisationAddressToReturnFromSpy("organisation_address", 4);
 
 		List<DbStatement> dbStatements = address.handleDbForDataGroup(organisation,
 				organisationRows);
@@ -181,23 +143,6 @@ public class OrganisationAddressTableTest {
 		Map<String, Object> conditions = dbStatement.getConditions();
 		assertEquals(conditions.get("address_id"), addressId);
 	}
-	//
-	// private void assertCorrectDatabaseQueriesWhenUpdatingAddress(int organisationId,
-	// DataGroup organisation) {
-	// assertEquals(recordReaderFactory.factoredReaders.size(), 1);
-	// assertFirstReadRowIsOrganisation(organisationId);
-	//
-	// RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
-	// assertTrue(factoredUpdater.updateWasCalled);
-	// assertEquals(factoredUpdater.tableName, "organisation_address");
-	//
-	// assertEquals(factoredUpdater.conditions.get("address_id"), 4);
-	//
-	// Map<String, Object> values = factoredUpdater.values;
-	// assertValuesForCreateOrUpdateAddressAreCorrect(organisation, values);
-	//
-	// assertFalse(recordDeleter.deleteWasCalled);
-	// }
 
 	private void assertCorrectCommonValuesForUpdateAndInsert(DataGroup organisation,
 			DbStatement dbStatement) {
@@ -220,12 +165,8 @@ public class OrganisationAddressTableTest {
 
 	@Test
 	public void testStreetInDataGroupAndAddressInDatabase() {
-		int organisationId = 678;
 		DataGroup organisation = createDataGroupWithId("678");
 		organisation.addChild(new DataAtomicSpy("street", "Hill street"));
-
-		addOrganisationToReturnFromSpy("organisation", organisationId, 4);
-		addOrganisationAddressToReturnFromSpy("organisation_address", 4);
 
 		List<DbStatement> dbStatements = address.handleDbForDataGroup(organisation,
 				organisationRows);
@@ -237,12 +178,8 @@ public class OrganisationAddressTableTest {
 
 	@Test
 	public void testPostboxInDataGroupAndAddressInDatabase() {
-		int organisationId = 678;
 		DataGroup organisation = createDataGroupWithId("678");
 		organisation.addChild(new DataAtomicSpy("box", "box21"));
-
-		addOrganisationToReturnFromSpy("organisation", organisationId, 4);
-		addOrganisationAddressToReturnFromSpy("organisation_address", 4);
 
 		List<DbStatement> dbStatements = address.handleDbForDataGroup(organisation,
 				organisationRows);
@@ -253,12 +190,8 @@ public class OrganisationAddressTableTest {
 
 	@Test
 	public void testPostnumberInDataGroupAndAddressInDatabase() {
-		int organisationId = 678;
 		DataGroup organisation = createDataGroupWithId("678");
 		organisation.addChild(new DataAtomicSpy("postcode", "90210"));
-
-		addOrganisationToReturnFromSpy("organisation", organisationId, 4);
-		addOrganisationAddressToReturnFromSpy("organisation_address", 4);
 
 		List<DbStatement> dbStatements = address.handleDbForDataGroup(organisation,
 				organisationRows);
@@ -269,12 +202,8 @@ public class OrganisationAddressTableTest {
 
 	@Test
 	public void testCountryCodeInDataGroupAndAddressInDatabase() {
-		int organisationId = 678;
 		DataGroup organisation = createDataGroupWithId("678");
 		organisation.addChild(new DataAtomicSpy("country", "SE"));
-
-		addOrganisationToReturnFromSpy("organisation", organisationId, 4);
-		addOrganisationAddressToReturnFromSpy("organisation_address", 4);
 
 		List<DbStatement> dbStatements = address.handleDbForDataGroup(organisation,
 				organisationRows);
@@ -285,16 +214,12 @@ public class OrganisationAddressTableTest {
 
 	@Test
 	public void testCompleteAddressInDataGroupAndAddressInDatabase() {
-		int organisationId = 678;
 		DataGroup organisation = createDataGroupWithId("678");
 		organisation.addChild(new DataAtomicSpy("city", "City of rock and roll"));
 		organisation.addChild(new DataAtomicSpy("country", "SE"));
 		organisation.addChild(new DataAtomicSpy("postcode", "90210"));
 		organisation.addChild(new DataAtomicSpy("box", "box21"));
 		organisation.addChild(new DataAtomicSpy("street", "Hill street"));
-
-		addOrganisationToReturnFromSpy("organisation", organisationId, 4);
-		addOrganisationAddressToReturnFromSpy("organisation_address", 4);
 
 		List<DbStatement> dbStatements = address.handleDbForDataGroup(organisation,
 				organisationRows);
@@ -308,14 +233,13 @@ public class OrganisationAddressTableTest {
 		int organisationId = 678;
 		DataGroup organisation = createDataGroupWithId("678");
 		organisation.addChild(new DataAtomicSpy("box", "box21"));
-
-		addOrganisationToReturnFromSpy("organisation", organisationId, -1);
+		setUpOrganisationRowWithoutAddress();
 
 		List<DbStatement> dbStatements = address.handleDbForDataGroup(organisation,
-				Collections.emptyList());
+				organisationRows);
 		assertEquals(dbStatements.size(), 2);
 
-		RecordReaderAddressSpy sequenceReader = recordReaderFactory.factoredReaders.get(1);
+		RecordReaderAddressSpy sequenceReader = recordReaderFactory.factoredReaders.get(0);
 		int generatedAddressKey = (int) sequenceReader.nextVal.get("nextval");
 
 		assertEquals(sequenceReader.sequenceName, "address_sequence");

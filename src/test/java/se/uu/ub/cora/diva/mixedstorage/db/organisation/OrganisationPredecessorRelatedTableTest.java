@@ -36,8 +36,6 @@ import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.DataAtomicSpy;
 import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
-import se.uu.ub.cora.diva.mixedstorage.db.RecordCreatorSpy;
-import se.uu.ub.cora.diva.mixedstorage.db.RecordDeleterSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
 
 public class OrganisationPredecessorRelatedTableTest {

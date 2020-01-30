@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.sqldatabase.RecordCreator;
-import se.uu.ub.cora.sqldatabase.RecordDeleter;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
 public interface ReferenceTable {
@@ -32,9 +30,5 @@ public interface ReferenceTable {
 			List<Map<String, Object>> rowsFromDb);
 
 	RecordReaderFactory getRecordReaderFactory();
-
-	RecordDeleter getRecordDeleter();
-
-	RecordCreator getRecordCreator();
 
 }
