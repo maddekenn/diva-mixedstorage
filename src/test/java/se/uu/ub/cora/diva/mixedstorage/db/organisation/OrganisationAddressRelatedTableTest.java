@@ -35,7 +35,7 @@ import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
 
-public class OrganisationAddressTableTest {
+public class OrganisationAddressRelatedTableTest {
 
 	private RecordReaderRelatedTableFactorySpy recordReaderFactory;
 	private RelatedTable address;
@@ -45,7 +45,7 @@ public class OrganisationAddressTableTest {
 	public void setUp() {
 		recordReaderFactory = new RecordReaderRelatedTableFactorySpy();
 		initOrganisationRows();
-		address = new OrganisationAddressTable(recordReaderFactory);
+		address = new OrganisationAddressRelatedTable(recordReaderFactory);
 
 	}
 

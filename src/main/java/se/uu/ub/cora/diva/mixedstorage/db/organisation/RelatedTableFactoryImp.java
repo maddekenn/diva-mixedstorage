@@ -53,7 +53,7 @@ public class RelatedTableFactoryImp implements RelatedTableFactory {
 			return new OrganisationAlternativeNameRelatedTable(recordReader);
 		}
 		if ("organisationAddress".equals(relatedTableName)) {
-			return new OrganisationAddressTable(recordReaderFactory);
+			return new OrganisationAddressRelatedTable(recordReaderFactory);
 		}
 
 		if ("organisationParent".equals(relatedTableName)) {

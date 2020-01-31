@@ -33,7 +33,7 @@ import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
-public class OrganisationAddressTable implements RelatedTable {
+public class OrganisationAddressRelatedTable implements RelatedTable {
 
 	private static final String CITY = "city";
 	private static final String STREET = "street";
@@ -42,7 +42,7 @@ public class OrganisationAddressTable implements RelatedTable {
 	private RecordReaderFactory recordReaderFactory;
 	private int organisationId;
 
-	public OrganisationAddressTable(RecordReaderFactory recordReaderFactory) {
+	public OrganisationAddressRelatedTable(RecordReaderFactory recordReaderFactory) {
 		this.recordReaderFactory = recordReaderFactory;
 	}
 

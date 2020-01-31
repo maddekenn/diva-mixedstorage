@@ -55,7 +55,7 @@ public class RelatedTableFactoryTest {
 
 	@Test
 	public void testFactorOrganisationAddress() {
-		OrganisationAddressTable factoredTable = (OrganisationAddressTable) factory
+		OrganisationAddressRelatedTable factoredTable = (OrganisationAddressRelatedTable) factory
 				.factor("organisationAddress");
 		assertSame(factoredTable.getRecordReaderFactory(), recordReaderFactory);
 	}
