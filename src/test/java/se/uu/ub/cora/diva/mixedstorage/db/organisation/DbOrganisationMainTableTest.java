@@ -40,7 +40,6 @@ public class DbOrganisationMainTableTest {
 	private DataToDbTranslaterSpy dataTranslater;
 	private RecordUpdaterSpy recordUpdater;
 	private RelatedTableFactorySpy relatedTableFactory;
-	private ReferenceTableFactorySpy referenceTableFactory;
 	private RecordReaderFactorySpy recordReaderFactory;
 	private DataGroup dataGroup;
 
@@ -54,9 +53,8 @@ public class DbOrganisationMainTableTest {
 		recordReaderFactory = new RecordReaderFactorySpy();
 		recordUpdater = new RecordUpdaterSpy();
 		relatedTableFactory = new RelatedTableFactorySpy();
-		referenceTableFactory = new ReferenceTableFactorySpy();
 		mainTable = new DbOrganisationMainTable(dataTranslater, recordReaderFactory, recordUpdater,
-				relatedTableFactory, referenceTableFactory);
+				relatedTableFactory);
 	}
 
 	@Test
@@ -88,14 +86,13 @@ public class DbOrganisationMainTableTest {
 	@Test
 	public void testAddress() {
 		mainTable.update(dataGroup);
-		// RecordReaderSpy factoredReader = recordReaderFactory.factoredReaders.get(0);
-		// assertEquals(factoredReader.usedTableNames.get(3), "divaorganisation");
 
+		RecordReaderSpy factoredReader = recordReaderFactory.factoredReaders.get(0);
 		assertEquals(relatedTableFactory.relatedTableNames.get(1), "organisationAddress");
-
-		// assertEquals(referenceTableFactory.tableName, "organisationAddress");
-		// ReferenceTableSpy addressTable = referenceTableFactory.factored;
-		// assertSame(addressTable.organisationSentToSpy, dataGroup);
+		RelatedTableSpy addressTable = (RelatedTableSpy) relatedTableFactory.factoredRelatedTables
+				.get(1);
+		assertSame(addressTable.dataGroup, dataGroup);
+		assertEquals(addressTable.dbRows, factoredReader.returnedListCollection.get(0));
 	}
 
 	@Test
@@ -108,7 +105,7 @@ public class DbOrganisationMainTableTest {
 
 		assertEquals(relatedTableFactory.relatedTableNames.get(2), "organisationParent");
 		RelatedTableSpy secondRelatedTable = (RelatedTableSpy) relatedTableFactory.factoredRelatedTables
-				.get(1);
+				.get(2);
 		assertSame(secondRelatedTable.dataGroup, dataGroup);
 		assertEquals(secondRelatedTable.dbRows, factoredReader.returnedListCollection.get(1));
 
@@ -123,7 +120,7 @@ public class DbOrganisationMainTableTest {
 
 		assertEquals(relatedTableFactory.relatedTableNames.get(3), "organisationPredecessor");
 		RelatedTableSpy thirdRelatedTable = (RelatedTableSpy) relatedTableFactory.factoredRelatedTables
-				.get(2);
+				.get(3);
 		assertSame(thirdRelatedTable.dataGroup, dataGroup);
 		assertEquals(thirdRelatedTable.dbRows, factoredReader.returnedListCollection.get(2));
 

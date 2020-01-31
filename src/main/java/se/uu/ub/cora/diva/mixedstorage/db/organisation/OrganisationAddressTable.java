@@ -29,11 +29,11 @@ import java.util.Map;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbHelper;
 import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
-import se.uu.ub.cora.diva.mixedstorage.db.ReferenceTable;
+import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
-public class OrganisationAddressTable implements ReferenceTable {
+public class OrganisationAddressTable implements RelatedTable {
 
 	private static final String CITY = "city";
 	private static final String STREET = "street";
@@ -192,7 +192,6 @@ public class OrganisationAddressTable implements ReferenceTable {
 		return valuesForInsert;
 	}
 
-	@Override
 	public RecordReaderFactory getRecordReaderFactory() {
 		// needed for test
 		return recordReaderFactory;

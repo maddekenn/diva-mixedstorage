@@ -33,12 +33,12 @@ import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.DataAtomicSpy;
 import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
-import se.uu.ub.cora.diva.mixedstorage.db.ReferenceTable;
+import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
 
 public class OrganisationAddressTableTest {
 
 	private RecordReaderRelatedTableFactorySpy recordReaderFactory;
-	private ReferenceTable address;
+	private RelatedTable address;
 	private List<Map<String, Object>> organisationRows;
 
 	@BeforeMethod

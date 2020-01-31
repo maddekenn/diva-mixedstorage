@@ -25,8 +25,6 @@ import java.util.Map;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslater;
 import se.uu.ub.cora.diva.mixedstorage.db.DbMainTable;
-import se.uu.ub.cora.diva.mixedstorage.db.ReferenceTable;
-import se.uu.ub.cora.diva.mixedstorage.db.ReferenceTableFactory;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTableFactory;
 import se.uu.ub.cora.sqldatabase.RecordReader;
@@ -38,18 +36,16 @@ public class DbOrganisationMainTable implements DbMainTable {
 	private DataToDbTranslater dataToDbTranslater;
 	private RecordUpdater recordUpdater;
 	private RelatedTableFactory relatedTableFactory;
-	private ReferenceTableFactory referenceTableFactory;
 	private RecordReaderFactory recordReaderFactory;
 	private RecordReader recordReader;
 
 	public DbOrganisationMainTable(DataToDbTranslater dataTranslater,
 			RecordReaderFactory recordReaderFactory, RecordUpdater recordUpdater,
-			RelatedTableFactory relatedTableFactory, ReferenceTableFactory referenceTableFactory) {
+			RelatedTableFactory relatedTableFactory) {
 		this.dataToDbTranslater = dataTranslater;
 		this.recordReaderFactory = recordReaderFactory;
 		this.recordUpdater = recordUpdater;
 		this.relatedTableFactory = relatedTableFactory;
-		this.referenceTableFactory = referenceTableFactory;
 	}
 
 	@Override
@@ -61,13 +57,15 @@ public class DbOrganisationMainTable implements DbMainTable {
 	}
 
 	private void generateDbStatements(DataGroup dataGroup) {
-
 		Map<String, Object> readConditions = generateReadConditions();
-
 		recordUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions("organisation",
 				dataToDbTranslater.getValues(), dataToDbTranslater.getConditions());
 
-		generateDbStatementsForAlternativeName(dataGroup, readConditions);
+		List<Map<String, Object>> dbOrganisation = recordReader
+				.readFromTableUsingConditions("divaorganisation", readConditions);
+
+		generateDbStatementsForAlternativeName(dataGroup, dbOrganisation);
+		generateDbStatementsForAddress(dataGroup, dbOrganisation);
 		generateDbStatementsForParents(dataGroup, readConditions);
 		generateDbStatementsForPredecessors(dataGroup, readConditions);
 
@@ -81,14 +79,15 @@ public class DbOrganisationMainTable implements DbMainTable {
 	}
 
 	private void generateDbStatementsForAlternativeName(DataGroup dataGroup,
-			Map<String, Object> readConditions) {
-		List<Map<String, Object>> dbOrganisation = recordReader
-				.readFromTableUsingConditions("divaorganisation", readConditions);
+			List<Map<String, Object>> dbOrganisation) {
 		RelatedTable alternativeName = relatedTableFactory.factor("organisationAlternativeName");
 		alternativeName.handleDbForDataGroup(dataGroup, dbOrganisation);
+	}
 
-		ReferenceTable addressTable = referenceTableFactory.factor("organisationAddress");
-		// addressTable.handleDbForDataGroup(dataGroup, null);
+	private void generateDbStatementsForAddress(DataGroup dataGroup,
+			List<Map<String, Object>> dbOrganisation) {
+		RelatedTable addressTable = relatedTableFactory.factor("organisationAddress");
+		addressTable.handleDbForDataGroup(dataGroup, dbOrganisation);
 	}
 
 	private void generateDbStatementsForParents(DataGroup dataGroup,
@@ -120,10 +119,6 @@ public class DbOrganisationMainTable implements DbMainTable {
 	public RelatedTableFactory getRelatedTableFactory() {
 		// needed for test
 		return relatedTableFactory;
-	}
-
-	public ReferenceTableFactory getReferenceTableFactory() {
-		return referenceTableFactory;
 	}
 
 }

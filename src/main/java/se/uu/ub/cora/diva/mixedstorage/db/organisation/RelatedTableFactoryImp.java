@@ -21,9 +21,7 @@ package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTableFactory;
-import se.uu.ub.cora.sqldatabase.RecordCreator;
 import se.uu.ub.cora.sqldatabase.RecordCreatorFactory;
-import se.uu.ub.cora.sqldatabase.RecordDeleter;
 import se.uu.ub.cora.sqldatabase.RecordDeleterFactory;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
@@ -51,11 +49,13 @@ public class RelatedTableFactoryImp implements RelatedTableFactory {
 	@Override
 	public RelatedTable factor(String relatedTableName) {
 		RecordReader recordReader = recordReaderFactory.factor();
-		RecordDeleter recordDeleter = recordDeleterFactory.factor();
-		RecordCreator recordCreator = recordCreatorFactory.factor();
 		if ("organisationAlternativeName".equals(relatedTableName)) {
 			return new OrganisationAlternativeNameRelatedTable(recordReader);
 		}
+		if ("organisationAddress".equals(relatedTableName)) {
+			return new OrganisationAddressTable(recordReaderFactory);
+		}
+
 		if ("organisationParent".equals(relatedTableName)) {
 			return new OrganisationParentRelatedTable(recordReader);
 		}

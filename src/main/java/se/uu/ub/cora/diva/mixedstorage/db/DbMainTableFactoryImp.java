@@ -28,15 +28,12 @@ public class DbMainTableFactoryImp implements DbMainTableFactory {
 	private DataToDbTranslaterFactory translaterFactory;
 	private RecordUpdaterFactory recordUpdaterFactory;
 	private RelatedTableFactory relatedTableFactory;
-	private ReferenceTableFactory referenceTableFactory;
 
 	public DbMainTableFactoryImp(DataToDbTranslaterFactory translaterFactory,
-			RecordUpdaterFactory recordUpdaterFactory, RelatedTableFactory relatedTableFactory,
-			ReferenceTableFactory referenceTableFactory) {
+			RecordUpdaterFactory recordUpdaterFactory, RelatedTableFactory relatedTableFactory) {
 		this.translaterFactory = translaterFactory;
 		this.recordUpdaterFactory = recordUpdaterFactory;
 		this.relatedTableFactory = relatedTableFactory;
-		this.referenceTableFactory = referenceTableFactory;
 	}
 
 	@Override
@@ -44,8 +41,8 @@ public class DbMainTableFactoryImp implements DbMainTableFactory {
 		if (tableName.equals("organisation")) {
 			RecordUpdater recordUpdater = recordUpdaterFactory.factor();
 			DataToDbTranslater translater = translaterFactory.factorForTableName("organisation");
-			return new DbOrganisationMainTable(translater, null, recordUpdater, relatedTableFactory,
-					referenceTableFactory);
+			return new DbOrganisationMainTable(translater, null, recordUpdater,
+					relatedTableFactory);
 		}
 		throw NotImplementedException.withMessage("Main table not implemented for " + tableName);
 	}
@@ -63,11 +60,6 @@ public class DbMainTableFactoryImp implements DbMainTableFactory {
 	public RelatedTableFactory getRelatedTableFactory() {
 		// needed for test
 		return relatedTableFactory;
-	}
-
-	public ReferenceTableFactory getReferenceTableFactory() {
-		// needed for test
-		return referenceTableFactory;
 	}
 
 }
