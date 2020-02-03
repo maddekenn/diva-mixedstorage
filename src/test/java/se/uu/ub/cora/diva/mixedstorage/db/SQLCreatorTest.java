@@ -41,6 +41,7 @@ public class SQLCreatorTest {
 	private Map<String, Object> values;
 	private DbStatement updateDbStatement;
 	private DbStatement deleteDbStatement;
+	private DbStatement insertDbStatement;
 
 	@BeforeMethod
 	public void setUp() {
@@ -52,7 +53,8 @@ public class SQLCreatorTest {
 		updateDbStatement = new DbStatement("update", "organisation", values, conditions);
 		deleteDbStatement = new DbStatement("delete", "organisation", Collections.emptyMap(),
 				conditions);
-
+		insertDbStatement = new DbStatement("insert", null, Collections.emptyMap(),
+				Collections.emptyMap());
 	}
 
 	@Test
@@ -60,7 +62,7 @@ public class SQLCreatorTest {
 		PreparedStatementSpy preparedStatement = (PreparedStatementSpy) sqlCreator
 				.createFromDbStatment(updateDbStatement);
 		assertSame(connection.preparedStatementSpy, preparedStatement);
-		assertEquals(connection.sql, "update organisation set name = ?");
+		assertEquals(connection.sql, "UPDATE organisation SET name = ?");
 		assertEquals(preparedStatement.usedSetObjects.size(), 1);
 		assertEquals(preparedStatement.usedSetObjects.get("1"), "someName");
 	}
@@ -71,7 +73,7 @@ public class SQLCreatorTest {
 		PreparedStatementSpy preparedStatement = (PreparedStatementSpy) sqlCreator
 				.createFromDbStatment(updateDbStatement);
 		assertSame(connection.preparedStatementSpy, preparedStatement);
-		assertEquals(connection.sql, "update organisation set name = ? where id = ?");
+		assertEquals(connection.sql, "UPDATE organisation SET name = ? WHERE id = ?");
 		assertEquals(preparedStatement.usedSetObjects.size(), 2);
 		assertEquals(preparedStatement.usedSetObjects.get("1"), "someName");
 		assertEquals(preparedStatement.usedSetObjects.get("2"), 35);
@@ -86,7 +88,7 @@ public class SQLCreatorTest {
 				.createFromDbStatment(updateDbStatement);
 		assertSame(connection.preparedStatementSpy, preparedStatement);
 		assertEquals(connection.sql,
-				"update organisation set address = ?, name = ? where otherId = ? and id = ?");
+				"UPDATE organisation SET address = ?, name = ? WHERE otherId = ? AND id = ?");
 		assertEquals(preparedStatement.usedSetObjects.size(), 4);
 		assertEquals(preparedStatement.usedSetObjects.get("1"), "some address");
 		assertEquals(preparedStatement.usedSetObjects.get("2"), "someName");
@@ -109,23 +111,51 @@ public class SQLCreatorTest {
 	}
 
 	@Test(expectedExceptions = SqlStorageException.class, expectedExceptionsMessageRegExp = ""
-			+ "Error executing statement: update organisation set name = \\?")
+			+ "Error executing statement: UPDATE organisation SET name = \\?")
 	public void testSQlException() {
 		connection.returnErrorConnection = true;
 		sqlCreator.createFromDbStatment(updateDbStatement);
 	}
 
-	/***************************************** DELETE *********************************************/
+	/***************************************** DELETE ********************************************/
 
 	@Test
 	public void testDeleteWithOneCondition() {
-		values = Collections.emptyMap();
+		// values = Collections.emptyMap();
 		conditions.put("id", 35);
 		PreparedStatementSpy preparedStatement = (PreparedStatementSpy) sqlCreator
 				.createFromDbStatment(deleteDbStatement);
 		assertSame(connection.preparedStatementSpy, preparedStatement);
-		assertEquals(connection.sql, "delete organisation where id = ?");
+		assertEquals(connection.sql, "DELETE FROM organisation WHERE id = ?");
 		assertEquals(preparedStatement.usedSetObjects.size(), 1);
 		assertEquals(preparedStatement.usedSetObjects.get("1"), 35);
 	}
+
+	@Test
+	public void testDeleteWithSeveralConditions() throws Exception {
+		conditions.put("id", 35);
+		conditions.put("anotherId", 72);
+		conditions.put("lastId", 47);
+		PreparedStatementSpy preparedStatement = (PreparedStatementSpy) sqlCreator
+				.createFromDbStatment(deleteDbStatement);
+		assertSame(connection.preparedStatementSpy, preparedStatement);
+		assertEquals(connection.sql,
+				"DELETE FROM organisation WHERE anotherId = ? AND lastId = ? AND id = ?");
+	}
+
+	/***************************************** INSERT ********************************************/
+
+	@Test
+	public void testInsertWithOneValue() throws Exception {
+		PreparedStatementSpy preparedStatement = (PreparedStatementSpy) sqlCreator
+				.createFromDbStatment(insertDbStatement);
+		assertSame(connection.preparedStatementSpy, preparedStatement);
+		assertEquals(connection.sql, "INSERT INTO null(column) VALUES(values)");
+
+	}
+
+	// @Test
+	// public void testInsertWithNoValues() throws Exception {
+	//
+	// }
 }

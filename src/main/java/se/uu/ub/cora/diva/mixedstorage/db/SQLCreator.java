@@ -41,10 +41,14 @@ public class SQLCreator {
 	public PreparedStatement createFromDbStatment(DbStatement dbStatement) {
 		StringBuilder sql = new StringBuilder();
 		if ("delete".equals(dbStatement.getOperation())) {
-			createSqlForDelete(dbStatement.getTableName(), dbStatement.getConditions());
-		} else {
+			sql.append(createSqlForDelete(dbStatement.getTableName(), dbStatement.getConditions()));
+		} else if ("update".equals(dbStatement.getOperation())) {
 			sql.append(createSqlForUpdate(dbStatement.getTableName(), dbStatement.getValues(),
 					dbStatement.getConditions()));
+		} else {
+			sql.append(createSqlForInsert(dbStatement.getTableName(), dbStatement.getValues(),
+					dbStatement.getConditions()));
+
 		}
 		try {
 			List<Object> valuesForUpdate = addColumnsAndConditionsToValuesForUpdate(
@@ -70,7 +74,7 @@ public class SQLCreator {
 
 	private String createSettingPartOfSqlStatement(String tableName,
 			Map<String, Object> columnsWithValues) {
-		StringBuilder sql = new StringBuilder("update " + tableName + " set ");
+		StringBuilder sql = new StringBuilder("UPDATE " + tableName + " SET ");
 		List<String> columnNames = getAllColumnNames(columnsWithValues);
 		return appendColumnsToSelectPart(sql, columnNames);
 	}
@@ -97,7 +101,7 @@ public class SQLCreator {
 	}
 
 	private String createWherePartOfSqlStatement(Map<String, Object> conditions) {
-		StringBuilder sql = new StringBuilder(" where ");
+		StringBuilder sql = new StringBuilder(" WHERE ");
 		List<String> conditionNames = getAllConditionNames(conditions);
 		return appendConditionsToWherePart(sql, conditionNames);
 	}
@@ -111,7 +115,7 @@ public class SQLCreator {
 	}
 
 	private String appendConditionsToWherePart(StringBuilder sql, List<String> conditions) {
-		StringJoiner joiner = new StringJoiner(" and ");
+		StringJoiner joiner = new StringJoiner(" AND ");
 		addAllToJoiner(conditions, joiner);
 		sql.append(joiner);
 		return sql.toString();
@@ -126,7 +130,7 @@ public class SQLCreator {
 	}
 
 	private StringBuilder createSqlForDelete(String tableName, Map<String, Object> conditions) {
-		StringBuilder sql = new StringBuilder("delete from " + tableName + " where ");
+		StringBuilder sql = new StringBuilder("DELETE FROM " + tableName + " WHERE ");
 		List<String> allConditionNames = getAllConditionNames(conditions);
 		appendConditionsToWherePart(sql, allConditionNames);
 		return sql;
@@ -143,6 +147,24 @@ public class SQLCreator {
 			}
 			position++;
 		}
+	}
+
+	private StringBuilder createSqlForInsert(String tableName,
+			Map<String, Object> columnsWithValues, Map<String, Object> conditions) {
+		StringBuilder sql = new StringBuilder(
+				generateInsertStatement(tableName, columnsWithValues));
+		if (!conditions.isEmpty()) {
+			sql.append(createWherePartOfSqlStatement(conditions));
+		}
+		return sql;
+	}
+
+	private String generateInsertStatement(String tableName,
+			Map<String, Object> columnsWithValues) {
+		StringBuilder sql = new StringBuilder(
+				"INSERT INTO " + tableName + "(" + "columns" + ")" + " VALUES(" + "values" + ")");
+		List<String> columnNames = getAllColumnNames(columnsWithValues);
+		return appendColumnsToSelectPart(sql, columnNames);
 	}
 
 }
