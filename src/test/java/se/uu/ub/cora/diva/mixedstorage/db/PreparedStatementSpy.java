@@ -47,6 +47,8 @@ public class PreparedStatementSpy implements PreparedStatement {
 
 	public Map<String, Object> usedSetObjects = new HashMap<>();
 	public Map<String, Object> usedSetTimestamps = new HashMap<>();
+	public boolean executeWasCalled = false;
+	public boolean throwErrorOnExecution = false;
 
 	@Override
 	public void addBatch(String arg0) throws SQLException {
@@ -338,7 +340,10 @@ public class PreparedStatementSpy implements PreparedStatement {
 
 	@Override
 	public int executeUpdate() throws SQLException {
-		// TODO Auto-generated method stub
+		executeWasCalled = true;
+		if (throwErrorOnExecution) {
+			throw new SQLException("error from spy");
+		}
 		return 0;
 	}
 

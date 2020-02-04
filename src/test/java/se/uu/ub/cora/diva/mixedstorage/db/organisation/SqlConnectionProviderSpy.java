@@ -16,15 +16,26 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.diva.mixedstorage.db;
+package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.util.List;
 
-public interface PreparedStatementCreator {
+import se.uu.ub.cora.connection.SqlConnectionProvider;
+import se.uu.ub.cora.diva.mixedstorage.db.ConnectionSpy;
 
-	List<PreparedStatement> createFromDbStatment(List<DbStatement> dbStatements,
-			Connection connection);
+public class SqlConnectionProviderSpy implements SqlConnectionProvider {
+	public ConnectionSpy factoredConnection;
+	public boolean returnErrorConnection = false;
+	public boolean getConnectionHasBeenCalled = false;
+
+	@Override
+	public Connection getConnection() {
+		getConnectionHasBeenCalled = true;
+		factoredConnection = new ConnectionSpy();
+		if (returnErrorConnection) {
+			factoredConnection.returnErrorConnection = true;
+		}
+		return factoredConnection;
+	}
 
 }

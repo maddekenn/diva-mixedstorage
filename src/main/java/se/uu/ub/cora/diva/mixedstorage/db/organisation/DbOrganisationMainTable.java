@@ -18,57 +18,63 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import se.uu.ub.cora.connection.SqlConnectionProvider;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslater;
 import se.uu.ub.cora.diva.mixedstorage.db.DbMainTable;
+import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
+import se.uu.ub.cora.diva.mixedstorage.db.PreparedStatementCreator;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTableFactory;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
-import se.uu.ub.cora.sqldatabase.RecordUpdater;
+import se.uu.ub.cora.sqldatabase.SqlStorageException;
 
 public class DbOrganisationMainTable implements DbMainTable {
 
 	private DataToDbTranslater dataToDbTranslater;
-	private RecordUpdater recordUpdater;
 	private RelatedTableFactory relatedTableFactory;
 	private RecordReaderFactory recordReaderFactory;
 	private RecordReader recordReader;
+	private SqlConnectionProvider connectionProvider;
+	private PreparedStatementCreator preparedStatementCreator;
 
 	public DbOrganisationMainTable(DataToDbTranslater dataTranslater,
-			RecordReaderFactory recordReaderFactory, RecordUpdater recordUpdater,
-			RelatedTableFactory relatedTableFactory) {
+			RecordReaderFactory recordReaderFactory, RelatedTableFactory relatedTableFactory,
+			SqlConnectionProvider connectionProvider,
+			PreparedStatementCreator preparedStatementCreator) {
 		this.dataToDbTranslater = dataTranslater;
 		this.recordReaderFactory = recordReaderFactory;
-		this.recordUpdater = recordUpdater;
 		this.relatedTableFactory = relatedTableFactory;
+		this.connectionProvider = connectionProvider;
+		this.preparedStatementCreator = preparedStatementCreator;
+
 	}
 
 	@Override
 	public void update(DataGroup dataGroup) {
 		dataToDbTranslater.translate(dataGroup);
 		recordReader = recordReaderFactory.factor();
-		generateDbStatements(dataGroup);
+		updateOrganisation(dataGroup);
 
 	}
 
-	private void generateDbStatements(DataGroup dataGroup) {
+	private void updateOrganisation(DataGroup dataGroup) {
 		Map<String, Object> readConditions = generateReadConditions();
-		recordUpdater.updateTableUsingNameAndColumnsWithValuesAndConditions("organisation",
-				dataToDbTranslater.getValues(), dataToDbTranslater.getConditions());
-
 		List<Map<String, Object>> dbOrganisation = recordReader
 				.readFromTableUsingConditions("divaorganisation", readConditions);
 
-		generateDbStatementsForAlternativeName(dataGroup, dbOrganisation);
-		generateDbStatementsForAddress(dataGroup, dbOrganisation);
-		generateDbStatementsForParents(dataGroup, readConditions);
-		generateDbStatementsForPredecessors(dataGroup, readConditions);
-
+		List<DbStatement> dbStatements = generateDbStatements(dataGroup, readConditions,
+				dbOrganisation);
+		executeForDbStatements(dbStatements);
 	}
 
 	private Map<String, Object> generateReadConditions() {
@@ -78,32 +84,70 @@ public class DbOrganisationMainTable implements DbMainTable {
 		return readConditions;
 	}
 
-	private void generateDbStatementsForAlternativeName(DataGroup dataGroup,
+	private List<DbStatement> generateDbStatements(DataGroup dataGroup,
+			Map<String, Object> readConditions, List<Map<String, Object>> dbOrganisation) {
+		List<DbStatement> dbStatements = new ArrayList<>();
+		dbStatements.add(createDbStatementForOrganisationUpdate());
+		dbStatements.addAll(generateDbStatementsForAlternativeName(dataGroup, dbOrganisation));
+		dbStatements.addAll(generateDbStatementsForAddress(dataGroup, dbOrganisation));
+		dbStatements.addAll(generateDbStatementsForParents(dataGroup, readConditions));
+		dbStatements.addAll(generateDbStatementsForPredecessors(dataGroup, readConditions));
+		return dbStatements;
+	}
+
+	private DbStatement createDbStatementForOrganisationUpdate() {
+		return new DbStatement("update", "organisation", dataToDbTranslater.getValues(),
+				dataToDbTranslater.getConditions());
+	}
+
+	private List<DbStatement> generateDbStatementsForAlternativeName(DataGroup dataGroup,
 			List<Map<String, Object>> dbOrganisation) {
 		RelatedTable alternativeName = relatedTableFactory.factor("organisationAlternativeName");
-		alternativeName.handleDbForDataGroup(dataGroup, dbOrganisation);
+		return alternativeName.handleDbForDataGroup(dataGroup, dbOrganisation);
 	}
 
-	private void generateDbStatementsForAddress(DataGroup dataGroup,
+	private List<DbStatement> generateDbStatementsForAddress(DataGroup dataGroup,
 			List<Map<String, Object>> dbOrganisation) {
 		RelatedTable addressTable = relatedTableFactory.factor("organisationAddress");
-		addressTable.handleDbForDataGroup(dataGroup, dbOrganisation);
+		return addressTable.handleDbForDataGroup(dataGroup, dbOrganisation);
 	}
 
-	private void generateDbStatementsForParents(DataGroup dataGroup,
+	private List<DbStatement> generateDbStatementsForParents(DataGroup dataGroup,
 			Map<String, Object> readConditions) {
 		List<Map<String, Object>> dbParents = recordReader
 				.readFromTableUsingConditions("organisation_parent", readConditions);
 		RelatedTable parent = relatedTableFactory.factor("organisationParent");
-		parent.handleDbForDataGroup(dataGroup, dbParents);
+		return parent.handleDbForDataGroup(dataGroup, dbParents);
 	}
 
-	private void generateDbStatementsForPredecessors(DataGroup dataGroup,
+	private List<DbStatement> generateDbStatementsForPredecessors(DataGroup dataGroup,
 			Map<String, Object> readConditions) {
 		List<Map<String, Object>> dbPredecessors = recordReader
 				.readFromTableUsingConditions("organisationpredecessorview", readConditions);
 		RelatedTable predecessor = relatedTableFactory.factor("organisationPredecessor");
-		predecessor.handleDbForDataGroup(dataGroup, dbPredecessors);
+		return predecessor.handleDbForDataGroup(dataGroup, dbPredecessors);
+	}
+
+	private void executeForDbStatements(List<DbStatement> dbStatements) {
+		Connection connection = connectionProvider.getConnection();
+		try {
+			connection.setAutoCommit(false);
+			createAndExecutePreparedStatements(dbStatements);
+			connection.commit();
+			connection.close();
+		} catch (SQLException e) {
+			throw SqlStorageException.withMessageAndException(
+					"Error executing prepared statement: " + e.getMessage(), e);
+		}
+	}
+
+	private void createAndExecutePreparedStatements(List<DbStatement> dbStatements)
+			throws SQLException {
+		List<PreparedStatement> preparedStatements = preparedStatementCreator
+				.createFromDbStatment(dbStatements, null);
+		for (PreparedStatement preparedStatement : preparedStatements) {
+			preparedStatement.executeUpdate();
+		}
 	}
 
 	public DataToDbTranslater getDataToDbTranslater() {
@@ -111,14 +155,24 @@ public class DbOrganisationMainTable implements DbMainTable {
 		return dataToDbTranslater;
 	}
 
-	public RecordUpdater getRecordUpdater() {
-		// needed for test
-		return recordUpdater;
-	}
-
 	public RelatedTableFactory getRelatedTableFactory() {
 		// needed for test
 		return relatedTableFactory;
+	}
+
+	public RecordReaderFactory getRecordReaderFactory() {
+		// needed for test
+		return recordReaderFactory;
+	}
+
+	public SqlConnectionProvider getSqlConnectionProvider() {
+		// needed for test
+		return connectionProvider;
+	}
+
+	public PreparedStatementCreator getPreparedStatementCreator() {
+		// needed for test
+		return preparedStatementCreator;
 	}
 
 }

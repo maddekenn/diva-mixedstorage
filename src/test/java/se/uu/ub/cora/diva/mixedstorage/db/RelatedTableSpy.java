@@ -18,6 +18,7 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,13 +29,18 @@ public class RelatedTableSpy implements RelatedTable {
 
 	public DataGroup dataGroup;
 	public List<Map<String, Object>> dbRows;
+	private List<DbStatement> dbStatements;
 
 	@Override
 	public List<DbStatement> handleDbForDataGroup(DataGroup dataGroup,
 			List<Map<String, Object>> dbRows) {
 		this.dataGroup = dataGroup;
 		this.dbRows = dbRows;
-		return Collections.emptyList();
+		dbStatements = new ArrayList<>();
+		DbStatement dbStatement = new DbStatement("operationFromSpy", "spyTableName",
+				Collections.emptyMap(), Collections.emptyMap());
+		dbStatements.add(dbStatement);
+		return dbStatements;
 
 	}
 

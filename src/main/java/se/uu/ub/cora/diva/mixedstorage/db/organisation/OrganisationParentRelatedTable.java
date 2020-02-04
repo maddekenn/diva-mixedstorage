@@ -29,8 +29,6 @@ import java.util.Set;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
-import se.uu.ub.cora.sqldatabase.RecordCreator;
-import se.uu.ub.cora.sqldatabase.RecordDeleter;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 
 public class OrganisationParentRelatedTable extends OrganisationRelatedTable
@@ -39,8 +37,6 @@ public class OrganisationParentRelatedTable extends OrganisationRelatedTable
 	private static final String ORGANISATION_PARENT = "organisation_parent";
 	private static final String ORGANISATION_PARENT_ID = "organisation_parent_id";
 	private static final String ORGANISATION_ID = "organisation_id";
-	private RecordDeleter recordDeleter;
-	private RecordCreator recordCreator;
 
 	public OrganisationParentRelatedTable(RecordReader recordReader) {
 		this.recordReader = recordReader;
@@ -156,16 +152,6 @@ public class OrganisationParentRelatedTable extends OrganisationRelatedTable
 	public RecordReader getRecordReader() {
 		// needed for test
 		return recordReader;
-	}
-
-	public RecordDeleter getRecordDeleter() {
-		// needed for test
-		return recordDeleter;
-	}
-
-	public RecordCreator getRecordCreator() {
-		// needed for test
-		return recordCreator;
 	}
 
 }

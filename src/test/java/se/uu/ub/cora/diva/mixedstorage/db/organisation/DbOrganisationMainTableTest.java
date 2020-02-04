@@ -19,7 +19,9 @@
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertSame;
+import static org.testng.Assert.assertTrue;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -27,12 +29,16 @@ import org.testng.annotations.Test;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.DataAtomicSpy;
 import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
+import se.uu.ub.cora.diva.mixedstorage.db.ConnectionSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslaterSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.DbMainTable;
+import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
+import se.uu.ub.cora.diva.mixedstorage.db.PreparedStatementSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordReaderFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordReaderSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordUpdaterSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTableSpy;
+import se.uu.ub.cora.sqldatabase.SqlStorageException;
 
 public class DbOrganisationMainTableTest {
 
@@ -42,28 +48,39 @@ public class DbOrganisationMainTableTest {
 	private RelatedTableFactorySpy relatedTableFactory;
 	private RecordReaderFactorySpy recordReaderFactory;
 	private DataGroup dataGroup;
+	private SqlConnectionProviderSpy connectionProvider;
+	private PreparedStatementCreatorSpy preparedStatementCreator;
 
 	@BeforeMethod
 	public void setUp() {
-		dataGroup = new DataGroupSpy("organisation");
-		DataGroupSpy recordInfo = new DataGroupSpy("recordInfo");
-		recordInfo.addChild(new DataAtomicSpy("id", "4567"));
-		dataGroup.addChild(recordInfo);
+		createDefultDataGroup();
 		dataTranslater = new DataToDbTranslaterSpy();
 		recordReaderFactory = new RecordReaderFactorySpy();
 		recordUpdater = new RecordUpdaterSpy();
 		relatedTableFactory = new RelatedTableFactorySpy();
-		mainTable = new DbOrganisationMainTable(dataTranslater, recordReaderFactory, recordUpdater,
-				relatedTableFactory);
+		connectionProvider = new SqlConnectionProviderSpy();
+		preparedStatementCreator = new PreparedStatementCreatorSpy();
+		mainTable = new DbOrganisationMainTable(dataTranslater, recordReaderFactory, relatedTableFactory,
+				connectionProvider, preparedStatementCreator);
+	}
+
+	private void createDefultDataGroup() {
+		dataGroup = new DataGroupSpy("organisation");
+		DataGroupSpy recordInfo = new DataGroupSpy("recordInfo");
+		recordInfo.addChild(new DataAtomicSpy("id", "4567"));
+		dataGroup.addChild(recordInfo);
 	}
 
 	@Test
-	public void testCorrectValuesAreSentToTranslaterAndUpdater() {
+	public void testTranslaterAndDbStatmentForOrganisation() {
 		mainTable.update(dataGroup);
 		assertEquals(dataTranslater.dataGroup, dataGroup);
-		assertEquals(recordUpdater.tableName, "organisation");
-		assertSame(dataTranslater.getValues(), recordUpdater.values);
-		assertSame(dataTranslater.getConditions(), recordUpdater.conditions);
+
+		DbStatement organisationDbStatement = preparedStatementCreator.dbStatements.get(0);
+		assertEquals(organisationDbStatement.getOperation(), "update");
+		assertEquals(organisationDbStatement.getTableName(), "organisation");
+		assertSame(organisationDbStatement.getValues(), dataTranslater.getValues());
+		assertSame(organisationDbStatement.getConditions(), dataTranslater.getConditions());
 	}
 
 	@Test
@@ -124,6 +141,42 @@ public class DbOrganisationMainTableTest {
 		assertSame(thirdRelatedTable.dataGroup, dataGroup);
 		assertEquals(thirdRelatedTable.dbRows, factoredReader.returnedListCollection.get(2));
 
+	}
+
+	@Test
+	public void testConnection() {
+		mainTable.update(dataGroup);
+		assertTrue(connectionProvider.getConnectionHasBeenCalled);
+		ConnectionSpy factoredConnection = connectionProvider.factoredConnection;
+		assertFalse(factoredConnection.autoCommit);
+		assertTrue(factoredConnection.commitWasCalled);
+		assertTrue(factoredConnection.closeWasCalled);
+	}
+
+	@Test
+	public void testPreparedStatements() {
+		mainTable.update(dataGroup);
+		assertTrue(preparedStatementCreator.createWasCalled);
+		int orgStatementAndStatmentsFromSpy = 5;
+		assertEquals(preparedStatementCreator.dbStatements.size(), orgStatementAndStatmentsFromSpy);
+		assertExecuteWasCalledForPreparedStatementWithIndex(0);
+		assertExecuteWasCalledForPreparedStatementWithIndex(1);
+		assertExecuteWasCalledForPreparedStatementWithIndex(2);
+		assertExecuteWasCalledForPreparedStatementWithIndex(3);
+
+	}
+
+	private void assertExecuteWasCalledForPreparedStatementWithIndex(int index) {
+		PreparedStatementSpy psSpy = (PreparedStatementSpy) preparedStatementCreator.preparedStatements
+				.get(index);
+		assertTrue(psSpy.executeWasCalled);
+	}
+
+	@Test(expectedExceptions = SqlStorageException.class, expectedExceptionsMessageRegExp = ""
+			+ "Error executing prepared statement: error from spy")
+	public void testPreparedStatementThrowsException() {
+		preparedStatementCreator.throwErrorFromPreparedStatement = true;
+		mainTable.update(dataGroup);
 	}
 
 }

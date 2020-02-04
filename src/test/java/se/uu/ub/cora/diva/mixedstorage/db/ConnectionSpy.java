@@ -33,6 +33,8 @@ import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
@@ -40,9 +42,13 @@ import java.util.concurrent.Executor;
 public class ConnectionSpy implements Connection {
 
 	public boolean returnErrorConnection = false;
+	public List<String> sqlStatements = new ArrayList<>();
 	public String sql;
-	public PreparedStatementSpy preparedStatementSpy = new PreparedStatementSpy();
+	public List<PreparedStatementSpy> createdPreparedStatements = new ArrayList<>();
+	public PreparedStatementSpy preparedStatementSpy;
 	public boolean closeWasCalled = false;
+	public boolean autoCommit = true;
+	public boolean commitWasCalled = false;
 
 	@Override
 	public <T> T unwrap(Class<T> iface) throws SQLException {
@@ -65,9 +71,12 @@ public class ConnectionSpy implements Connection {
 	@Override
 	public PreparedStatement prepareStatement(String sql) throws SQLException {
 		this.sql = sql;
+		sqlStatements.add(sql);
 		if (returnErrorConnection) {
 			throw new SQLException("error thrown from prepareStatement in spy");
 		}
+		preparedStatementSpy = new PreparedStatementSpy();
+		createdPreparedStatements.add(preparedStatementSpy);
 		return preparedStatementSpy;
 	}
 
@@ -85,7 +94,7 @@ public class ConnectionSpy implements Connection {
 
 	@Override
 	public void setAutoCommit(boolean autoCommit) throws SQLException {
-		// TODO Auto-generated method stub
+		this.autoCommit = autoCommit;
 
 	}
 
@@ -97,8 +106,7 @@ public class ConnectionSpy implements Connection {
 
 	@Override
 	public void commit() throws SQLException {
-		// TODO Auto-generated method stub
-
+		commitWasCalled = true;
 	}
 
 	@Override

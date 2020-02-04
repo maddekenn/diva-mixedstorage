@@ -19,28 +19,34 @@
 package se.uu.ub.cora.diva.mixedstorage.db;
 
 import static org.testng.Assert.assertSame;
+import static org.testng.Assert.assertTrue;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.connection.SqlConnectionProvider;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.DbOrganisationMainTable;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.RelatedTableFactorySpy;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.SqlConnectionProviderSpy;
+import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
 public class DbMainTableFactoryTest {
 
 	private DbMainTableFactory factory;
 	private DataToDbTranslaterFactorySpy translaterFactory;
-	private RecordUpdaterFactorySpy recordUpdaterFactory;
 	private RelatedTableFactorySpy relatedTableFactory;
+	private RecordReaderFactory recordReaderFactory;
+	private SqlConnectionProvider sqlConnectionProvider;
 
 	@BeforeMethod
 	public void setUp() {
 		translaterFactory = new DataToDbTranslaterFactorySpy();
-		recordUpdaterFactory = new RecordUpdaterFactorySpy();
 		relatedTableFactory = new RelatedTableFactorySpy();
-		factory = new DbMainTableFactoryImp(translaterFactory, recordUpdaterFactory,
-				relatedTableFactory);
+		recordReaderFactory = new RecordReaderFactorySpy();
+		sqlConnectionProvider = new SqlConnectionProviderSpy();
+		factory = new DbMainTableFactoryImp(translaterFactory, recordReaderFactory,
+				relatedTableFactory, sqlConnectionProvider);
 	}
 
 	@Test
@@ -48,8 +54,10 @@ public class DbMainTableFactoryTest {
 		DbOrganisationMainTable mainTable = (DbOrganisationMainTable) factory
 				.factor("organisation");
 		assertSame(mainTable.getDataToDbTranslater(), translaterFactory.factoredTranslater);
-		assertSame(mainTable.getRecordUpdater(), recordUpdaterFactory.factoredUpdater);
 		assertSame(mainTable.getRelatedTableFactory(), relatedTableFactory);
+		assertSame(mainTable.getRecordReaderFactory(), recordReaderFactory);
+		assertSame(mainTable.getSqlConnectionProvider(), sqlConnectionProvider);
+		assertTrue(mainTable.getPreparedStatementCreator() instanceof PreparedStatementCreatorImp);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""

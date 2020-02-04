@@ -18,31 +18,34 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import se.uu.ub.cora.connection.SqlConnectionProvider;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.DbOrganisationMainTable;
-import se.uu.ub.cora.sqldatabase.RecordUpdater;
-import se.uu.ub.cora.sqldatabase.RecordUpdaterFactory;
+import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
 public class DbMainTableFactoryImp implements DbMainTableFactory {
 
 	private DataToDbTranslaterFactory translaterFactory;
-	private RecordUpdaterFactory recordUpdaterFactory;
 	private RelatedTableFactory relatedTableFactory;
+	private RecordReaderFactory recordReaderFactory;
+	private SqlConnectionProvider sqlConnectionProvider;
 
 	public DbMainTableFactoryImp(DataToDbTranslaterFactory translaterFactory,
-			RecordUpdaterFactory recordUpdaterFactory, RelatedTableFactory relatedTableFactory) {
+			RecordReaderFactory recordReaderFactory, RelatedTableFactory relatedTableFactory,
+			SqlConnectionProvider sqlConnectionProvider) {
 		this.translaterFactory = translaterFactory;
-		this.recordUpdaterFactory = recordUpdaterFactory;
+		this.recordReaderFactory = recordReaderFactory;
 		this.relatedTableFactory = relatedTableFactory;
+		this.sqlConnectionProvider = sqlConnectionProvider;
 	}
 
 	@Override
 	public DbMainTable factor(String tableName) {
 		if (tableName.equals("organisation")) {
-			RecordUpdater recordUpdater = recordUpdaterFactory.factor();
+			PreparedStatementCreatorImp preparedStatementCreator = new PreparedStatementCreatorImp();
 			DataToDbTranslater translater = translaterFactory.factorForTableName("organisation");
-			return new DbOrganisationMainTable(translater, null, recordUpdater,
-					relatedTableFactory);
+			return new DbOrganisationMainTable(translater, recordReaderFactory, relatedTableFactory,
+					sqlConnectionProvider, preparedStatementCreator);
 		}
 		throw NotImplementedException.withMessage("Main table not implemented for " + tableName);
 	}
@@ -52,14 +55,14 @@ public class DbMainTableFactoryImp implements DbMainTableFactory {
 		return translaterFactory;
 	}
 
-	public RecordUpdaterFactory getRecordUpdaterFactory() {
-		// needed for test
-		return recordUpdaterFactory;
-	}
-
 	public RelatedTableFactory getRelatedTableFactory() {
 		// needed for test
 		return relatedTableFactory;
+	}
+
+	public SqlConnectionProvider getSqlConnectionProvider() {
+		// needed for test
+		return sqlConnectionProvider;
 	}
 
 }
