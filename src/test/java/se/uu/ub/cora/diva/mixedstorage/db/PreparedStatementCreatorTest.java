@@ -33,10 +33,10 @@ import org.testng.annotations.Test;
 
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
 
-public class SQLCreatorTest {
+public class PreparedStatementCreatorTest {
 
 	public ConnectionSpy connection;
-	private SQLCreator sqlCreator;
+	private PreparedStatementCreator sqlCreator;
 	private Map<String, Object> conditions;
 	private Map<String, Object> values;
 	private DbStatement updateDbStatement;
@@ -46,14 +46,22 @@ public class SQLCreatorTest {
 	@BeforeMethod
 	public void setUp() {
 		connection = new ConnectionSpy();
-		sqlCreator = new SQLCreator(connection);
+		sqlCreator = PreparedStatementCreator.usingConnection(connection);
+		setUpDefaultValuesAndConditions();
+		createStatements();
+	}
+
+	private void setUpDefaultValuesAndConditions() {
 		conditions = new HashMap<>();
 		values = new HashMap<>();
 		values.put("name", "someName");
+	}
+
+	private void createStatements() {
 		updateDbStatement = new DbStatement("update", "organisation", values, conditions);
 		deleteDbStatement = new DbStatement("delete", "organisation", Collections.emptyMap(),
 				conditions);
-		insertDbStatement = new DbStatement("insert", null, Collections.emptyMap(),
+		insertDbStatement = new DbStatement("insert", "organisation", values,
 				Collections.emptyMap());
 	}
 
@@ -135,27 +143,53 @@ public class SQLCreatorTest {
 	public void testDeleteWithSeveralConditions() throws Exception {
 		conditions.put("id", 35);
 		conditions.put("anotherId", 72);
-		conditions.put("lastId", 47);
+		conditions.put("lastId", "47");
 		PreparedStatementSpy preparedStatement = (PreparedStatementSpy) sqlCreator
 				.createFromDbStatment(deleteDbStatement);
 		assertSame(connection.preparedStatementSpy, preparedStatement);
 		assertEquals(connection.sql,
 				"DELETE FROM organisation WHERE anotherId = ? AND lastId = ? AND id = ?");
+		assertEquals(preparedStatement.usedSetObjects.size(), 3);
+		assertEquals(preparedStatement.usedSetObjects.get("1"), 72);
+		assertEquals(preparedStatement.usedSetObjects.get("2"), "47");
+		assertEquals(preparedStatement.usedSetObjects.get("3"), 35);
 	}
 
 	/***************************************** INSERT ********************************************/
 
+	// @Test
+	// public void testInsertWithOneValue() throws Exception {
+	// PreparedStatementSpy preparedStatement = (PreparedStatementSpy) sqlCreator
+	// .createFromDbStatment(insertDbStatement);
+	// assertSame(connection.preparedStatementSpy, preparedStatement);
+	// assertEquals(connection.sql, "INSERT INTO null(column) VALUES(values)");
+	//
+	// }
 	@Test
 	public void testInsertWithOneValue() throws Exception {
 		PreparedStatementSpy preparedStatement = (PreparedStatementSpy) sqlCreator
 				.createFromDbStatment(insertDbStatement);
 		assertSame(connection.preparedStatementSpy, preparedStatement);
-		assertEquals(connection.sql, "INSERT INTO null(column) VALUES(values)");
-
+		assertEquals(connection.sql, "INSERT INTO organisation(name) VALUES(?)");
+		assertEquals(preparedStatement.usedSetObjects.size(), 1);
+		assertEquals(preparedStatement.usedSetObjects.get("1"), "someName");
 	}
 
-	// @Test
-	// public void testInsertWithNoValues() throws Exception {
-	//
-	// }
+	@Test
+	public void testInsertWithMultipleValue() throws Exception {
+		values.put("address", "some address");
+		values.put("alternative_name", "some other name");
+		values.put("org_id", 12345);
+		PreparedStatementSpy preparedStatement = (PreparedStatementSpy) sqlCreator
+				.createFromDbStatment(insertDbStatement);
+		assertSame(connection.preparedStatementSpy, preparedStatement);
+		assertEquals(connection.sql,
+				"INSERT INTO organisation(alternative_name, address, org_id, name) VALUES(?, ?, ?, ?)");
+		assertEquals(preparedStatement.usedSetObjects.size(), 4);
+		assertEquals(preparedStatement.usedSetObjects.get("1"), "some other name");
+		assertEquals(preparedStatement.usedSetObjects.get("2"), "some address");
+		assertEquals(preparedStatement.usedSetObjects.get("3"), 12345);
+		assertEquals(preparedStatement.usedSetObjects.get("4"), "someName");
+
+	}
 }

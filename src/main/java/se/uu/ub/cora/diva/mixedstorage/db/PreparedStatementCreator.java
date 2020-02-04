@@ -30,15 +30,42 @@ import java.util.StringJoiner;
 
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
 
-public class SQLCreator {
+public class PreparedStatementCreator {
 
 	private Connection connection;
 
-	public SQLCreator(Connection connection) {
+	public static PreparedStatementCreator usingConnection(Connection connection) {
+		return new PreparedStatementCreator(connection);
+	}
+
+	private PreparedStatementCreator(Connection connection) {
 		this.connection = connection;
 	}
 
 	public PreparedStatement createFromDbStatment(DbStatement dbStatement) {
+		StringBuilder sql = createSql(dbStatement);
+		try {
+			return tryToCreateDbStatement(dbStatement, sql);
+		} catch (SQLException e) {
+			throw SqlStorageException.withMessageAndException("Error executing statement: " + sql,
+					e);
+		}
+	}
+
+	private PreparedStatement tryToCreateDbStatement(DbStatement dbStatement, StringBuilder sql)
+			throws SQLException {
+		List<Object> parameterValues = getAllValuesAndConditions(dbStatement);
+		PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
+		addParameterValuesToPreparedStatement(parameterValues, preparedStatement);
+		return preparedStatement;
+	}
+
+	private List<Object> getAllValuesAndConditions(DbStatement dbStatement) {
+		return addColumnsAndConditionsToValuesForUpdate(dbStatement.getValues(),
+				dbStatement.getConditions());
+	}
+
+	private StringBuilder createSql(DbStatement dbStatement) {
 		StringBuilder sql = new StringBuilder();
 		if ("delete".equals(dbStatement.getOperation())) {
 			sql.append(createSqlForDelete(dbStatement.getTableName(), dbStatement.getConditions()));
@@ -46,20 +73,10 @@ public class SQLCreator {
 			sql.append(createSqlForUpdate(dbStatement.getTableName(), dbStatement.getValues(),
 					dbStatement.getConditions()));
 		} else {
-			sql.append(createSqlForInsert(dbStatement.getTableName(), dbStatement.getValues(),
-					dbStatement.getConditions()));
+			sql.append(createSqlForInsert(dbStatement.getTableName(), dbStatement.getValues()));
 
 		}
-		try {
-			List<Object> valuesForUpdate = addColumnsAndConditionsToValuesForUpdate(
-					dbStatement.getValues(), dbStatement.getConditions());
-			PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
-			addParameterValuesToPreparedStatement(valuesForUpdate, preparedStatement);
-			return preparedStatement;
-		} catch (SQLException e) {
-			throw SqlStorageException.withMessageAndException("Error executing statement: " + sql,
-					e);
-		}
+		return sql;
 	}
 
 	private StringBuilder createSqlForUpdate(String tableName,
@@ -150,21 +167,39 @@ public class SQLCreator {
 	}
 
 	private StringBuilder createSqlForInsert(String tableName,
-			Map<String, Object> columnsWithValues, Map<String, Object> conditions) {
-		StringBuilder sql = new StringBuilder(
-				generateInsertStatement(tableName, columnsWithValues));
-		if (!conditions.isEmpty()) {
-			sql.append(createWherePartOfSqlStatement(conditions));
-		}
+			Map<String, Object> columnsWithValues) {
+		StringBuilder sql = new StringBuilder("INSERT INTO " + tableName + "(");
+		List<String> columnNames = getAllColumnNames(columnsWithValues);
+		appendColumnNamesToInsertPart(sql, columnNames);
+		appendValuesPart(sql, columnNames);
 		return sql;
 	}
 
-	private String generateInsertStatement(String tableName,
-			Map<String, Object> columnsWithValues) {
-		StringBuilder sql = new StringBuilder(
-				"INSERT INTO " + tableName + "(" + "columns" + ")" + " VALUES(" + "values" + ")");
-		List<String> columnNames = getAllColumnNames(columnsWithValues);
-		return appendColumnsToSelectPart(sql, columnNames);
+	private String appendColumnNamesToInsertPart(StringBuilder sql, List<String> columnNames) {
+		StringJoiner joiner = new StringJoiner(", ");
+		addAllToInsertJoiner(columnNames, joiner);
+		sql.append(joiner);
+		return sql.toString();
+	}
+
+	private void addAllToInsertJoiner(List<String> columnNames, StringJoiner joiner) {
+		for (String columnName : columnNames) {
+			joiner.add(columnName);
+		}
+	}
+
+	private void appendValuesPart(StringBuilder sql, List<String> columnNames) {
+		sql.append(") VALUES(");
+		sql.append(addCorrectNumberOfPlaceHoldersForValues(columnNames));
+		sql.append(')');
+	}
+
+	private String addCorrectNumberOfPlaceHoldersForValues(List<String> columnNames) {
+		StringJoiner joiner = new StringJoiner(", ");
+		for (int i = 0; i < columnNames.size(); i++) {
+			joiner.add("?");
+		}
+		return joiner.toString();
 	}
 
 }
