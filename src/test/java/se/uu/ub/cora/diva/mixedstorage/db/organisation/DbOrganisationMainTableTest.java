@@ -36,7 +36,6 @@ import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
 import se.uu.ub.cora.diva.mixedstorage.db.PreparedStatementSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordReaderFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordReaderSpy;
-import se.uu.ub.cora.diva.mixedstorage.db.RecordUpdaterSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTableSpy;
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
 
@@ -44,7 +43,6 @@ public class DbOrganisationMainTableTest {
 
 	private DbMainTable mainTable;
 	private DataToDbTranslaterSpy dataTranslater;
-	private RecordUpdaterSpy recordUpdater;
 	private RelatedTableFactorySpy relatedTableFactory;
 	private RecordReaderFactorySpy recordReaderFactory;
 	private DataGroup dataGroup;
@@ -56,12 +54,11 @@ public class DbOrganisationMainTableTest {
 		createDefultDataGroup();
 		dataTranslater = new DataToDbTranslaterSpy();
 		recordReaderFactory = new RecordReaderFactorySpy();
-		recordUpdater = new RecordUpdaterSpy();
 		relatedTableFactory = new RelatedTableFactorySpy();
 		connectionProvider = new SqlConnectionProviderSpy();
 		preparedStatementCreator = new PreparedStatementCreatorSpy();
-		mainTable = new DbOrganisationMainTable(dataTranslater, recordReaderFactory, relatedTableFactory,
-				connectionProvider, preparedStatementCreator);
+		mainTable = new DbOrganisationMainTable(dataTranslater, recordReaderFactory,
+				relatedTableFactory, connectionProvider, preparedStatementCreator);
 	}
 
 	private void createDefultDataGroup() {
@@ -89,7 +86,7 @@ public class DbOrganisationMainTableTest {
 
 		RecordReaderSpy factoredReader = recordReaderFactory.factoredReaders.get(0);
 		assertEquals(factoredReader.usedTableNames.get(0), "divaorganisation");
-		assertEquals(factoredReader.usedConditionsList.get(0).get("organisation_id"), 4567);
+		assertEquals(factoredReader.usedConditionsList.get(0).get("id"), "4567");
 
 		assertEquals(relatedTableFactory.relatedTableNames.get(0), "organisationAlternativeName");
 		RelatedTableSpy firstRelatedTable = (RelatedTableSpy) relatedTableFactory.factoredRelatedTables
@@ -132,7 +129,7 @@ public class DbOrganisationMainTableTest {
 	public void testPredecessor() {
 		mainTable.update(dataGroup);
 		RecordReaderSpy factoredReader = recordReaderFactory.factoredReaders.get(0);
-		assertEquals(factoredReader.usedTableNames.get(2), "organisationpredecessorview");
+		assertEquals(factoredReader.usedTableNames.get(2), "divaorganisationpredecessor");
 		assertEquals(factoredReader.usedConditionsList.get(2).get("organisation_id"), 4567);
 
 		assertEquals(relatedTableFactory.relatedTableNames.get(3), "organisationPredecessor");
@@ -157,6 +154,7 @@ public class DbOrganisationMainTableTest {
 	public void testPreparedStatements() {
 		mainTable.update(dataGroup);
 		assertTrue(preparedStatementCreator.createWasCalled);
+		assertSame(preparedStatementCreator.connection, connectionProvider.factoredConnection);
 		int orgStatementAndStatmentsFromSpy = 5;
 		assertEquals(preparedStatementCreator.dbStatements.size(), orgStatementAndStatmentsFromSpy);
 		assertExecuteWasCalledForPreparedStatementWithIndex(0);

@@ -42,17 +42,13 @@ public class DivaDbToCoraRecordStorageTest {
 	private DivaDbToCoraConverterFactorySpy converterFactory;
 	private RecordReaderFactorySpy recordReaderFactory;
 	private DivaDbToCoraFactorySpy divaDbToCoraFactory;
-	private RecordUpdaterFactorySpy recordUpdaterFactory;
-	private DataToDbTranslaterFactorySpy dataToDbTranslaterFactory;
 	private DbMainTableFactorySpy dbMainTableFactory;
 
 	@BeforeMethod
 	public void BeforeMethod() {
 		converterFactory = new DivaDbToCoraConverterFactorySpy();
 		recordReaderFactory = new RecordReaderFactorySpy();
-		recordUpdaterFactory = new RecordUpdaterFactorySpy();
 		divaDbToCoraFactory = new DivaDbToCoraFactorySpy();
-		dataToDbTranslaterFactory = new DataToDbTranslaterFactorySpy();
 		dbMainTableFactory = new DbMainTableFactorySpy();
 		divaToCoraRecordStorage = DivaDbToCoraRecordStorage
 				.usingRecordReaderFactoryConverterFactoryDbToCoraFactoryAndMainTableFactory(

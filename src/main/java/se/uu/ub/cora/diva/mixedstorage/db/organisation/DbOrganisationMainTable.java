@@ -40,6 +40,7 @@ import se.uu.ub.cora.sqldatabase.SqlStorageException;
 
 public class DbOrganisationMainTable implements DbMainTable {
 
+	private static final String ORGANISATION_ID = "organisation_id";
 	private DataToDbTranslater dataToDbTranslater;
 	private RelatedTableFactory relatedTableFactory;
 	private RecordReaderFactory recordReaderFactory;
@@ -68,19 +69,27 @@ public class DbOrganisationMainTable implements DbMainTable {
 	}
 
 	private void updateOrganisation(DataGroup dataGroup) {
-		Map<String, Object> readConditions = generateReadConditions();
+		Map<String, Object> readConditionsForOrganisation = generateReadConditions();
 		List<Map<String, Object>> dbOrganisation = recordReader
-				.readFromTableUsingConditions("divaorganisation", readConditions);
+				.readFromTableUsingConditions("divaorganisation", readConditionsForOrganisation);
 
-		List<DbStatement> dbStatements = generateDbStatements(dataGroup, readConditions,
-				dbOrganisation);
+		List<DbStatement> dbStatements = generateDbStatements(dataGroup,
+				generateReadConditionsForRelatedTables(), dbOrganisation);
 		executeForDbStatements(dbStatements);
 	}
 
 	private Map<String, Object> generateReadConditions() {
 		Map<String, Object> readConditions = new HashMap<>();
-		int organisationsId = (int) dataToDbTranslater.getConditions().get("organisation_id");
-		readConditions.put("organisation_id", organisationsId);
+		String organisationsId = String
+				.valueOf(dataToDbTranslater.getConditions().get(ORGANISATION_ID));
+		readConditions.put("id", organisationsId);
+		return readConditions;
+	}
+
+	private Map<String, Object> generateReadConditionsForRelatedTables() {
+		Map<String, Object> readConditions = new HashMap<>();
+		int organisationsId = (int) dataToDbTranslater.getConditions().get(ORGANISATION_ID);
+		readConditions.put(ORGANISATION_ID, organisationsId);
 		return readConditions;
 	}
 
@@ -123,7 +132,7 @@ public class DbOrganisationMainTable implements DbMainTable {
 	private List<DbStatement> generateDbStatementsForPredecessors(DataGroup dataGroup,
 			Map<String, Object> readConditions) {
 		List<Map<String, Object>> dbPredecessors = recordReader
-				.readFromTableUsingConditions("organisationpredecessorview", readConditions);
+				.readFromTableUsingConditions("divaorganisationpredecessor", readConditions);
 		RelatedTable predecessor = relatedTableFactory.factor("organisationPredecessor");
 		return predecessor.handleDbForDataGroup(dataGroup, dbPredecessors);
 	}
@@ -132,7 +141,7 @@ public class DbOrganisationMainTable implements DbMainTable {
 		Connection connection = connectionProvider.getConnection();
 		try {
 			connection.setAutoCommit(false);
-			createAndExecutePreparedStatements(dbStatements);
+			createAndExecutePreparedStatements(dbStatements, connection);
 			connection.commit();
 			connection.close();
 		} catch (SQLException e) {
@@ -141,10 +150,10 @@ public class DbOrganisationMainTable implements DbMainTable {
 		}
 	}
 
-	private void createAndExecutePreparedStatements(List<DbStatement> dbStatements)
-			throws SQLException {
+	private void createAndExecutePreparedStatements(List<DbStatement> dbStatements,
+			Connection connection) throws SQLException {
 		List<PreparedStatement> preparedStatements = preparedStatementCreator
-				.createFromDbStatment(dbStatements, null);
+				.createFromDbStatment(dbStatements, connection);
 		for (PreparedStatement preparedStatement : preparedStatements) {
 			preparedStatement.executeUpdate();
 		}

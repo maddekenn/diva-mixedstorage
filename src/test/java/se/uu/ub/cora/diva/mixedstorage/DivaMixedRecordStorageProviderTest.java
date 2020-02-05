@@ -216,6 +216,7 @@ public class DivaMixedRecordStorageProviderTest {
 		ContextConnectionProviderImp connectionProvider = (ContextConnectionProviderImp) dbMainTableFactory
 				.getSqlConnectionProvider();
 		assertCorrectSqlConnectionProvider(connectionProvider);
+		assertTrue(dbMainTableFactory.getRecordReaderFactory() instanceof RecordReaderFactoryImp);
 		assertCorrectRelatedTableFactory(dbMainTableFactory);
 
 	}

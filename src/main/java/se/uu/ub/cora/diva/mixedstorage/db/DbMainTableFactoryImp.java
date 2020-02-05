@@ -65,4 +65,9 @@ public class DbMainTableFactoryImp implements DbMainTableFactory {
 		return sqlConnectionProvider;
 	}
 
+	public RecordReaderFactory getRecordReaderFactory() {
+		// needed for test
+		return recordReaderFactory;
+	}
+
 }

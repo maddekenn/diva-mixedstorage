@@ -105,8 +105,9 @@ public class DivaDbToCoraOrganisation implements DivaDbToCora {
 		organisation.addChild(parent);
 	}
 
-	private void tryToReadAndConvertPredecessors(String id, DataGroup organisation) {
+	private void tryToReadAndConvertPredecessors(String stringId, DataGroup organisation) {
 		Map<String, Object> conditions = new HashMap<>();
+		int id = Integer.parseInt(stringId);
 		conditions.put("organisation_id", id);
 		List<Map<String, Object>> predecessors = recordReader
 				.readFromTableUsingConditions(DIVA_ORGANISATION_PREDECESSOR, conditions);

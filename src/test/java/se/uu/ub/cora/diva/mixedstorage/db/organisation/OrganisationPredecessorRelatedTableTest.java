@@ -53,9 +53,10 @@ public class OrganisationPredecessorRelatedTableTest {
 
 	private void initPredecessorRows() {
 		predecssorRows = new ArrayList<>();
+
 		Map<String, Object> predeccessorRow = new HashMap<>();
 		predeccessorRow.put("organisation_id", 678);
-		predeccessorRow.put("organisation_predecessor_id", 234);
+		predeccessorRow.put("predecessor_id", 234);
 		predecssorRows.add(predeccessorRow);
 	}
 
@@ -223,7 +224,7 @@ public class OrganisationPredecessorRelatedTableTest {
 			int predecessorId) {
 		Map<String, Object> predecessorRow = new HashMap<>();
 		predecessorRow.put("organisation_id", organisationId);
-		predecessorRow.put("organisation_predecessor_id", predecessorId);
+		predecessorRow.put("predecessor_id", predecessorId);
 		return predecessorRow;
 	}
 

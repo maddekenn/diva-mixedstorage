@@ -35,7 +35,6 @@ import se.uu.ub.cora.data.DataGroupFactory;
 import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.diva.mixedstorage.DataAtomicFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.ConversionException;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbToCoraOrganisationPredecessorConverter;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DataGroupFactorySpy;
 
 public class DivaDbToCoraOrganisationPredecessorConverterTest {
@@ -53,7 +52,7 @@ public class DivaDbToCoraOrganisationPredecessorConverterTest {
 		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactorySpy);
 		rowFromDb = new HashMap<>();
 		rowFromDb.put("organisation_id", "someOrgId");
-		rowFromDb.put("predecessor_id", "somePredecessorId");
+		rowFromDb.put("predecessor_id", 7788);
 		converter = new DivaDbToCoraOrganisationPredecessorConverter();
 
 	}
@@ -100,7 +99,7 @@ public class DivaDbToCoraOrganisationPredecessorConverterTest {
 		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordType"),
 				"divaOrganisation");
 		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				"somePredecessorId");
+				"7788");
 		assertFalse(predecessor.containsChildWithNameInData("organisationComment"));
 	}
 
@@ -114,7 +113,7 @@ public class DivaDbToCoraOrganisationPredecessorConverterTest {
 		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordType"),
 				"divaOrganisation");
 		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				"somePredecessorId");
+				"7788");
 		assertFalse(predecessor.containsChildWithNameInData("organisationComment"));
 	}
 
@@ -128,7 +127,7 @@ public class DivaDbToCoraOrganisationPredecessorConverterTest {
 		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordType"),
 				"divaOrganisation");
 		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				"somePredecessorId");
+				"7788");
 		assertFalse(predecessor.containsChildWithNameInData("organisationComment"));
 	}
 
@@ -142,7 +141,7 @@ public class DivaDbToCoraOrganisationPredecessorConverterTest {
 		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordType"),
 				"divaOrganisation");
 		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				"somePredecessorId");
+				"7788");
 
 		assertEquals(predecessor.getFirstAtomicValueWithNameInData("organisationComment"),
 				"some description text");

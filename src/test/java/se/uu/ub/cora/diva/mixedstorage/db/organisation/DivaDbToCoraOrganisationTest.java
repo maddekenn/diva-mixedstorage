@@ -37,7 +37,6 @@ import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordReaderFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordReaderSpy;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbToCoraOrganisation;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DataGroupFactorySpy;
 
 public class DivaDbToCoraOrganisationTest {
@@ -61,13 +60,13 @@ public class DivaDbToCoraOrganisationTest {
 
 	@Test
 	public void testReadOrgansiationFactorDbReader() throws Exception {
-		toCoraOrganisation.convertOneRowData(TABLE_NAME, "someId");
+		toCoraOrganisation.convertOneRowData(TABLE_NAME, "567");
 		assertTrue(recordReaderFactory.factorWasCalled);
 	}
 
 	@Test
 	public void testReadOrgansiationTableRequestedFromReader() throws Exception {
-		toCoraOrganisation.convertOneRowData(TABLE_NAME, "someId");
+		toCoraOrganisation.convertOneRowData(TABLE_NAME, "567");
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
 		assertEquals(recordReader.usedTableNames.get(0), TABLE_NAME);
 		assertEquals(recordReader.usedTableNames.get(1), "divaOrganisationParent");
@@ -77,22 +76,22 @@ public class DivaDbToCoraOrganisationTest {
 
 	@Test
 	public void testReadOrganisationConditionsForOrganisationTable() throws Exception {
-		toCoraOrganisation.convertOneRowData(TABLE_NAME, "someId");
+		toCoraOrganisation.convertOneRowData(TABLE_NAME, "567");
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
 		Map<String, Object> conditions = recordReader.usedConditionsList.get(0);
-		assertEquals(conditions.get("id"), "someId");
+		assertEquals(conditions.get("id"), "567");
 	}
 
 	@Test
 	public void testReadOrganisationConverterIsFactored() throws Exception {
-		toCoraOrganisation.convertOneRowData(TABLE_NAME, "someId");
+		toCoraOrganisation.convertOneRowData(TABLE_NAME, "567");
 		DivaDbToCoraConverter divaDbToCoraConverter = converterFactory.factoredConverters.get(0);
 		assertNotNull(divaDbToCoraConverter);
 	}
 
 	@Test
 	public void testReadOrganisationConverterIsCalledWithDataFromDbStorage() throws Exception {
-		toCoraOrganisation.convertOneRowData(TABLE_NAME, "someId");
+		toCoraOrganisation.convertOneRowData(TABLE_NAME, "567");
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
 		DivaDbToCoraConverterSpy divaDbToCoraConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
 				.get(0);
@@ -103,8 +102,7 @@ public class DivaDbToCoraOrganisationTest {
 	@Test
 	public void testReadOrganisationCallsDatabaseAndReturnsConvertedResultNoPredecessorsNoSuccessorsNoParents()
 			throws Exception {
-		DataGroup convertedOrganisation = toCoraOrganisation.convertOneRowData(TABLE_NAME,
-				"someId");
+		DataGroup convertedOrganisation = toCoraOrganisation.convertOneRowData(TABLE_NAME, "567");
 
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
 		assertCorrectTableNamesAndConditionsAreUsedWhenReading(recordReader);
@@ -125,13 +123,13 @@ public class DivaDbToCoraOrganisationTest {
 		List<Map<String, Object>> usedConditionsList = recordReader.usedConditionsList;
 
 		assertEquals(recordReader.usedTableNames.get(0), "divaOrganisation");
-		assertEquals(usedConditionsList.get(0).get("id"), "someId");
+		assertEquals(usedConditionsList.get(0).get("id"), "567");
 
 		assertEquals(recordReader.usedTableNames.get(1), "divaOrganisationParent");
-		assertEquals(usedConditionsList.get(1).get("organisation_id"), "someId");
+		assertEquals(usedConditionsList.get(1).get("organisation_id"), "567");
 
 		assertEquals(recordReader.usedTableNames.get(2), "divaOrganisationPredecessor");
-		assertEquals(usedConditionsList.get(2).get("organisation_id"), "someId");
+		assertEquals(usedConditionsList.get(2).get("organisation_id"), 567);
 
 	}
 
@@ -149,8 +147,7 @@ public class DivaDbToCoraOrganisationTest {
 	public void testReadOrganisationCanHandleNullPredecessorsAndSuccessorsAndParents()
 			throws Exception {
 		recordReaderFactory.numOfPredecessorsToReturn = -1;
-		DataGroup convertedOrganisation = toCoraOrganisation.convertOneRowData(TABLE_NAME,
-				"someId");
+		DataGroup convertedOrganisation = toCoraOrganisation.convertOneRowData(TABLE_NAME, "567");
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
 
 		assertCorrectTableNamesAndConditionsAreUsedWhenReading(recordReader);
@@ -168,8 +165,7 @@ public class DivaDbToCoraOrganisationTest {
 	public void testReadOrganisationCallsDatabaseAndReturnsConvertedResultWithOnePredecessor()
 			throws Exception {
 		recordReaderFactory.numOfPredecessorsToReturn = 1;
-		DataGroup convertedOrganisation = toCoraOrganisation.convertOneRowData(TABLE_NAME,
-				"someId");
+		DataGroup convertedOrganisation = toCoraOrganisation.convertOneRowData(TABLE_NAME, "567");
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
 
 		assertCorrectTableNamesAndConditionsAreUsedWhenReading(recordReader);
@@ -202,8 +198,7 @@ public class DivaDbToCoraOrganisationTest {
 			throws Exception {
 		recordReaderFactory.numOfPredecessorsToReturn = 3;
 		recordReaderFactory.noOfRecordsToReturn = 3;
-		DataGroup convertedOrganisation = toCoraOrganisation.convertOneRowData(TABLE_NAME,
-				"someId");
+		DataGroup convertedOrganisation = toCoraOrganisation.convertOneRowData(TABLE_NAME, "567");
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
 
 		assertEquals(recordReader.predecessorsToReturn.size(), 3);
@@ -246,8 +241,7 @@ public class DivaDbToCoraOrganisationTest {
 	public void testReadOrganisationCallsDatabaseAndReturnsConvertedResultWithOneParent()
 			throws Exception {
 		recordReaderFactory.numOfParentsToReturn = 1;
-		DataGroup convertedOrganisation = toCoraOrganisation.convertOneRowData(TABLE_NAME,
-				"someId");
+		DataGroup convertedOrganisation = toCoraOrganisation.convertOneRowData(TABLE_NAME, "567");
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
 
 		assertCorrectTableNamesAndConditionsAreUsedWhenReading(recordReader);
@@ -280,8 +274,7 @@ public class DivaDbToCoraOrganisationTest {
 			throws Exception {
 		recordReaderFactory.numOfParentsToReturn = 3;
 		recordReaderFactory.noOfRecordsToReturn = 3;
-		DataGroup convertedOrganisation = toCoraOrganisation.convertOneRowData(TABLE_NAME,
-				"someId");
+		DataGroup convertedOrganisation = toCoraOrganisation.convertOneRowData(TABLE_NAME, "567");
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
 
 		assertEquals(recordReader.parentsToReturn.size(), 3);

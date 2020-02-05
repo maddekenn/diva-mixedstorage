@@ -52,7 +52,7 @@ public class DivaDbToCoraOrganisationPredecessorConverter
 
 	private void addPredecessorLink(DataGroup formerName) {
 		DataGroup predecessor = createOrganisationLinkUsingLinkedRecordId(
-				(String) dbRow.get(PREDECESSOR_ID));
+				String.valueOf(dbRow.get(PREDECESSOR_ID)));
 		formerName.addChild(predecessor);
 	}
 

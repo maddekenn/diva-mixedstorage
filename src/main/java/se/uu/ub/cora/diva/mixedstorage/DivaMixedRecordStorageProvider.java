@@ -149,7 +149,7 @@ public class DivaMixedRecordStorageProvider
 		RelatedTableFactoryImp relatedFactory = RelatedTableFactoryImp.usingReaderDeleterAndCreator(
 				recordReaderFactory, recordDeleterFactory, recordCreatorFactory);
 
-		return new DbMainTableFactoryImp(translaterFactory, null, relatedFactory,
+		return new DbMainTableFactoryImp(translaterFactory, recordReaderFactory, relatedFactory,
 				tryToCreateConnectionProvider());
 	}
 
