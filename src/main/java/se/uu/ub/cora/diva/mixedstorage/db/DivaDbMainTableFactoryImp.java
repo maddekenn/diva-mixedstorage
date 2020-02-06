@@ -20,17 +20,17 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 
 import se.uu.ub.cora.connection.SqlConnectionProvider;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.DbOrganisationMainTable;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbOrganisationMainTable;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
-public class DbMainTableFactoryImp implements DbMainTableFactory {
+public class DivaDbMainTableFactoryImp implements DbMainTableFactory {
 
 	private DataToDbTranslaterFactory translaterFactory;
 	private RelatedTableFactory relatedTableFactory;
 	private RecordReaderFactory recordReaderFactory;
 	private SqlConnectionProvider sqlConnectionProvider;
 
-	public DbMainTableFactoryImp(DataToDbTranslaterFactory translaterFactory,
+	public DivaDbMainTableFactoryImp(DataToDbTranslaterFactory translaterFactory,
 			RecordReaderFactory recordReaderFactory, RelatedTableFactory relatedTableFactory,
 			SqlConnectionProvider sqlConnectionProvider) {
 		this.translaterFactory = translaterFactory;
@@ -42,12 +42,16 @@ public class DbMainTableFactoryImp implements DbMainTableFactory {
 	@Override
 	public DbMainTable factor(String tableName) {
 		if (tableName.equals("organisation")) {
-			PreparedStatementCreatorImp preparedStatementCreator = new PreparedStatementCreatorImp();
-			DataToDbTranslater translater = translaterFactory.factorForTableName("organisation");
-			return new DbOrganisationMainTable(translater, recordReaderFactory, relatedTableFactory,
-					sqlConnectionProvider, preparedStatementCreator);
+			return factorForOrganisation();
 		}
 		throw NotImplementedException.withMessage("Main table not implemented for " + tableName);
+	}
+
+	private DbMainTable factorForOrganisation() {
+		PreparedStatementCreator preparedStatementCreator = new PreparedStatementCreatorImp();
+		DataToDbTranslater translater = translaterFactory.factorForTableName("organisation");
+		return new DivaDbOrganisationMainTable(translater, recordReaderFactory, relatedTableFactory,
+				sqlConnectionProvider, preparedStatementCreator);
 	}
 
 	public DataToDbTranslaterFactory getTranslaterFactory() {

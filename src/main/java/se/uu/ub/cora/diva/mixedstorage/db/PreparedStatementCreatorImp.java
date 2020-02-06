@@ -33,27 +33,26 @@ import se.uu.ub.cora.sqldatabase.SqlStorageException;
 public class PreparedStatementCreatorImp implements PreparedStatementCreator {
 
 	@Override
-	public List<PreparedStatement> createFromDbStatment(List<DbStatement> dbStatements,
-			Connection connection) {
-		List<PreparedStatement> preparedStatements = new ArrayList<>();
+	public void generateFromDbStatment(List<DbStatement> dbStatements, Connection connection) {
 		for (DbStatement dbStatement : dbStatements) {
 			StringBuilder sql = createSql(dbStatement);
 			try {
-				preparedStatements.add(tryToCreatePreparedStatement(dbStatement, sql, connection));
+				tryToExecuteUsingPreparedStatement(dbStatement, sql, connection);
 			} catch (SQLException e) {
 				throw SqlStorageException
 						.withMessageAndException("Error executing statement: " + sql, e);
 			}
 		}
-		return preparedStatements;
 	}
 
-	private PreparedStatement tryToCreatePreparedStatement(DbStatement dbStatement,
-			StringBuilder sql, Connection connection) throws SQLException {
+	private void tryToExecuteUsingPreparedStatement(DbStatement dbStatement, StringBuilder sql,
+			Connection connection) throws SQLException {
 		List<Object> parameterValues = getAllValuesAndConditions(dbStatement);
-		PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
-		addParameterValuesToPreparedStatement(parameterValues, preparedStatement);
-		return preparedStatement;
+		try (PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());) {
+			addParameterValuesToPreparedStatement(parameterValues, preparedStatement);
+			preparedStatement.executeUpdate();
+		}
+
 	}
 
 	private List<Object> getAllValuesAndConditions(DbStatement dbStatement) {

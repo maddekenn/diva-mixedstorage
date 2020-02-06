@@ -36,7 +36,7 @@ public class DataToDbTranslaterFactoryTest {
 	@BeforeMethod
 	public void setUp() {
 		recordReaderFactory = new RecordReaderFactorySpy();
-		factory = new DataToDbTranslaterFactoryImp(recordReaderFactory);
+		factory = new DivaDataToDbTranslaterFactoryImp(recordReaderFactory);
 	}
 
 	@Test

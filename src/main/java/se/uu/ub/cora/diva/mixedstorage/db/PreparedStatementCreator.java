@@ -19,12 +19,14 @@
 package se.uu.ub.cora.diva.mixedstorage.db;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.util.List;
 
+/**
+ * PreparedStatementsCreator creates PreparedStatements from DbStatements
+ */
 public interface PreparedStatementCreator {
 
-	List<PreparedStatement> createFromDbStatment(List<DbStatement> dbStatements,
+	void generateFromDbStatment(List<DbStatement> dbStatements,
 			Connection connection);
 
 }

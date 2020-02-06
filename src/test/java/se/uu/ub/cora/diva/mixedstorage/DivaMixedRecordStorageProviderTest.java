@@ -44,8 +44,8 @@ import se.uu.ub.cora.basicstorage.RecordStorageOnDisk;
 import se.uu.ub.cora.connection.ContextConnectionProviderImp;
 import se.uu.ub.cora.data.DataGroupFactory;
 import se.uu.ub.cora.data.DataGroupProvider;
-import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslaterFactoryImp;
-import se.uu.ub.cora.diva.mixedstorage.db.DbMainTableFactoryImp;
+import se.uu.ub.cora.diva.mixedstorage.db.DivaDataToDbTranslaterFactoryImp;
+import se.uu.ub.cora.diva.mixedstorage.db.DivaDbMainTableFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraRecordStorage;
@@ -204,13 +204,13 @@ public class DivaMixedRecordStorageProviderTest {
 	}
 
 	private void assertCorrectDbMainTableFactory(DivaDbToCoraRecordStorage dbStorage) {
-		DbMainTableFactoryImp dbMainTableFactory = (DbMainTableFactoryImp) dbStorage
+		DivaDbMainTableFactoryImp dbMainTableFactory = (DivaDbMainTableFactoryImp) dbStorage
 				.getDbMainTableFactory();
-		assertTrue(dbMainTableFactory instanceof DbMainTableFactoryImp);
+		assertTrue(dbMainTableFactory instanceof DivaDbMainTableFactoryImp);
 
-		DataToDbTranslaterFactoryImp translaterFactory = (DataToDbTranslaterFactoryImp) dbMainTableFactory
+		DivaDataToDbTranslaterFactoryImp translaterFactory = (DivaDataToDbTranslaterFactoryImp) dbMainTableFactory
 				.getTranslaterFactory();
-		assertTrue(translaterFactory instanceof DataToDbTranslaterFactoryImp);
+		assertTrue(translaterFactory instanceof DivaDataToDbTranslaterFactoryImp);
 		assertTrue(translaterFactory.getRecordReaderFactory() instanceof RecordReaderFactoryImp);
 
 		ContextConnectionProviderImp connectionProvider = (ContextConnectionProviderImp) dbMainTableFactory
@@ -221,7 +221,7 @@ public class DivaMixedRecordStorageProviderTest {
 
 	}
 
-	private void assertCorrectRelatedTableFactory(DbMainTableFactoryImp dbMainTableFactory) {
+	private void assertCorrectRelatedTableFactory(DivaDbMainTableFactoryImp dbMainTableFactory) {
 		RelatedTableFactoryImp relatedTableFactory = (RelatedTableFactoryImp) dbMainTableFactory
 				.getRelatedTableFactory();
 

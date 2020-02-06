@@ -28,8 +28,8 @@ import se.uu.ub.cora.basicstorage.RecordStorageInstance;
 import se.uu.ub.cora.basicstorage.RecordStorageOnDisk;
 import se.uu.ub.cora.connection.ContextConnectionProviderImp;
 import se.uu.ub.cora.connection.SqlConnectionProvider;
-import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslaterFactoryImp;
-import se.uu.ub.cora.diva.mixedstorage.db.DbMainTableFactoryImp;
+import se.uu.ub.cora.diva.mixedstorage.db.DivaDataToDbTranslaterFactoryImp;
+import se.uu.ub.cora.diva.mixedstorage.db.DivaDbMainTableFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraRecordStorage;
@@ -126,7 +126,7 @@ public class DivaMixedRecordStorageProvider
 		DivaDbToCoraConverterFactoryImp divaDbToCoraConverterFactory = new DivaDbToCoraConverterFactoryImp();
 		DivaDbToCoraFactoryImp divaDbToCoraFactory = new DivaDbToCoraFactoryImp(recordReaderFactory,
 				divaDbToCoraConverterFactory);
-		DbMainTableFactoryImp dbMainTableFactory = createDbMainTableFactory(recordReaderFactory);
+		DivaDbMainTableFactoryImp dbMainTableFactory = createDbMainTableFactory(recordReaderFactory);
 		return DivaDbToCoraRecordStorage
 				.usingRecordReaderFactoryConverterFactoryDbToCoraFactoryAndMainTableFactory(
 						recordReaderFactory, divaDbToCoraConverterFactory, divaDbToCoraFactory,
@@ -138,9 +138,9 @@ public class DivaMixedRecordStorageProvider
 		return RecordReaderFactoryImp.usingSqlConnectionProvider(sqlConnectionProvider);
 	}
 
-	private DbMainTableFactoryImp createDbMainTableFactory(
+	private DivaDbMainTableFactoryImp createDbMainTableFactory(
 			RecordReaderFactoryImp recordReaderFactory) {
-		DataToDbTranslaterFactoryImp translaterFactory = new DataToDbTranslaterFactoryImp(
+		DivaDataToDbTranslaterFactoryImp translaterFactory = new DivaDataToDbTranslaterFactoryImp(
 				recordReaderFactory);
 
 		RecordCreatorFactoryImp recordCreatorFactory = createRecordCreatorFactory();
@@ -149,7 +149,7 @@ public class DivaMixedRecordStorageProvider
 		RelatedTableFactoryImp relatedFactory = RelatedTableFactoryImp.usingReaderDeleterAndCreator(
 				recordReaderFactory, recordDeleterFactory, recordCreatorFactory);
 
-		return new DbMainTableFactoryImp(translaterFactory, recordReaderFactory, relatedFactory,
+		return new DivaDbMainTableFactoryImp(translaterFactory, recordReaderFactory, relatedFactory,
 				tryToCreateConnectionProvider());
 	}
 

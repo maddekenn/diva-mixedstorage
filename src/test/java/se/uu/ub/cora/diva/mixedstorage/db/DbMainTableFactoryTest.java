@@ -26,7 +26,7 @@ import org.testng.annotations.Test;
 
 import se.uu.ub.cora.connection.SqlConnectionProvider;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.DbOrganisationMainTable;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbOrganisationMainTable;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.RelatedTableFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.SqlConnectionProviderSpy;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
@@ -45,13 +45,13 @@ public class DbMainTableFactoryTest {
 		relatedTableFactory = new RelatedTableFactorySpy();
 		recordReaderFactory = new RecordReaderFactorySpy();
 		sqlConnectionProvider = new SqlConnectionProviderSpy();
-		factory = new DbMainTableFactoryImp(translaterFactory, recordReaderFactory,
+		factory = new DivaDbMainTableFactoryImp(translaterFactory, recordReaderFactory,
 				relatedTableFactory, sqlConnectionProvider);
 	}
 
 	@Test
 	public void testFactorOrganisationTable() {
-		DbOrganisationMainTable mainTable = (DbOrganisationMainTable) factory
+		DivaDbOrganisationMainTable mainTable = (DivaDbOrganisationMainTable) factory
 				.factor("organisation");
 		assertSame(mainTable.getDataToDbTranslater(), translaterFactory.factoredTranslater);
 		assertSame(mainTable.getRelatedTableFactory(), relatedTableFactory);

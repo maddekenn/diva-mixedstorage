@@ -49,6 +49,7 @@ public class PreparedStatementSpy implements PreparedStatement {
 	public Map<String, Object> usedSetTimestamps = new HashMap<>();
 	public boolean executeWasCalled = false;
 	public boolean throwErrorOnExecution = false;
+	public boolean closedWasCalled = false;
 
 	@Override
 	public void addBatch(String arg0) throws SQLException {
@@ -77,7 +78,7 @@ public class PreparedStatementSpy implements PreparedStatement {
 	@Override
 	public void close() throws SQLException {
 		// TODO Auto-generated method stub
-
+		closedWasCalled = true;
 	}
 
 	@Override

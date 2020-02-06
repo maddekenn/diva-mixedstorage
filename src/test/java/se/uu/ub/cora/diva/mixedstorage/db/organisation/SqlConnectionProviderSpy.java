@@ -33,7 +33,7 @@ public class SqlConnectionProviderSpy implements SqlConnectionProvider {
 		getConnectionHasBeenCalled = true;
 		factoredConnection = new ConnectionSpy();
 		if (returnErrorConnection) {
-			factoredConnection.returnErrorConnection = true;
+			factoredConnection.throwException = true;
 		}
 		return factoredConnection;
 	}

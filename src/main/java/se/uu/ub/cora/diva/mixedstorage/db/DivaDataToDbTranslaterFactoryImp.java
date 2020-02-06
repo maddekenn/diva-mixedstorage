@@ -24,11 +24,11 @@ import se.uu.ub.cora.diva.mixedstorage.db.organisation.OrganisationDataToDbTrans
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
-public class DataToDbTranslaterFactoryImp implements DataToDbTranslaterFactory {
+public class DivaDataToDbTranslaterFactoryImp implements DataToDbTranslaterFactory {
 
 	private RecordReaderFactory recordReaderFactory;
 
-	public DataToDbTranslaterFactoryImp(RecordReaderFactory recordReaderFactory) {
+	public DivaDataToDbTranslaterFactoryImp(RecordReaderFactory recordReaderFactory) {
 		this.recordReaderFactory = recordReaderFactory;
 	}
 

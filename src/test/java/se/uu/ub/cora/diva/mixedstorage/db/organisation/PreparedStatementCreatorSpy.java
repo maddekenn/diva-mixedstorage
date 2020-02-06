@@ -26,6 +26,7 @@ import java.util.List;
 import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
 import se.uu.ub.cora.diva.mixedstorage.db.PreparedStatementCreator;
 import se.uu.ub.cora.diva.mixedstorage.db.PreparedStatementSpy;
+import se.uu.ub.cora.sqldatabase.SqlStorageException;
 
 public class PreparedStatementCreatorSpy implements PreparedStatementCreator {
 
@@ -34,20 +35,23 @@ public class PreparedStatementCreatorSpy implements PreparedStatementCreator {
 	public List<PreparedStatement> preparedStatements;
 	public boolean throwErrorFromPreparedStatement = false;
 	public Connection connection;
+	public boolean throwExceptionOnGenerateStatement = false;
 
 	@Override
-	public List<PreparedStatement> createFromDbStatment(List<DbStatement> dbStatements,
-			Connection connection) {
-		this.dbStatements = dbStatements;
-		this.connection = connection;
-		createWasCalled = true;
-		preparedStatements = new ArrayList<>();
-		for (int i = 0; i < dbStatements.size(); i++) {
-			PreparedStatementSpy preparedStatementSpy = new PreparedStatementSpy();
-			preparedStatementSpy.throwErrorOnExecution = throwErrorFromPreparedStatement;
-			preparedStatements.add(preparedStatementSpy);
+	public void generateFromDbStatment(List<DbStatement> dbStatements, Connection connection) {
+		if (throwExceptionOnGenerateStatement) {
+			throw SqlStorageException.withMessageAndException(
+					"Error executing statement: error from spy", new Exception());
+		} else {
+			this.dbStatements = dbStatements;
+			this.connection = connection;
+			createWasCalled = true;
+			preparedStatements = new ArrayList<>();
+			for (int i = 0; i < dbStatements.size(); i++) {
+				PreparedStatementSpy preparedStatementSpy = new PreparedStatementSpy();
+				preparedStatements.add(preparedStatementSpy);
+			}
 		}
-		return preparedStatements;
 	}
 
 }

@@ -22,9 +22,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
-import java.sql.PreparedStatement;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -70,13 +68,12 @@ public class PreparedStatementCreatorTest {
 
 	@Test
 	public void testUpdateNoConditions() {
-		List<DbStatement> dbStatements = new ArrayList<>();
-		dbStatements.add(updateDbStatement);
+		List<DbStatement> dbStatements = List.of(updateDbStatement);
 
-		List<PreparedStatement> preparedStatements = sqlCreator.createFromDbStatment(dbStatements,
-				connectionSpy);
+		sqlCreator.generateFromDbStatment(dbStatements, connectionSpy);
+		List<PreparedStatementSpy> preparedStatements = connectionSpy.createdPreparedStatements;
 
-		PreparedStatementSpy preparedStatement = (PreparedStatementSpy) preparedStatements.get(0);
+		PreparedStatementSpy preparedStatement = preparedStatements.get(0);
 		assertSame(connectionSpy.preparedStatementSpy, preparedStatement);
 		assertEquals(connectionSpy.sql, "UPDATE organisation SET name = ?");
 		assertEquals(preparedStatement.usedSetObjects.size(), 1);
@@ -84,13 +81,45 @@ public class PreparedStatementCreatorTest {
 	}
 
 	@Test
+	public void testPreparedStatementIsExecutedAndClosed() throws Exception {
+		List<DbStatement> dbStatements = List.of(updateDbStatement);
+		sqlCreator.generateFromDbStatment(dbStatements, connectionSpy);
+		var firstStatement = connectionSpy.createdPreparedStatements.get(0);
+		assertTrue(firstStatement.executeWasCalled);
+		assertTrue(firstStatement.closedWasCalled);
+	}
+
+	@Test
+	public void testPreparedStatementIsClosedOnSQLException() throws Exception {
+		List<DbStatement> dbStatements = List.of(updateDbStatement);
+		connectionSpy.throwExceptionOnPreparedStatementExecute = true;
+		try {
+			sqlCreator.generateFromDbStatment(dbStatements, connectionSpy);
+		} catch (Exception e) {
+		}
+		var firstStatement = connectionSpy.createdPreparedStatements.get(0);
+		assertTrue(firstStatement.closedWasCalled);
+	}
+
+	@Test
+	public void testValuesAreSetOnPreparedStatementBeforeSQLExecute() throws Exception {
+		List<DbStatement> dbStatements = List.of(updateDbStatement);
+		connectionSpy.throwExceptionOnPreparedStatementExecute = true;
+		try {
+			sqlCreator.generateFromDbStatment(dbStatements, connectionSpy);
+		} catch (Exception e) {
+		}
+		var firstStatement = connectionSpy.createdPreparedStatements.get(0);
+		assertEquals(firstStatement.usedSetObjects.get("1"), "someName");
+	}
+
+	@Test
 	public void testUpdateWithConditions() {
 		conditions.put("id", 35);
-		List<DbStatement> dbStatements = new ArrayList<>();
-		dbStatements.add(updateDbStatement);
-		List<PreparedStatement> preparedStatements = sqlCreator.createFromDbStatment(dbStatements,
-				connectionSpy);
-		PreparedStatementSpy preparedStatement = (PreparedStatementSpy) preparedStatements.get(0);
+		List<DbStatement> dbStatements = List.of(updateDbStatement);
+		sqlCreator.generateFromDbStatment(dbStatements, connectionSpy);
+		List<PreparedStatementSpy> preparedStatements = connectionSpy.createdPreparedStatements;
+		PreparedStatementSpy preparedStatement = preparedStatements.get(0);
 		assertSame(connectionSpy.preparedStatementSpy, preparedStatement);
 		assertEquals(connectionSpy.sql, "UPDATE organisation SET name = ? WHERE id = ?");
 		assertEquals(preparedStatement.usedSetObjects.size(), 2);
@@ -103,11 +132,10 @@ public class PreparedStatementCreatorTest {
 		values.put("address", "some address");
 		conditions.put("id", 35);
 		conditions.put("otherId", 3500);
-		List<DbStatement> dbStatements = new ArrayList<>();
-		dbStatements.add(updateDbStatement);
-		List<PreparedStatement> preparedStatements = sqlCreator.createFromDbStatment(dbStatements,
-				connectionSpy);
-		PreparedStatementSpy preparedStatement = (PreparedStatementSpy) preparedStatements.get(0);
+		List<DbStatement> dbStatements = List.of(updateDbStatement);
+		sqlCreator.generateFromDbStatment(dbStatements, connectionSpy);
+		List<PreparedStatementSpy> preparedStatements = connectionSpy.createdPreparedStatements;
+		PreparedStatementSpy preparedStatement = preparedStatements.get(0);
 		assertSame(connectionSpy.preparedStatementSpy, preparedStatement);
 		assertEquals(connectionSpy.sql,
 				"UPDATE organisation SET address = ?, name = ? WHERE otherId = ? AND id = ?");
@@ -125,11 +153,10 @@ public class PreparedStatementCreatorTest {
 		long time = today.getTime();
 		Timestamp timestamp = new Timestamp(time);
 		values.put("lastupdated", timestamp);
-		List<DbStatement> dbStatements = new ArrayList<>();
-		dbStatements.add(updateDbStatement);
-		List<PreparedStatement> preparedStatements = sqlCreator.createFromDbStatment(dbStatements,
-				connectionSpy);
-		PreparedStatementSpy preparedStatement = (PreparedStatementSpy) preparedStatements.get(0);
+		List<DbStatement> dbStatements = List.of(updateDbStatement);
+		sqlCreator.generateFromDbStatment(dbStatements, connectionSpy);
+		List<PreparedStatementSpy> preparedStatements = connectionSpy.createdPreparedStatements;
+		PreparedStatementSpy preparedStatement = preparedStatements.get(0);
 		assertSame(connectionSpy.preparedStatementSpy, preparedStatement);
 		assertEquals(preparedStatement.usedSetObjects.get("1"), "someName");
 		assertTrue(preparedStatement.usedSetTimestamps.get("2") instanceof Timestamp);
@@ -138,10 +165,9 @@ public class PreparedStatementCreatorTest {
 	@Test(expectedExceptions = SqlStorageException.class, expectedExceptionsMessageRegExp = ""
 			+ "Error executing statement: UPDATE organisation SET name = \\?")
 	public void testSQlException() {
-		List<DbStatement> dbStatements = new ArrayList<>();
-		dbStatements.add(updateDbStatement);
-		connectionSpy.returnErrorConnection = true;
-		sqlCreator.createFromDbStatment(dbStatements, connectionSpy);
+		List<DbStatement> dbStatements = List.of(updateDbStatement);
+		connectionSpy.throwException = true;
+		sqlCreator.generateFromDbStatment(dbStatements, connectionSpy);
 	}
 
 	/***************************************** DELETE ********************************************/
@@ -149,11 +175,10 @@ public class PreparedStatementCreatorTest {
 	@Test
 	public void testDeleteWithOneCondition() {
 		conditions.put("id", 35);
-		List<DbStatement> dbStatements = new ArrayList<>();
-		dbStatements.add(deleteDbStatement);
-		List<PreparedStatement> preparedStatements = sqlCreator.createFromDbStatment(dbStatements,
-				connectionSpy);
-		PreparedStatementSpy preparedStatement = (PreparedStatementSpy) preparedStatements.get(0);
+		List<DbStatement> dbStatements = List.of(deleteDbStatement);
+		sqlCreator.generateFromDbStatment(dbStatements, connectionSpy);
+		List<PreparedStatementSpy> preparedStatements = connectionSpy.createdPreparedStatements;
+		PreparedStatementSpy preparedStatement = preparedStatements.get(0);
 		assertSame(connectionSpy.preparedStatementSpy, preparedStatement);
 		assertEquals(connectionSpy.sql, "DELETE FROM organisation WHERE id = ?");
 		assertEquals(preparedStatement.usedSetObjects.size(), 1);
@@ -165,11 +190,10 @@ public class PreparedStatementCreatorTest {
 		conditions.put("id", 35);
 		conditions.put("anotherId", 72);
 		conditions.put("lastId", "47");
-		List<DbStatement> dbStatements = new ArrayList<>();
-		dbStatements.add(deleteDbStatement);
-		List<PreparedStatement> preparedStatements = sqlCreator.createFromDbStatment(dbStatements,
-				connectionSpy);
-		PreparedStatementSpy preparedStatement = (PreparedStatementSpy) preparedStatements.get(0);
+		List<DbStatement> dbStatements = List.of(deleteDbStatement);
+		sqlCreator.generateFromDbStatment(dbStatements, connectionSpy);
+		List<PreparedStatementSpy> preparedStatements = connectionSpy.createdPreparedStatements;
+		PreparedStatementSpy preparedStatement = preparedStatements.get(0);
 		assertSame(connectionSpy.preparedStatementSpy, preparedStatement);
 		assertEquals(connectionSpy.sql,
 				"DELETE FROM organisation WHERE anotherId = ? AND lastId = ? AND id = ?");
@@ -191,11 +215,10 @@ public class PreparedStatementCreatorTest {
 	// }
 	@Test
 	public void testInsertWithOneValue() throws Exception {
-		List<DbStatement> dbStatements = new ArrayList<>();
-		dbStatements.add(insertDbStatement);
-		List<PreparedStatement> preparedStatements = sqlCreator.createFromDbStatment(dbStatements,
-				connectionSpy);
-		PreparedStatementSpy preparedStatement = (PreparedStatementSpy) preparedStatements.get(0);
+		List<DbStatement> dbStatements = List.of(insertDbStatement);
+		sqlCreator.generateFromDbStatment(dbStatements, connectionSpy);
+		List<PreparedStatementSpy> preparedStatements = connectionSpy.createdPreparedStatements;
+		PreparedStatementSpy preparedStatement = preparedStatements.get(0);
 		assertSame(connectionSpy.preparedStatementSpy, preparedStatement);
 		assertEquals(connectionSpy.sql, "INSERT INTO organisation(name) VALUES(?)");
 		assertCorrectPreparedStatementDefaultInsert(preparedStatement);
@@ -212,11 +235,10 @@ public class PreparedStatementCreatorTest {
 		values.put("address", "some address");
 		values.put("alternative_name", "some other name");
 		values.put("org_id", 12345);
-		List<DbStatement> dbStatements = new ArrayList<>();
-		dbStatements.add(insertDbStatement);
-		List<PreparedStatement> preparedStatements = sqlCreator.createFromDbStatment(dbStatements,
-				connectionSpy);
-		PreparedStatementSpy preparedStatement = (PreparedStatementSpy) preparedStatements.get(0);
+		List<DbStatement> dbStatements = List.of(insertDbStatement);
+		sqlCreator.generateFromDbStatment(dbStatements, connectionSpy);
+		List<PreparedStatementSpy> preparedStatements = connectionSpy.createdPreparedStatements;
+		PreparedStatementSpy preparedStatement = preparedStatements.get(0);
 		assertSame(connectionSpy.preparedStatementSpy, preparedStatement);
 		assertEquals(connectionSpy.sql,
 				"INSERT INTO organisation(alternative_name, address, org_id, name) VALUES(?, ?, ?, ?)");
@@ -231,15 +253,12 @@ public class PreparedStatementCreatorTest {
 	@Test
 	public void testMultipleStatements() {
 		conditions.put("id", 35);
-		List<DbStatement> dbStatements = new ArrayList<>();
-		dbStatements.add(insertDbStatement);
-		dbStatements.add(updateDbStatement);
-		dbStatements.add(deleteDbStatement);
-		List<PreparedStatement> preparedStatements = sqlCreator.createFromDbStatment(dbStatements,
-				connectionSpy);
+		List<DbStatement> dbStatements = List.of(insertDbStatement, updateDbStatement,
+				deleteDbStatement);
+		sqlCreator.generateFromDbStatment(dbStatements, connectionSpy);
+		List<PreparedStatementSpy> preparedStatements = connectionSpy.createdPreparedStatements;
 		assertEquals(preparedStatements.size(), 3);
-		assertCorrectPreparedStatementDefaultInsert(
-				(PreparedStatementSpy) preparedStatements.get(0));
+		assertCorrectPreparedStatementDefaultInsert(preparedStatements.get(0));
 
 		assertSame(connectionSpy.createdPreparedStatements.get(0), preparedStatements.get(0));
 		assertEquals(connectionSpy.sqlStatements.get(0),

@@ -19,7 +19,6 @@
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,21 +37,23 @@ import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
 
-public class DbOrganisationMainTable implements DbMainTable {
+public class DivaDbOrganisationMainTable implements DbMainTable {
 
 	private static final String ORGANISATION_ID = "organisation_id";
-	private DataToDbTranslater dataToDbTranslater;
+	private DataToDbTranslater organisationToDbTranslater;
 	private RelatedTableFactory relatedTableFactory;
 	private RecordReaderFactory recordReaderFactory;
 	private RecordReader recordReader;
 	private SqlConnectionProvider connectionProvider;
 	private PreparedStatementCreator preparedStatementCreator;
+	private Map<String, Object> organisationConditions;
+	private Map<String, Object> organisationValues;
 
-	public DbOrganisationMainTable(DataToDbTranslater dataTranslater,
+	public DivaDbOrganisationMainTable(DataToDbTranslater dataTranslater,
 			RecordReaderFactory recordReaderFactory, RelatedTableFactory relatedTableFactory,
 			SqlConnectionProvider connectionProvider,
 			PreparedStatementCreator preparedStatementCreator) {
-		this.dataToDbTranslater = dataTranslater;
+		this.organisationToDbTranslater = dataTranslater;
 		this.recordReaderFactory = recordReaderFactory;
 		this.relatedTableFactory = relatedTableFactory;
 		this.connectionProvider = connectionProvider;
@@ -62,33 +63,39 @@ public class DbOrganisationMainTable implements DbMainTable {
 
 	@Override
 	public void update(DataGroup dataGroup) {
-		dataToDbTranslater.translate(dataGroup);
+		organisationToDbTranslater.translate(dataGroup);
+		organisationConditions = organisationToDbTranslater.getConditions();
+		organisationValues = organisationToDbTranslater.getValues();
 		recordReader = recordReaderFactory.factor();
 		updateOrganisation(dataGroup);
 
 	}
 
 	private void updateOrganisation(DataGroup dataGroup) {
-		Map<String, Object> readConditionsForOrganisation = generateReadConditions();
-		List<Map<String, Object>> dbOrganisation = recordReader
-				.readFromTableUsingConditions("divaorganisation", readConditionsForOrganisation);
-
+		List<Map<String, Object>> existingDbOrganisation = readExistingOrganisationRow();
+		Map<String, Object> readConditionsRelatedTables = generateReadConditionsForRelatedTables();
 		List<DbStatement> dbStatements = generateDbStatements(dataGroup,
-				generateReadConditionsForRelatedTables(), dbOrganisation);
+				readConditionsRelatedTables, existingDbOrganisation);
+
 		executeForDbStatements(dbStatements);
+	}
+
+	private List<Map<String, Object>> readExistingOrganisationRow() {
+		Map<String, Object> readConditionsForOrganisation = generateReadConditions();
+		return recordReader.readFromTableUsingConditions("divaorganisation",
+				readConditionsForOrganisation);
 	}
 
 	private Map<String, Object> generateReadConditions() {
 		Map<String, Object> readConditions = new HashMap<>();
-		String organisationsId = String
-				.valueOf(dataToDbTranslater.getConditions().get(ORGANISATION_ID));
+		String organisationsId = String.valueOf(organisationConditions.get(ORGANISATION_ID));
 		readConditions.put("id", organisationsId);
 		return readConditions;
 	}
 
 	private Map<String, Object> generateReadConditionsForRelatedTables() {
 		Map<String, Object> readConditions = new HashMap<>();
-		int organisationsId = (int) dataToDbTranslater.getConditions().get(ORGANISATION_ID);
+		int organisationsId = (int) organisationConditions.get(ORGANISATION_ID);
 		readConditions.put(ORGANISATION_ID, organisationsId);
 		return readConditions;
 	}
@@ -105,8 +112,8 @@ public class DbOrganisationMainTable implements DbMainTable {
 	}
 
 	private DbStatement createDbStatementForOrganisationUpdate() {
-		return new DbStatement("update", "organisation", dataToDbTranslater.getValues(),
-				dataToDbTranslater.getConditions());
+		return new DbStatement("update", "organisation", organisationValues,
+				organisationConditions);
 	}
 
 	private List<DbStatement> generateDbStatementsForAlternativeName(DataGroup dataGroup,
@@ -138,32 +145,29 @@ public class DbOrganisationMainTable implements DbMainTable {
 	}
 
 	private void executeForDbStatements(List<DbStatement> dbStatements) {
-		Connection connection = connectionProvider.getConnection();
-		try {
+
+		try (Connection connection = connectionProvider.getConnection();) {
 			connection.setAutoCommit(false);
 			createAndExecutePreparedStatements(dbStatements, connection);
 			connection.commit();
-			// TODO:stänga preparedstatement
-			connection.close();
+			connection.setAutoCommit(true);
 		} catch (SQLException e) {
 			// TODO:rollback om det inte gått bra
+			// connection.rollback();
 			throw SqlStorageException.withMessageAndException(
 					"Error executing prepared statement: " + e.getMessage(), e);
 		}
+
 	}
 
 	private void createAndExecutePreparedStatements(List<DbStatement> dbStatements,
 			Connection connection) throws SQLException {
-		List<PreparedStatement> preparedStatements = preparedStatementCreator
-				.createFromDbStatment(dbStatements, connection);
-		for (PreparedStatement preparedStatement : preparedStatements) {
-			preparedStatement.executeUpdate();
-		}
+		preparedStatementCreator.generateFromDbStatment(dbStatements, connection);
 	}
 
 	public DataToDbTranslater getDataToDbTranslater() {
 		// needed for test
-		return dataToDbTranslater;
+		return organisationToDbTranslater;
 	}
 
 	public RelatedTableFactory getRelatedTableFactory() {

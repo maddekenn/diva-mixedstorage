@@ -33,13 +33,12 @@ import se.uu.ub.cora.diva.mixedstorage.db.ConnectionSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslaterSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.DbMainTable;
 import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
-import se.uu.ub.cora.diva.mixedstorage.db.PreparedStatementSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordReaderFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordReaderSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTableSpy;
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
 
-public class DbOrganisationMainTableTest {
+public class DivaDbOrganisationMainTableTest {
 
 	private DbMainTable mainTable;
 	private DataToDbTranslaterSpy dataTranslater;
@@ -57,7 +56,7 @@ public class DbOrganisationMainTableTest {
 		relatedTableFactory = new RelatedTableFactorySpy();
 		connectionProvider = new SqlConnectionProviderSpy();
 		preparedStatementCreator = new PreparedStatementCreatorSpy();
-		mainTable = new DbOrganisationMainTable(dataTranslater, recordReaderFactory,
+		mainTable = new DivaDbOrganisationMainTable(dataTranslater, recordReaderFactory,
 				relatedTableFactory, connectionProvider, preparedStatementCreator);
 	}
 
@@ -141,14 +140,47 @@ public class DbOrganisationMainTableTest {
 	}
 
 	@Test
+	public void testConnectionAutoCommitFalse() {
+		preparedStatementCreator.throwExceptionOnGenerateStatement = true;
+		try {
+			mainTable.update(dataGroup);
+		} catch (Exception sqlException) {
+		}
+		ConnectionSpy factoredConnection = connectionProvider.factoredConnection;
+		assertFalse(factoredConnection.autoCommit);
+	}
+
+	@Test
 	public void testConnection() {
 		mainTable.update(dataGroup);
 		assertTrue(connectionProvider.getConnectionHasBeenCalled);
 		ConnectionSpy factoredConnection = connectionProvider.factoredConnection;
-		assertFalse(factoredConnection.autoCommit);
+		assertTrue(factoredConnection.autoCommit);
 		assertTrue(factoredConnection.commitWasCalled);
 		assertTrue(factoredConnection.closeWasCalled);
 	}
+
+	@Test
+	public void testConnectionClosedOnSQLException() throws Exception {
+		preparedStatementCreator.throwExceptionOnGenerateStatement = true;
+		try {
+			mainTable.update(dataGroup);
+		} catch (Exception sqlException) {
+		}
+		ConnectionSpy factoredConnection = connectionProvider.factoredConnection;
+		assertTrue(factoredConnection.closeWasCalled);
+	}
+
+	// @Test
+	// public void testConnectionRollbackOnSQLException() throws Exception {
+	// preparedStatementCreator.throwExceptionOnGenerateStatement = true;
+	// try {
+	// mainTable.update(dataGroup);
+	// } catch (Exception sqlException) {
+	// }
+	// ConnectionSpy factoredConnection = connectionProvider.factoredConnection;
+	// assertTrue(factoredConnection.rollbackWasCalled);
+	// }
 
 	@Test
 	public void testPreparedStatements() {
@@ -157,24 +189,13 @@ public class DbOrganisationMainTableTest {
 		assertSame(preparedStatementCreator.connection, connectionProvider.factoredConnection);
 		int orgStatementAndStatmentsFromSpy = 5;
 		assertEquals(preparedStatementCreator.dbStatements.size(), orgStatementAndStatmentsFromSpy);
-		assertExecuteWasCalledForPreparedStatementWithIndex(0);
-		assertExecuteWasCalledForPreparedStatementWithIndex(1);
-		assertExecuteWasCalledForPreparedStatementWithIndex(2);
-		assertExecuteWasCalledForPreparedStatementWithIndex(3);
 
-	}
-
-	private void assertExecuteWasCalledForPreparedStatementWithIndex(int index) {
-		PreparedStatementSpy psSpy = (PreparedStatementSpy) preparedStatementCreator.preparedStatements
-				.get(index);
-		assertTrue(psSpy.executeWasCalled);
 	}
 
 	@Test(expectedExceptions = SqlStorageException.class, expectedExceptionsMessageRegExp = ""
-			+ "Error executing prepared statement: error from spy")
+			+ "Error executing statement: error from spy")
 	public void testPreparedStatementThrowsException() {
-		preparedStatementCreator.throwErrorFromPreparedStatement = true;
+		preparedStatementCreator.throwExceptionOnGenerateStatement = true;
 		mainTable.update(dataGroup);
 	}
-
 }

@@ -41,7 +41,7 @@ import java.util.concurrent.Executor;
 
 public class ConnectionSpy implements Connection {
 
-	public boolean returnErrorConnection = false;
+	public boolean throwException = false;
 	public List<String> sqlStatements = new ArrayList<>();
 	public String sql;
 	public List<PreparedStatementSpy> createdPreparedStatements = new ArrayList<>();
@@ -49,6 +49,8 @@ public class ConnectionSpy implements Connection {
 	public boolean closeWasCalled = false;
 	public boolean autoCommit = true;
 	public boolean commitWasCalled = false;
+	public boolean rollbackWasCalled = false;
+	public boolean throwExceptionOnPreparedStatementExecute = false;
 
 	@Override
 	public <T> T unwrap(Class<T> iface) throws SQLException {
@@ -72,11 +74,12 @@ public class ConnectionSpy implements Connection {
 	public PreparedStatement prepareStatement(String sql) throws SQLException {
 		this.sql = sql;
 		sqlStatements.add(sql);
-		if (returnErrorConnection) {
+		preparedStatementSpy = new PreparedStatementSpy();
+		preparedStatementSpy.throwErrorOnExecution = throwExceptionOnPreparedStatementExecute;
+		createdPreparedStatements.add(preparedStatementSpy);
+		if (throwException) {
 			throw new SQLException("error thrown from prepareStatement in spy");
 		}
-		preparedStatementSpy = new PreparedStatementSpy();
-		createdPreparedStatements.add(preparedStatementSpy);
 		return preparedStatementSpy;
 	}
 
@@ -112,7 +115,7 @@ public class ConnectionSpy implements Connection {
 	@Override
 	public void rollback() throws SQLException {
 		// TODO Auto-generated method stub
-
+		rollbackWasCalled = true;
 	}
 
 	@Override

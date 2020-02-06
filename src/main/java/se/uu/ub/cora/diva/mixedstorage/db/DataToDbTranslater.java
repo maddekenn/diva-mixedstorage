@@ -22,6 +22,10 @@ import java.util.Map;
 
 import se.uu.ub.cora.data.DataGroup;
 
+/**
+ * DataToDbTranslater makes it possible to get conditions and values from a DataGroup to use in SQL
+ * statements
+ */
 public interface DataToDbTranslater {
 
 	void translate(DataGroup dataGroup);
