@@ -57,7 +57,7 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 
 		mapWithPredecessorAsKey = new HashMap<>();
 		for (Map<String, Object> dbRow : existingPredecessors) {
-			int predecessorId = (int) dbRow.get(PREDECESSOR_ID);
+			int predecessorId = (int) dbRow.get(ORGANISATION_PREDECESSOR_ID);
 			mapWithPredecessorAsKey.put(predecessorId, dbRow);
 		}
 		List<DbStatement> dbStatements = new ArrayList<>();
@@ -116,7 +116,7 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 	private void deletePredecessors(List<DbStatement> dbStatements,
 			List<Map<String, Object>> predecessors) {
 		for (Map<String, Object> readRow : predecessors) {
-			int predecessorId = (int) readRow.get(PREDECESSOR_ID);
+			int predecessorId = (int) readRow.get(ORGANISATION_PREDECESSOR_ID);
 			createDeleteForPredecessorAndDescription(dbStatements, predecessorId);
 		}
 	}
@@ -153,7 +153,7 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 			List<Map<String, Object>> allCurrentPredecessorsInDb) {
 		Set<String> predecessorIdsInDatabase = new HashSet<>();
 		for (Map<String, Object> readRow : allCurrentPredecessorsInDb) {
-			predecessorIdsInDatabase.add(String.valueOf(readRow.get(PREDECESSOR_ID)));
+			predecessorIdsInDatabase.add(String.valueOf(readRow.get(ORGANISATION_PREDECESSOR_ID)));
 		}
 		return predecessorIdsInDatabase;
 	}

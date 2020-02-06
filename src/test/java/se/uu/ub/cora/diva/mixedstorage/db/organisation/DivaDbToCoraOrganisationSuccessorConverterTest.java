@@ -1,4 +1,5 @@
 /*
+
  * Copyright 2019 Uppsala University Library
  *
  * This file is part of Cora.
@@ -35,7 +36,6 @@ import se.uu.ub.cora.data.DataGroupFactory;
 import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.diva.mixedstorage.DataAtomicFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.ConversionException;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbToCoraOrganisationSuccessorConverter;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DataGroupFactorySpy;
 
 public class DivaDbToCoraOrganisationSuccessorConverterTest {
@@ -52,7 +52,7 @@ public class DivaDbToCoraOrganisationSuccessorConverterTest {
 		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactory);
 		rowFromDb = new HashMap<>();
 		rowFromDb.put("organisation_id", "someOrgId");
-		rowFromDb.put("predecessor_id", "somePredecessorId");
+		rowFromDb.put("organisation_predecessor_id", "somePredecessorId");
 		converter = new DivaDbToCoraOrganisationSuccessorConverter();
 
 	}

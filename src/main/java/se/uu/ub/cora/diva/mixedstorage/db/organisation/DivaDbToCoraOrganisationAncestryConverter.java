@@ -25,7 +25,7 @@ import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupProvider;
 
 public class DivaDbToCoraOrganisationAncestryConverter {
-	protected static final String PREDECESSOR_ID = "predecessor_id";
+	protected static final String PREDECESSOR_ID = "organisation_predecessor_id";
 	protected static final String ORGANISATION_ID = "organisation_id";
 	protected Map<String, Object> dbRow;
 

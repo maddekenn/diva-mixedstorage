@@ -52,7 +52,7 @@ public class DivaDbToCoraOrganisationPredecessorConverterTest {
 		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactorySpy);
 		rowFromDb = new HashMap<>();
 		rowFromDb.put("organisation_id", "someOrgId");
-		rowFromDb.put("predecessor_id", 7788);
+		rowFromDb.put("organisation_predecessor_id", 7788);
 		converter = new DivaDbToCoraOrganisationPredecessorConverter();
 
 	}
