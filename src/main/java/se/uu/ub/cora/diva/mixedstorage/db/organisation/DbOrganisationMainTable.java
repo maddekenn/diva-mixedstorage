@@ -143,8 +143,10 @@ public class DbOrganisationMainTable implements DbMainTable {
 			connection.setAutoCommit(false);
 			createAndExecutePreparedStatements(dbStatements, connection);
 			connection.commit();
+			// TODO:stänga preparedstatement
 			connection.close();
 		} catch (SQLException e) {
+			// TODO:rollback om det inte gått bra
 			throw SqlStorageException.withMessageAndException(
 					"Error executing prepared statement: " + e.getMessage(), e);
 		}
