@@ -20,17 +20,17 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 
 import se.uu.ub.cora.connection.SqlConnectionProvider;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbOrganisationMainTable;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.OrganisationDbRecordStorage;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
-public class DivaDbMainTableFactoryImp implements DbMainTableFactory {
+public class RecordStorageForOneTypeFactoryImp implements RecordStorageForOneTypeFactory {
 
 	private DataToDbTranslaterFactory translaterFactory;
 	private RelatedTableFactory relatedTableFactory;
 	private RecordReaderFactory recordReaderFactory;
 	private SqlConnectionProvider sqlConnectionProvider;
 
-	public DivaDbMainTableFactoryImp(DataToDbTranslaterFactory translaterFactory,
+	public RecordStorageForOneTypeFactoryImp(DataToDbTranslaterFactory translaterFactory,
 			RecordReaderFactory recordReaderFactory, RelatedTableFactory relatedTableFactory,
 			SqlConnectionProvider sqlConnectionProvider) {
 		this.translaterFactory = translaterFactory;
@@ -40,17 +40,17 @@ public class DivaDbMainTableFactoryImp implements DbMainTableFactory {
 	}
 
 	@Override
-	public DbMainTable factor(String tableName) {
+	public RecordStorageForOneType factor(String tableName) {
 		if (tableName.equals("organisation")) {
 			return factorForOrganisation();
 		}
 		throw NotImplementedException.withMessage("Main table not implemented for " + tableName);
 	}
 
-	private DbMainTable factorForOrganisation() {
-		PreparedStatementCreator preparedStatementCreator = new PreparedStatementCreatorImp();
+	private RecordStorageForOneType factorForOrganisation() {
+		StatementExecutor preparedStatementCreator = new PreparedStatementExecutorImp();
 		DataToDbTranslater translater = translaterFactory.factorForTableName("organisation");
-		return new DivaDbOrganisationMainTable(translater, recordReaderFactory, relatedTableFactory,
+		return new OrganisationDbRecordStorage(translater, recordReaderFactory, relatedTableFactory,
 				sqlConnectionProvider, preparedStatementCreator);
 	}
 

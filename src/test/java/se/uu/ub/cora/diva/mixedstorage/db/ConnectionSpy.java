@@ -47,7 +47,7 @@ public class ConnectionSpy implements Connection {
 	public List<PreparedStatementSpy> createdPreparedStatements = new ArrayList<>();
 	public PreparedStatementSpy preparedStatementSpy;
 	public boolean closeWasCalled = false;
-	public boolean autoCommit = true;
+	public List<Boolean> autoCommitChanges = new ArrayList<>();
 	public boolean commitWasCalled = false;
 	public boolean rollbackWasCalled = false;
 	public boolean throwExceptionOnPreparedStatementExecute = false;
@@ -97,8 +97,7 @@ public class ConnectionSpy implements Connection {
 
 	@Override
 	public void setAutoCommit(boolean autoCommit) throws SQLException {
-		this.autoCommit = autoCommit;
-
+		autoCommitChanges.add(autoCommit);
 	}
 
 	@Override

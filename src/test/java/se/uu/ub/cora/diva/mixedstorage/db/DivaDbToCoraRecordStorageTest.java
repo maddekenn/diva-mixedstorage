@@ -42,18 +42,18 @@ public class DivaDbToCoraRecordStorageTest {
 	private DivaDbToCoraConverterFactorySpy converterFactory;
 	private RecordReaderFactorySpy recordReaderFactory;
 	private DivaDbToCoraFactorySpy divaDbToCoraFactory;
-	private DbMainTableFactorySpy dbMainTableFactory;
+	private RecordStorageForOneTypeFactorySpy recordStorageForOneTypeFactorySpy;
 
 	@BeforeMethod
 	public void BeforeMethod() {
 		converterFactory = new DivaDbToCoraConverterFactorySpy();
 		recordReaderFactory = new RecordReaderFactorySpy();
 		divaDbToCoraFactory = new DivaDbToCoraFactorySpy();
-		dbMainTableFactory = new DbMainTableFactorySpy();
+		recordStorageForOneTypeFactorySpy = new RecordStorageForOneTypeFactorySpy();
 		divaToCoraRecordStorage = DivaDbToCoraRecordStorage
-				.usingRecordReaderFactoryConverterFactoryDbToCoraFactoryAndMainTableFactory(
+				.usingRecordReaderFactoryConverterFactoryDbToCoraFactoryAndRecordStorageForOneTypeFactory(
 						recordReaderFactory, converterFactory, divaDbToCoraFactory,
-						dbMainTableFactory);
+						recordStorageForOneTypeFactorySpy);
 	}
 
 	@Test
@@ -124,13 +124,14 @@ public class DivaDbToCoraRecordStorageTest {
 	// }
 
 	@Test
-	public void testUpdateOrganisationFactorOrganisationMainTable() throws Exception {
+	public void testUpdateOrganisationFactorOrganisationDbRecordStorageForOneType()
+			throws Exception {
 		DataGroup record = new DataGroupSpy("organisation");
 		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 
 		String dataDivider = "";
 		divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
-		assertTrue(dbMainTableFactory.factorWasCalled);
+		assertTrue(recordStorageForOneTypeFactorySpy.factorWasCalled);
 
 	}
 
@@ -163,7 +164,7 @@ public class DivaDbToCoraRecordStorageTest {
 	// assertEquals(factoredUpdater.tableName, "organisation");
 	// }
 	@Test
-	public void testUpdateOrganisationUsesMainTableFromFactory() throws Exception {
+	public void testUpdateOrganisationUsesRecordStorageForOneTypeFromFactory() throws Exception {
 		DataGroup organisation = new DataGroupSpy("organisation");
 		organisation.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 
@@ -171,13 +172,9 @@ public class DivaDbToCoraRecordStorageTest {
 		divaToCoraRecordStorage.update("divaOrganisation", "56", organisation, null, null,
 				dataDivider);
 
-		DbMainTableSpy mainTable = (DbMainTableSpy) dbMainTableFactory.mainTables.get(0);
-		assertEquals(mainTable.dataGroup, organisation);
-
-		// RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
-		// assertSame(factoredUpdater.conditions, mainTable.conditions);
-		// assertSame(factoredUpdater.values, mainTable.values);
-		// assertEquals(factoredUpdater.tableName, "organisation");
+		RecordStorageForOneTypeSpy recordStorageForOneTypeSpy = (RecordStorageForOneTypeSpy) recordStorageForOneTypeFactorySpy.RecordStorageForOneType
+				.get(0);
+		assertEquals(recordStorageForOneTypeSpy.dataGroup, organisation);
 	}
 
 	// @Test

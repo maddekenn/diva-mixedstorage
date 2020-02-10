@@ -18,22 +18,16 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
-import java.util.ArrayList;
-import java.util.List;
+import se.uu.ub.cora.data.DataGroup;
 
-public class DbMainTableFactorySpy implements DbMainTableFactory {
+public class RecordStorageForOneTypeSpy implements RecordStorageForOneType {
 
-	public List<String> tableNames = new ArrayList<>();
-	public List<DbMainTable> mainTables = new ArrayList<>();
-	public boolean factorWasCalled = false;
+	public DataGroup dataGroup;
 
 	@Override
-	public DbMainTable factor(String tableName) {
-		factorWasCalled = true;
-		tableNames.add(tableName);
-		DbMainTable mainTable = new DbMainTableSpy();
-		mainTables.add(mainTable);
-		return mainTable;
+	public void update(DataGroup dataGroup) {
+		this.dataGroup = dataGroup;
+
 	}
 
 }

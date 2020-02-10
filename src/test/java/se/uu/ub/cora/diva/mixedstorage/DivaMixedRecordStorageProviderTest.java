@@ -45,10 +45,10 @@ import se.uu.ub.cora.connection.ContextConnectionProviderImp;
 import se.uu.ub.cora.data.DataGroupFactory;
 import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDataToDbTranslaterFactoryImp;
-import se.uu.ub.cora.diva.mixedstorage.db.DivaDbMainTableFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraRecordStorage;
+import se.uu.ub.cora.diva.mixedstorage.db.RecordStorageForOneTypeFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.RelatedTableFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DataGroupFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraConverterFactory;
@@ -194,7 +194,7 @@ public class DivaMixedRecordStorageProviderTest {
 		RecordReaderFactoryImp recordReaderFactory = assertCorrectRecordReaderFactory(dbStorage);
 
 		assertTrue(dbStorage.getConverterFactory() instanceof DivaDbToCoraConverterFactoryImp);
-		assertCorrectDbMainTableFactory(dbStorage);
+		assertCorrectRecordStorageForOneTypeFactory(dbStorage);
 
 		DivaDbToCoraFactoryImp divaDbToCoraFactory = (DivaDbToCoraFactoryImp) dbStorage
 				.getDivaDbToCoraFactory();
@@ -203,26 +203,28 @@ public class DivaMixedRecordStorageProviderTest {
 
 	}
 
-	private void assertCorrectDbMainTableFactory(DivaDbToCoraRecordStorage dbStorage) {
-		DivaDbMainTableFactoryImp dbMainTableFactory = (DivaDbMainTableFactoryImp) dbStorage
-				.getDbMainTableFactory();
-		assertTrue(dbMainTableFactory instanceof DivaDbMainTableFactoryImp);
+	private void assertCorrectRecordStorageForOneTypeFactory(DivaDbToCoraRecordStorage dbStorage) {
+		RecordStorageForOneTypeFactoryImp recordStorageForOneTypeFactory = (RecordStorageForOneTypeFactoryImp) dbStorage
+				.getRecordStorageForOneTypeFactory();
+		assertTrue(recordStorageForOneTypeFactory instanceof RecordStorageForOneTypeFactoryImp);
 
-		DivaDataToDbTranslaterFactoryImp translaterFactory = (DivaDataToDbTranslaterFactoryImp) dbMainTableFactory
+		DivaDataToDbTranslaterFactoryImp translaterFactory = (DivaDataToDbTranslaterFactoryImp) recordStorageForOneTypeFactory
 				.getTranslaterFactory();
 		assertTrue(translaterFactory instanceof DivaDataToDbTranslaterFactoryImp);
 		assertTrue(translaterFactory.getRecordReaderFactory() instanceof RecordReaderFactoryImp);
 
-		ContextConnectionProviderImp connectionProvider = (ContextConnectionProviderImp) dbMainTableFactory
+		ContextConnectionProviderImp connectionProvider = (ContextConnectionProviderImp) recordStorageForOneTypeFactory
 				.getSqlConnectionProvider();
 		assertCorrectSqlConnectionProvider(connectionProvider);
-		assertTrue(dbMainTableFactory.getRecordReaderFactory() instanceof RecordReaderFactoryImp);
-		assertCorrectRelatedTableFactory(dbMainTableFactory);
+		assertTrue(recordStorageForOneTypeFactory
+				.getRecordReaderFactory() instanceof RecordReaderFactoryImp);
+		assertCorrectRelatedTableFactory(recordStorageForOneTypeFactory);
 
 	}
 
-	private void assertCorrectRelatedTableFactory(DivaDbMainTableFactoryImp dbMainTableFactory) {
-		RelatedTableFactoryImp relatedTableFactory = (RelatedTableFactoryImp) dbMainTableFactory
+	private void assertCorrectRelatedTableFactory(
+			RecordStorageForOneTypeFactoryImp recordStorageForOneTypeFactory) {
+		RelatedTableFactoryImp relatedTableFactory = (RelatedTableFactoryImp) recordStorageForOneTypeFactory
 				.getRelatedTableFactory();
 
 		assertTrue(relatedTableFactory.getRecordReaderFactory() instanceof RecordReaderFactoryImp);

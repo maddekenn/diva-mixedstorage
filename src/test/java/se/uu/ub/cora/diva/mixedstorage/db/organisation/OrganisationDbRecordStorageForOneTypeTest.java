@@ -31,22 +31,22 @@ import se.uu.ub.cora.diva.mixedstorage.DataAtomicSpy;
 import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.ConnectionSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslaterSpy;
-import se.uu.ub.cora.diva.mixedstorage.db.DbMainTable;
 import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordReaderFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordReaderSpy;
+import se.uu.ub.cora.diva.mixedstorage.db.RecordStorageForOneType;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTableSpy;
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
 
-public class DivaDbOrganisationMainTableTest {
+public class OrganisationDbRecordStorageForOneTypeTest {
 
-	private DbMainTable mainTable;
+	private RecordStorageForOneType recordStorageForOneType;
 	private DataToDbTranslaterSpy dataTranslater;
 	private RelatedTableFactorySpy relatedTableFactory;
 	private RecordReaderFactorySpy recordReaderFactory;
 	private DataGroup dataGroup;
 	private SqlConnectionProviderSpy connectionProvider;
-	private PreparedStatementCreatorSpy preparedStatementCreator;
+	private PreparedStatementExecutorSpy preparedStatementCreator;
 
 	@BeforeMethod
 	public void setUp() {
@@ -55,9 +55,10 @@ public class DivaDbOrganisationMainTableTest {
 		recordReaderFactory = new RecordReaderFactorySpy();
 		relatedTableFactory = new RelatedTableFactorySpy();
 		connectionProvider = new SqlConnectionProviderSpy();
-		preparedStatementCreator = new PreparedStatementCreatorSpy();
-		mainTable = new DivaDbOrganisationMainTable(dataTranslater, recordReaderFactory,
-				relatedTableFactory, connectionProvider, preparedStatementCreator);
+		preparedStatementCreator = new PreparedStatementExecutorSpy();
+		recordStorageForOneType = new OrganisationDbRecordStorage(dataTranslater,
+				recordReaderFactory, relatedTableFactory, connectionProvider,
+				preparedStatementCreator);
 	}
 
 	private void createDefultDataGroup() {
@@ -69,7 +70,7 @@ public class DivaDbOrganisationMainTableTest {
 
 	@Test
 	public void testTranslaterAndDbStatmentForOrganisation() {
-		mainTable.update(dataGroup);
+		recordStorageForOneType.update(dataGroup);
 		assertEquals(dataTranslater.dataGroup, dataGroup);
 
 		DbStatement organisationDbStatement = preparedStatementCreator.dbStatements.get(0);
@@ -81,7 +82,7 @@ public class DivaDbOrganisationMainTableTest {
 
 	@Test
 	public void testAlternativeName() {
-		mainTable.update(dataGroup);
+		recordStorageForOneType.update(dataGroup);
 
 		RecordReaderSpy factoredReader = recordReaderFactory.factoredReaders.get(0);
 		assertEquals(factoredReader.usedTableNames.get(0), "divaorganisation");
@@ -98,7 +99,7 @@ public class DivaDbOrganisationMainTableTest {
 
 	@Test
 	public void testAddress() {
-		mainTable.update(dataGroup);
+		recordStorageForOneType.update(dataGroup);
 
 		RecordReaderSpy factoredReader = recordReaderFactory.factoredReaders.get(0);
 		assertEquals(relatedTableFactory.relatedTableNames.get(1), "organisationAddress");
@@ -110,7 +111,7 @@ public class DivaDbOrganisationMainTableTest {
 
 	@Test
 	public void testParent() {
-		mainTable.update(dataGroup);
+		recordStorageForOneType.update(dataGroup);
 
 		RecordReaderSpy factoredReader = recordReaderFactory.factoredReaders.get(0);
 		assertEquals(factoredReader.usedTableNames.get(1), "organisation_parent");
@@ -126,7 +127,7 @@ public class DivaDbOrganisationMainTableTest {
 
 	@Test
 	public void testPredecessor() {
-		mainTable.update(dataGroup);
+		recordStorageForOneType.update(dataGroup);
 		RecordReaderSpy factoredReader = recordReaderFactory.factoredReaders.get(0);
 		assertEquals(factoredReader.usedTableNames.get(2), "divaorganisationpredecessor");
 		assertEquals(factoredReader.usedConditionsList.get(2).get("organisation_id"), 4567);
@@ -140,22 +141,24 @@ public class DivaDbOrganisationMainTableTest {
 	}
 
 	@Test
-	public void testConnectionAutoCommitFalse() {
+	public void testConnectionAutoCommitIsFirstSetToFalseAndThenTrueOnException() {
 		preparedStatementCreator.throwExceptionOnGenerateStatement = true;
 		try {
-			mainTable.update(dataGroup);
+			recordStorageForOneType.update(dataGroup);
 		} catch (Exception sqlException) {
 		}
 		ConnectionSpy factoredConnection = connectionProvider.factoredConnection;
-		assertFalse(factoredConnection.autoCommit);
+		assertFalse(factoredConnection.autoCommitChanges.get(0));
+		assertTrue(factoredConnection.autoCommitChanges.get(1));
 	}
 
 	@Test
-	public void testConnection() {
-		mainTable.update(dataGroup);
+	public void testSQLConnectionConfiguration() {
+		recordStorageForOneType.update(dataGroup);
 		assertTrue(connectionProvider.getConnectionHasBeenCalled);
 		ConnectionSpy factoredConnection = connectionProvider.factoredConnection;
-		assertTrue(factoredConnection.autoCommit);
+		assertFalse(factoredConnection.autoCommitChanges.get(0));
+		assertTrue(factoredConnection.autoCommitChanges.get(1));
 		assertTrue(factoredConnection.commitWasCalled);
 		assertTrue(factoredConnection.closeWasCalled);
 	}
@@ -164,27 +167,27 @@ public class DivaDbOrganisationMainTableTest {
 	public void testConnectionClosedOnSQLException() throws Exception {
 		preparedStatementCreator.throwExceptionOnGenerateStatement = true;
 		try {
-			mainTable.update(dataGroup);
+			recordStorageForOneType.update(dataGroup);
 		} catch (Exception sqlException) {
 		}
 		ConnectionSpy factoredConnection = connectionProvider.factoredConnection;
 		assertTrue(factoredConnection.closeWasCalled);
 	}
 
-	// @Test
-	// public void testConnectionRollbackOnSQLException() throws Exception {
-	// preparedStatementCreator.throwExceptionOnGenerateStatement = true;
-	// try {
-	// mainTable.update(dataGroup);
-	// } catch (Exception sqlException) {
-	// }
-	// ConnectionSpy factoredConnection = connectionProvider.factoredConnection;
-	// assertTrue(factoredConnection.rollbackWasCalled);
-	// }
+	@Test
+	public void testConnectionRollbackOnSQLException() throws Exception {
+		preparedStatementCreator.throwExceptionOnGenerateStatement = true;
+		try {
+			recordStorageForOneType.update(dataGroup);
+		} catch (Exception sqlException) {
+		}
+		ConnectionSpy factoredConnection = connectionProvider.factoredConnection;
+		assertTrue(factoredConnection.rollbackWasCalled);
+	}
 
 	@Test
 	public void testPreparedStatements() {
-		mainTable.update(dataGroup);
+		recordStorageForOneType.update(dataGroup);
 		assertTrue(preparedStatementCreator.createWasCalled);
 		assertSame(preparedStatementCreator.connection, connectionProvider.factoredConnection);
 		int orgStatementAndStatmentsFromSpy = 5;
@@ -193,9 +196,9 @@ public class DivaDbOrganisationMainTableTest {
 	}
 
 	@Test(expectedExceptions = SqlStorageException.class, expectedExceptionsMessageRegExp = ""
-			+ "Error executing statement: error from spy")
+			+ "Error executing prepared statement: Error executing statement: error from spy")
 	public void testPreparedStatementThrowsException() {
 		preparedStatementCreator.throwExceptionOnGenerateStatement = true;
-		mainTable.update(dataGroup);
+		recordStorageForOneType.update(dataGroup);
 	}
 }

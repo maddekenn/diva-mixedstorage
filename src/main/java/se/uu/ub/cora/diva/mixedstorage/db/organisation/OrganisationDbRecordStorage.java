@@ -28,16 +28,16 @@ import java.util.Map;
 import se.uu.ub.cora.connection.SqlConnectionProvider;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslater;
-import se.uu.ub.cora.diva.mixedstorage.db.DbMainTable;
+import se.uu.ub.cora.diva.mixedstorage.db.RecordStorageForOneType;
 import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
-import se.uu.ub.cora.diva.mixedstorage.db.PreparedStatementCreator;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTableFactory;
+import se.uu.ub.cora.diva.mixedstorage.db.StatementExecutor;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
 
-public class DivaDbOrganisationMainTable implements DbMainTable {
+public class OrganisationDbRecordStorage implements RecordStorageForOneType {
 
 	private static final String ORGANISATION_ID = "organisation_id";
 	private DataToDbTranslater organisationToDbTranslater;
@@ -45,19 +45,18 @@ public class DivaDbOrganisationMainTable implements DbMainTable {
 	private RecordReaderFactory recordReaderFactory;
 	private RecordReader recordReader;
 	private SqlConnectionProvider connectionProvider;
-	private PreparedStatementCreator preparedStatementCreator;
+	private StatementExecutor statementExecutor;
 	private Map<String, Object> organisationConditions;
 	private Map<String, Object> organisationValues;
 
-	public DivaDbOrganisationMainTable(DataToDbTranslater dataTranslater,
+	public OrganisationDbRecordStorage(DataToDbTranslater dataTranslater,
 			RecordReaderFactory recordReaderFactory, RelatedTableFactory relatedTableFactory,
-			SqlConnectionProvider connectionProvider,
-			PreparedStatementCreator preparedStatementCreator) {
+			SqlConnectionProvider connectionProvider, StatementExecutor preparedStatementCreator) {
 		this.organisationToDbTranslater = dataTranslater;
 		this.recordReaderFactory = recordReaderFactory;
 		this.relatedTableFactory = relatedTableFactory;
 		this.connectionProvider = connectionProvider;
-		this.preparedStatementCreator = preparedStatementCreator;
+		this.statementExecutor = preparedStatementCreator;
 
 	}
 
@@ -76,8 +75,7 @@ public class DivaDbOrganisationMainTable implements DbMainTable {
 		Map<String, Object> readConditionsRelatedTables = generateReadConditionsForRelatedTables();
 		List<DbStatement> dbStatements = generateDbStatements(dataGroup,
 				readConditionsRelatedTables, existingDbOrganisation);
-
-		executeForDbStatements(dbStatements);
+		tryUpdateDatabaseWithGivenDbStatements(dbStatements);
 	}
 
 	private List<Map<String, Object>> readExistingOrganisationRow() {
@@ -144,25 +142,32 @@ public class DivaDbOrganisationMainTable implements DbMainTable {
 		return predecessor.handleDbForDataGroup(dataGroup, dbPredecessors);
 	}
 
-	private void executeForDbStatements(List<DbStatement> dbStatements) {
-
+	private void tryUpdateDatabaseWithGivenDbStatements(List<DbStatement> dbStatements) {
 		try (Connection connection = connectionProvider.getConnection();) {
-			connection.setAutoCommit(false);
-			createAndExecutePreparedStatements(dbStatements, connection);
-			connection.commit();
-			connection.setAutoCommit(true);
-		} catch (SQLException e) {
-			// TODO:rollback om det inte gått bra
-			// connection.rollback();
+			tryUpdateDatabaseWithGivenDbStatementsUsingConnection(dbStatements, connection);
+		} catch (Exception e) {
 			throw SqlStorageException.withMessageAndException(
 					"Error executing prepared statement: " + e.getMessage(), e);
 		}
-
 	}
 
-	private void createAndExecutePreparedStatements(List<DbStatement> dbStatements,
+	private void tryUpdateDatabaseWithGivenDbStatementsUsingConnection(
+			List<DbStatement> dbStatements, Connection connection) throws SQLException, Exception {
+		try {
+			updateDatabaseWithGivenDbStatementsUsingConnection(dbStatements, connection);
+		} catch (Exception innerException) {
+			connection.rollback();
+			throw innerException;
+		} finally {
+			connection.setAutoCommit(true);
+		}
+	}
+
+	private void updateDatabaseWithGivenDbStatementsUsingConnection(List<DbStatement> dbStatements,
 			Connection connection) throws SQLException {
-		preparedStatementCreator.generateFromDbStatment(dbStatements, connection);
+		connection.setAutoCommit(false);
+		statementExecutor.executeDbStatmentUsingConnection(dbStatements, connection);
+		connection.commit();
 	}
 
 	public DataToDbTranslater getDataToDbTranslater() {
@@ -185,9 +190,9 @@ public class DivaDbOrganisationMainTable implements DbMainTable {
 		return connectionProvider;
 	}
 
-	public PreparedStatementCreator getPreparedStatementCreator() {
+	public StatementExecutor getPreparedStatementCreator() {
 		// needed for test
-		return preparedStatementCreator;
+		return statementExecutor;
 	}
 
 }

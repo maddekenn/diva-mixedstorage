@@ -7,6 +7,7 @@
  *     it under the terms of the GNU General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
+ *     
  *
  *     Cora is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,8 +19,21 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
-public interface DbMainTableFactory {
+import se.uu.ub.cora.data.DataGroup;
 
-	DbMainTable factor(String tableName);
+/**
+ * RecordStorageForOneType interface is intended to handle database operations for a Datagroup.
+ * 
+ * The interface provides a common way to interact with specific table implementations which might
+ * span multiple sepearate db tables.
+ */
+public interface RecordStorageForOneType {
+
+	/**
+	 * update methods can be used in order to implement the update operation in the database.
+	 * 
+	 * @param dataGroup
+	 */
+	void update(DataGroup dataGroup);
 
 }

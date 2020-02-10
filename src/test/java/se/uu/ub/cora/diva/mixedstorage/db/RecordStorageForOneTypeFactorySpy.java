@@ -7,7 +7,6 @@
  *     it under the terms of the GNU General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
- *     
  *
  *     Cora is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,10 +18,22 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
-import se.uu.ub.cora.data.DataGroup;
+import java.util.ArrayList;
+import java.util.List;
 
-public interface DbMainTable {
+public class RecordStorageForOneTypeFactorySpy implements RecordStorageForOneTypeFactory {
 
-	void update(DataGroup dataGroup);
+	public List<String> tableNames = new ArrayList<>();
+	public List<RecordStorageForOneType> RecordStorageForOneType = new ArrayList<>();
+	public boolean factorWasCalled = false;
+
+	@Override
+	public RecordStorageForOneType factor(String tableName) {
+		factorWasCalled = true;
+		tableNames.add(tableName);
+		var recordStorageForOneType = new RecordStorageForOneTypeSpy();
+		RecordStorageForOneType.add(recordStorageForOneType);
+		return recordStorageForOneType;
+	}
 
 }

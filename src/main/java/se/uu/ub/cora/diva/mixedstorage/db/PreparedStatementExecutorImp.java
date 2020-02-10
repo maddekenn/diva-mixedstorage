@@ -30,10 +30,11 @@ import java.util.StringJoiner;
 
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
 
-public class PreparedStatementCreatorImp implements PreparedStatementCreator {
+public class PreparedStatementExecutorImp implements StatementExecutor {
 
 	@Override
-	public void generateFromDbStatment(List<DbStatement> dbStatements, Connection connection) {
+	public void executeDbStatmentUsingConnection(List<DbStatement> dbStatements,
+			Connection connection) {
 		for (DbStatement dbStatement : dbStatements) {
 			StringBuilder sql = createSql(dbStatement);
 			try {

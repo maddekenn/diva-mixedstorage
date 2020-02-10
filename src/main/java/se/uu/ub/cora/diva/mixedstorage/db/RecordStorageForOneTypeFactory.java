@@ -18,16 +18,8 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
-import se.uu.ub.cora.data.DataGroup;
+public interface RecordStorageForOneTypeFactory {
 
-public class DbMainTableSpy implements DbMainTable {
-
-	public DataGroup dataGroup;
-
-	@Override
-	public void update(DataGroup dataGroup) {
-		this.dataGroup = dataGroup;
-
-	}
+	RecordStorageForOneType factor(String tableName);
 
 }

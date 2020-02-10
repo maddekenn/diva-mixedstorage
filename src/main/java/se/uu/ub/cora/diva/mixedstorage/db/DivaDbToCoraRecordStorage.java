@@ -40,23 +40,24 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	private RecordReaderFactory recordReaderFactory;
 	private DivaDbToCoraConverterFactory converterFactory;
 	private DivaDbToCoraFactory divaDbToCoraFactory;
-	private DbMainTableFactory dbMainTableFactory;
+	private RecordStorageForOneTypeFactory recordStorageForOneTypeFactory;
 
 	private DivaDbToCoraRecordStorage(RecordReaderFactory recordReaderFactory,
 			DivaDbToCoraConverterFactory converterFactory, DivaDbToCoraFactory divaDbToCoraFactory,
-			DbMainTableFactory dbMainTableFactory) {
+			RecordStorageForOneTypeFactory recordStorageForOneTypeFactory) {
 		this.recordReaderFactory = recordReaderFactory;
 		this.converterFactory = converterFactory;
 		this.divaDbToCoraFactory = divaDbToCoraFactory;
-		this.dbMainTableFactory = dbMainTableFactory;
+		this.recordStorageForOneTypeFactory = recordStorageForOneTypeFactory;
 
 	}
 
-	public static DivaDbToCoraRecordStorage usingRecordReaderFactoryConverterFactoryDbToCoraFactoryAndMainTableFactory(
+	public static DivaDbToCoraRecordStorage usingRecordReaderFactoryConverterFactoryDbToCoraFactoryAndRecordStorageForOneTypeFactory(
 			RecordReaderFactory recordReaderFactory, DivaDbToCoraConverterFactory converterFactory,
-			DivaDbToCoraFactory divaDbToCoraFactory, DbMainTableFactory dbMainTableFactory) {
+			DivaDbToCoraFactory divaDbToCoraFactory,
+			RecordStorageForOneTypeFactory recordStorageForOneTypeFactory) {
 		return new DivaDbToCoraRecordStorage(recordReaderFactory, converterFactory,
-				divaDbToCoraFactory, dbMainTableFactory);
+				divaDbToCoraFactory, recordStorageForOneTypeFactory);
 	}
 
 	@Override
@@ -95,8 +96,9 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 	}
 
 	private void updateOrganisation(DataGroup dataGroup) {
-		DbMainTable mainTable = dbMainTableFactory.factor(ORGANISATION);
-		mainTable.update(dataGroup);
+		RecordStorageForOneType recordStorageForOneType = recordStorageForOneTypeFactory
+				.factor(ORGANISATION);
+		recordStorageForOneType.update(dataGroup);
 	}
 
 	private Map<String, Object> createConditionsAddingOrganisationId(String id) {
@@ -215,9 +217,9 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 		return divaDbToCoraFactory;
 	}
 
-	public DbMainTableFactory getDbMainTableFactory() {
+	public RecordStorageForOneTypeFactory getRecordStorageForOneTypeFactory() {
 		// needed for test
-		return dbMainTableFactory;
+		return recordStorageForOneTypeFactory;
 	}
 
 }

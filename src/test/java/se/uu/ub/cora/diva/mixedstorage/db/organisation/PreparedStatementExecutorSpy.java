@@ -24,11 +24,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
-import se.uu.ub.cora.diva.mixedstorage.db.PreparedStatementCreator;
+import se.uu.ub.cora.diva.mixedstorage.db.StatementExecutor;
 import se.uu.ub.cora.diva.mixedstorage.db.PreparedStatementSpy;
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
 
-public class PreparedStatementCreatorSpy implements PreparedStatementCreator {
+public class PreparedStatementExecutorSpy implements StatementExecutor {
 
 	public List<DbStatement> dbStatements;
 	public boolean createWasCalled = false;
@@ -38,7 +38,7 @@ public class PreparedStatementCreatorSpy implements PreparedStatementCreator {
 	public boolean throwExceptionOnGenerateStatement = false;
 
 	@Override
-	public void generateFromDbStatment(List<DbStatement> dbStatements, Connection connection) {
+	public void executeDbStatmentUsingConnection(List<DbStatement> dbStatements, Connection connection) {
 		if (throwExceptionOnGenerateStatement) {
 			throw SqlStorageException.withMessageAndException(
 					"Error executing statement: error from spy", new Exception());

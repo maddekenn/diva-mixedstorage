@@ -22,11 +22,22 @@ import java.sql.Connection;
 import java.util.List;
 
 /**
- * PreparedStatementsCreator creates PreparedStatements from DbStatements
+ * StatementsExecutor executes dbStatements
  */
-public interface PreparedStatementCreator {
+public interface StatementExecutor {
 
-	void generateFromDbStatment(List<DbStatement> dbStatements,
-			Connection connection);
+	/**
+	 * The user of this interface can choose an implementation of StatementExecutor, to execute
+	 * DbStatements. Different implementations may choose how they turn the dbStatemetns into
+	 * executeable sql statements, for example this might be as preparedStatements.
+	 * 
+	 * Implementations are required to use the provided connection to execute the statements.
+	 * 
+	 * @param dbStatements
+	 *            statements to execute
+	 * @param connection
+	 *            to use to execute statements
+	 */
+	void executeDbStatmentUsingConnection(List<DbStatement> dbStatements, Connection connection);
 
 }

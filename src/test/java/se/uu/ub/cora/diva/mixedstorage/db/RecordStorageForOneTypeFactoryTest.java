@@ -26,14 +26,14 @@ import org.testng.annotations.Test;
 
 import se.uu.ub.cora.connection.SqlConnectionProvider;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbOrganisationMainTable;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.OrganisationDbRecordStorage;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.RelatedTableFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.SqlConnectionProviderSpy;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
-public class DbMainTableFactoryTest {
+public class RecordStorageForOneTypeFactoryTest {
 
-	private DbMainTableFactory factory;
+	private RecordStorageForOneTypeFactory factory;
 	private DataToDbTranslaterFactorySpy translaterFactory;
 	private RelatedTableFactorySpy relatedTableFactory;
 	private RecordReaderFactory recordReaderFactory;
@@ -45,24 +45,26 @@ public class DbMainTableFactoryTest {
 		relatedTableFactory = new RelatedTableFactorySpy();
 		recordReaderFactory = new RecordReaderFactorySpy();
 		sqlConnectionProvider = new SqlConnectionProviderSpy();
-		factory = new DivaDbMainTableFactoryImp(translaterFactory, recordReaderFactory,
+		factory = new RecordStorageForOneTypeFactoryImp(translaterFactory, recordReaderFactory,
 				relatedTableFactory, sqlConnectionProvider);
 	}
 
 	@Test
 	public void testFactorOrganisationTable() {
-		DivaDbOrganisationMainTable mainTable = (DivaDbOrganisationMainTable) factory
+		var organisationDbRecordStorage = (OrganisationDbRecordStorage) factory
 				.factor("organisation");
-		assertSame(mainTable.getDataToDbTranslater(), translaterFactory.factoredTranslater);
-		assertSame(mainTable.getRelatedTableFactory(), relatedTableFactory);
-		assertSame(mainTable.getRecordReaderFactory(), recordReaderFactory);
-		assertSame(mainTable.getSqlConnectionProvider(), sqlConnectionProvider);
-		assertTrue(mainTable.getPreparedStatementCreator() instanceof PreparedStatementCreatorImp);
+		assertSame(organisationDbRecordStorage.getDataToDbTranslater(),
+				translaterFactory.factoredTranslater);
+		assertSame(organisationDbRecordStorage.getRelatedTableFactory(), relatedTableFactory);
+		assertSame(organisationDbRecordStorage.getRecordReaderFactory(), recordReaderFactory);
+		assertSame(organisationDbRecordStorage.getSqlConnectionProvider(), sqlConnectionProvider);
+		assertTrue(organisationDbRecordStorage
+				.getPreparedStatementCreator() instanceof PreparedStatementExecutorImp);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
-			+ "Main table not implemented for someNonExistingMainTable")
+			+ "Main table not implemented for someNonExistingRecordStorageForOneType")
 	public void testNotImplemented() {
-		factory.factor("someNonExistingMainTable");
+		factory.factor("someNonExistingRecordStorageForOneType");
 	}
 }
