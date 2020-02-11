@@ -8,8 +8,8 @@ module se.uu.ub.cora.diva.mixedstorage {
 	requires se.uu.ub.cora.searchstorage;
 	requires java.sql;
 
-	exports se.uu.ub.cora.diva.mixedstorage.db;
-	exports se.uu.ub.cora.diva.mixedstorage.fedora;
+	// exports se.uu.ub.cora.diva.mixedstorage.db;
+	// exports se.uu.ub.cora.diva.mixedstorage.fedora;
 
 	provides se.uu.ub.cora.storage.RecordStorageProvider
 			with se.uu.ub.cora.diva.mixedstorage.DivaMixedRecordStorageProvider;

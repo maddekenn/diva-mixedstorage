@@ -2,8 +2,8 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 
 import se.uu.ub.cora.data.DataGroup;
 
-public interface DivaDbToCora {
+public interface DivaDb {
 
-	DataGroup convertOneRowData(String type, String id);
+	DataGroup read(String type, String id);
 
 }

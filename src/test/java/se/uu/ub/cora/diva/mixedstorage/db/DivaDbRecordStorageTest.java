@@ -36,21 +36,21 @@ import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.storage.RecordStorage;
 import se.uu.ub.cora.storage.StorageReadResult;
 
-public class DivaDbToCoraRecordStorageTest {
+public class DivaDbRecordStorageTest {
 	private static final String TABLE_NAME = "divaOrganisation";
-	private DivaDbToCoraRecordStorage divaToCoraRecordStorage;
+	private DivaDbRecordStorage divaToCoraRecordStorage;
 	private DivaDbToCoraConverterFactorySpy converterFactory;
 	private RecordReaderFactorySpy recordReaderFactory;
-	private DivaDbToCoraFactorySpy divaDbToCoraFactory;
+	private DivaDbFactorySpy divaDbToCoraFactory;
 	private RecordStorageForOneTypeFactorySpy recordStorageForOneTypeFactorySpy;
 
 	@BeforeMethod
 	public void BeforeMethod() {
 		converterFactory = new DivaDbToCoraConverterFactorySpy();
 		recordReaderFactory = new RecordReaderFactorySpy();
-		divaDbToCoraFactory = new DivaDbToCoraFactorySpy();
+		divaDbToCoraFactory = new DivaDbFactorySpy();
 		recordStorageForOneTypeFactorySpy = new RecordStorageForOneTypeFactorySpy();
-		divaToCoraRecordStorage = DivaDbToCoraRecordStorage
+		divaToCoraRecordStorage = DivaDbRecordStorage
 				.usingRecordReaderFactoryConverterFactoryDbToCoraFactoryAndRecordStorageForOneTypeFactory(
 						recordReaderFactory, converterFactory, divaDbToCoraFactory,
 						recordStorageForOneTypeFactorySpy);
@@ -82,7 +82,7 @@ public class DivaDbToCoraRecordStorageTest {
 	@Test
 	public void testReadOrganisationMakeCorrectCalls() throws Exception {
 		divaToCoraRecordStorage.read(TABLE_NAME, "someId");
-		DivaDbToCoraSpy factored = divaDbToCoraFactory.factored;
+		DivaDbSpy factored = divaDbToCoraFactory.factored;
 		assertEquals(factored.type, TABLE_NAME);
 		assertEquals(factored.id, "someId");
 	}
@@ -90,7 +90,7 @@ public class DivaDbToCoraRecordStorageTest {
 	@Test
 	public void testOrganisationFromDivaDbToCoraIsReturnedFromRead() throws Exception {
 		DataGroup readOrganisation = divaToCoraRecordStorage.read(TABLE_NAME, "someId");
-		DivaDbToCoraSpy factored = divaDbToCoraFactory.factored;
+		DivaDbSpy factored = divaDbToCoraFactory.factored;
 		assertEquals(readOrganisation, factored.dataGroup);
 	}
 

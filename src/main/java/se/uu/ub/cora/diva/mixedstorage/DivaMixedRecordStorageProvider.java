@@ -31,7 +31,7 @@ import se.uu.ub.cora.connection.SqlConnectionProvider;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDataToDbTranslaterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraFactoryImp;
-import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraRecordStorage;
+import se.uu.ub.cora.diva.mixedstorage.db.DivaDbRecordStorage;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordStorageForOneTypeFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.RelatedTableFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraConverterFactory;
@@ -87,7 +87,7 @@ public class DivaMixedRecordStorageProvider
 		RecordStorage basicStorage = createBasicStorage();
 		DivaFedoraRecordStorage fedoraStorage = createFedoraStorage();
 
-		DivaDbToCoraRecordStorage dbStorage = createDbStorage();
+		DivaDbRecordStorage dbStorage = createDbStorage();
 
 		RecordStorage mixedRecordStorage = DivaMixedRecordStorage
 				.usingBasicAndFedoraAndDbStorage(basicStorage, fedoraStorage, dbStorage);
@@ -121,7 +121,7 @@ public class DivaMixedRecordStorageProvider
 						fedoraPassword);
 	}
 
-	private DivaDbToCoraRecordStorage createDbStorage() {
+	private DivaDbRecordStorage createDbStorage() {
 		RecordReaderFactoryImp recordReaderFactory = createRecordReaderFactory();
 
 		DivaDbToCoraConverterFactoryImp divaDbToCoraConverterFactory = new DivaDbToCoraConverterFactoryImp();
@@ -129,7 +129,7 @@ public class DivaMixedRecordStorageProvider
 				divaDbToCoraConverterFactory);
 		RecordStorageForOneTypeFactoryImp recordStorageForOneTypeFactory = createRecordStorageForOneTypeFactory(
 				recordReaderFactory);
-		return DivaDbToCoraRecordStorage
+		return DivaDbRecordStorage
 				.usingRecordReaderFactoryConverterFactoryDbToCoraFactoryAndRecordStorageForOneTypeFactory(
 						recordReaderFactory, divaDbToCoraConverterFactory, divaDbToCoraFactory,
 						recordStorageForOneTypeFactory);

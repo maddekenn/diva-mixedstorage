@@ -47,7 +47,7 @@ import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDataToDbTranslaterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraFactoryImp;
-import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraRecordStorage;
+import se.uu.ub.cora.diva.mixedstorage.db.DivaDbRecordStorage;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordStorageForOneTypeFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.RelatedTableFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DataGroupFactorySpy;
@@ -187,9 +187,9 @@ public class DivaMixedRecordStorageProviderTest {
 		DivaMixedRecordStorage recordStorage = (DivaMixedRecordStorage) recordStorageOnDiskProvider
 				.getRecordStorage();
 		RecordStorage dbStorageInRecordStorage = recordStorage.getDbStorage();
-		assertTrue(dbStorageInRecordStorage instanceof DivaDbToCoraRecordStorage);
+		assertTrue(dbStorageInRecordStorage instanceof DivaDbRecordStorage);
 
-		DivaDbToCoraRecordStorage dbStorage = (DivaDbToCoraRecordStorage) dbStorageInRecordStorage;
+		DivaDbRecordStorage dbStorage = (DivaDbRecordStorage) dbStorageInRecordStorage;
 
 		RecordReaderFactoryImp recordReaderFactory = assertCorrectRecordReaderFactory(dbStorage);
 
@@ -203,7 +203,7 @@ public class DivaMixedRecordStorageProviderTest {
 
 	}
 
-	private void assertCorrectRecordStorageForOneTypeFactory(DivaDbToCoraRecordStorage dbStorage) {
+	private void assertCorrectRecordStorageForOneTypeFactory(DivaDbRecordStorage dbStorage) {
 		RecordStorageForOneTypeFactoryImp recordStorageForOneTypeFactory = (RecordStorageForOneTypeFactoryImp) dbStorage
 				.getRecordStorageForOneTypeFactory();
 		assertTrue(recordStorageForOneTypeFactory instanceof RecordStorageForOneTypeFactoryImp);
@@ -235,7 +235,7 @@ public class DivaMixedRecordStorageProviderTest {
 	}
 
 	private RecordReaderFactoryImp assertCorrectRecordReaderFactory(
-			DivaDbToCoraRecordStorage dbStorage) {
+			DivaDbRecordStorage dbStorage) {
 		RecordReaderFactoryImp recordReaderFactory = (RecordReaderFactoryImp) dbStorage
 				.getRecordReaderFactory();
 

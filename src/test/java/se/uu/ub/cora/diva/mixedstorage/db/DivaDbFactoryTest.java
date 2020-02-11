@@ -28,7 +28,7 @@ import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbToCoraOrganisation;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
-public class DivaDbToCoraFactoryTest {
+public class DivaDbFactoryTest {
 	private DivaDbToCoraFactoryImp divaDbToCoraFactoryImp;
 	private RecordReaderFactory readerFactory;
 	private DivaDbToCoraConverterFactory converterFactory;
@@ -49,7 +49,7 @@ public class DivaDbToCoraFactoryTest {
 
 	@Test
 	public void testFactoryOrganisation() {
-		DivaDbToCora divaDbToCoraOrganisation = divaDbToCoraFactoryImp.factor("divaOrganisation");
+		DivaDb divaDbToCoraOrganisation = divaDbToCoraFactoryImp.factor("divaOrganisation");
 		assertTrue(divaDbToCoraOrganisation instanceof DivaDbToCoraOrganisation);
 	}
 

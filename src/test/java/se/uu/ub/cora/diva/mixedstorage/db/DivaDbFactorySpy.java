@@ -1,15 +1,15 @@
 package se.uu.ub.cora.diva.mixedstorage.db;
 
-public class DivaDbToCoraFactorySpy implements DivaDbToCoraFactory {
+public class DivaDbFactorySpy implements DivaDbFactory {
 	public boolean factorWasCalled = false;
-	public DivaDbToCoraSpy factored;
+	public DivaDbSpy factored;
 	public String type;
 
 	@Override
-	public DivaDbToCora factor(String type) {
+	public DivaDb factor(String type) {
 		factorWasCalled = true;
 		this.type = type;
-		factored = new DivaDbToCoraSpy();
+		factored = new DivaDbSpy();
 		return factored;
 	}
 

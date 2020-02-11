@@ -33,38 +33,38 @@ import se.uu.ub.cora.storage.RecordNotFoundException;
 import se.uu.ub.cora.storage.RecordStorage;
 import se.uu.ub.cora.storage.StorageReadResult;
 
-public class DivaDbToCoraRecordStorage implements RecordStorage {
+public class DivaDbRecordStorage implements RecordStorage {
 
 	private static final String ORGANISATION = "organisation";
 	private static final String DIVA_ORGANISATION = "divaOrganisation";
 	private RecordReaderFactory recordReaderFactory;
 	private DivaDbToCoraConverterFactory converterFactory;
-	private DivaDbToCoraFactory divaDbToCoraFactory;
+	private DivaDbFactory divaDbFactory;
 	private RecordStorageForOneTypeFactory recordStorageForOneTypeFactory;
 
-	private DivaDbToCoraRecordStorage(RecordReaderFactory recordReaderFactory,
-			DivaDbToCoraConverterFactory converterFactory, DivaDbToCoraFactory divaDbToCoraFactory,
+	private DivaDbRecordStorage(RecordReaderFactory recordReaderFactory,
+			DivaDbToCoraConverterFactory converterFactory, DivaDbFactory divaDbFactory,
 			RecordStorageForOneTypeFactory recordStorageForOneTypeFactory) {
 		this.recordReaderFactory = recordReaderFactory;
 		this.converterFactory = converterFactory;
-		this.divaDbToCoraFactory = divaDbToCoraFactory;
+		this.divaDbFactory = divaDbFactory;
 		this.recordStorageForOneTypeFactory = recordStorageForOneTypeFactory;
 
 	}
 
-	public static DivaDbToCoraRecordStorage usingRecordReaderFactoryConverterFactoryDbToCoraFactoryAndRecordStorageForOneTypeFactory(
+	public static DivaDbRecordStorage usingRecordReaderFactoryConverterFactoryDbToCoraFactoryAndRecordStorageForOneTypeFactory(
 			RecordReaderFactory recordReaderFactory, DivaDbToCoraConverterFactory converterFactory,
-			DivaDbToCoraFactory divaDbToCoraFactory,
+			DivaDbFactory divaDbFactory,
 			RecordStorageForOneTypeFactory recordStorageForOneTypeFactory) {
-		return new DivaDbToCoraRecordStorage(recordReaderFactory, converterFactory,
-				divaDbToCoraFactory, recordStorageForOneTypeFactory);
+		return new DivaDbRecordStorage(recordReaderFactory, converterFactory,
+				divaDbFactory, recordStorageForOneTypeFactory);
 	}
 
 	@Override
 	public DataGroup read(String type, String id) {
 		if (DIVA_ORGANISATION.equals(type)) {
-			DivaDbToCora divaDbToCora = divaDbToCoraFactory.factor(type);
-			return divaDbToCora.convertOneRowData(type, id);
+			DivaDb divaDbToCora = divaDbFactory.factor(type);
+			return divaDbToCora.read(type, id);
 		}
 		throw NotImplementedException.withMessage("read is not implemented for type: " + type);
 	}
@@ -212,9 +212,9 @@ public class DivaDbToCoraRecordStorage implements RecordStorage {
 		return recordReaderFactory;
 	}
 
-	public DivaDbToCoraFactory getDivaDbToCoraFactory() {
+	public DivaDbFactory getDivaDbToCoraFactory() {
 		// needed for test
-		return divaDbToCoraFactory;
+		return divaDbFactory;
 	}
 
 	public RecordStorageForOneTypeFactory getRecordStorageForOneTypeFactory() {

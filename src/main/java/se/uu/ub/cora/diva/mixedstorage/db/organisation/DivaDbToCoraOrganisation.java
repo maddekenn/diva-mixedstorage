@@ -23,13 +23,13 @@ import java.util.List;
 import java.util.Map;
 
 import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCora;
+import se.uu.ub.cora.diva.mixedstorage.db.DivaDb;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverter;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactory;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
-public class DivaDbToCoraOrganisation implements DivaDbToCora {
+public class DivaDbToCoraOrganisation implements DivaDb {
 
 	private static final String DIVA_ORGANISATION_PREDECESSOR = "divaOrganisationPredecessor";
 	private RecordReaderFactory recordReaderFactory;
@@ -49,7 +49,7 @@ public class DivaDbToCoraOrganisation implements DivaDbToCora {
 	}
 
 	@Override
-	public DataGroup convertOneRowData(String type, String id) {
+	public DataGroup read(String type, String id) {
 		recordReader = getRecordReaderFactory().factor();
 		DataGroup organisation = readAndConvertOrganisationFromDb(type, id);
 		tryToReadAndConvertParents(id, organisation);

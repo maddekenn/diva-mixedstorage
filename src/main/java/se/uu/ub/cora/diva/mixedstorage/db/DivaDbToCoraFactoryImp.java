@@ -22,7 +22,7 @@ import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbToCoraOrganisation;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
-public class DivaDbToCoraFactoryImp implements DivaDbToCoraFactory {
+public class DivaDbToCoraFactoryImp implements DivaDbFactory {
 
 	private RecordReaderFactory readerFactory;
 	private DivaDbToCoraConverterFactory converterFactory;
@@ -34,7 +34,7 @@ public class DivaDbToCoraFactoryImp implements DivaDbToCoraFactory {
 	}
 
 	@Override
-	public DivaDbToCora factor(String type) {
+	public DivaDb factor(String type) {
 		if ("divaOrganisation".equals(type)) {
 			return DivaDbToCoraOrganisation
 					.usingRecordReaderFactoryAndConverterFactory(readerFactory, converterFactory);
