@@ -25,7 +25,7 @@ import java.util.Map;
 public class OrganisationType {
 	private static final Map<Integer, String> immutableOrganisationType;
 	static {
-		Map<Integer, String> mutableMap = new HashMap<>();
+		Map<Integer, String> mutableMap = new HashMap<>(18);
 		mutableMap.put(49, "root");
 		mutableMap.put(50, "university");
 		mutableMap.put(51, "school");

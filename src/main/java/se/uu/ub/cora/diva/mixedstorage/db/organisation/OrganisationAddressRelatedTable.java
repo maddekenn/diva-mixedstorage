@@ -83,7 +83,7 @@ public class OrganisationAddressRelatedTable implements RelatedTable {
 	private void setIdAsInt(DataGroup organisation) {
 		String organisationIdAsString = DataToDbHelper.extractIdFromDataGroup(organisation);
 		DataToDbHelper.throwDbExceptionIfIdNotAnIntegerValue(organisationIdAsString);
-		organisationId = Integer.valueOf(organisationIdAsString);
+		organisationId = Integer.parseInt(organisationIdAsString);
 	}
 
 	private boolean addressExistsInDatabase(Object addressIdInOrganisation) {

@@ -28,8 +28,8 @@ import java.util.Map;
 import se.uu.ub.cora.connection.SqlConnectionProvider;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslater;
-import se.uu.ub.cora.diva.mixedstorage.db.RecordStorageForOneType;
 import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
+import se.uu.ub.cora.diva.mixedstorage.db.RecordStorageForOneType;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTableFactory;
 import se.uu.ub.cora.diva.mixedstorage.db.StatementExecutor;
@@ -152,7 +152,7 @@ public class OrganisationDbRecordStorage implements RecordStorageForOneType {
 	}
 
 	private void tryUpdateDatabaseWithGivenDbStatementsUsingConnection(
-			List<DbStatement> dbStatements, Connection connection) throws SQLException, Exception {
+			List<DbStatement> dbStatements, Connection connection) throws SQLException {
 		try {
 			updateDatabaseWithGivenDbStatementsUsingConnection(dbStatements, connection);
 		} catch (Exception innerException) {

@@ -44,6 +44,7 @@ import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.sqldatabase.RecordCreatorFactoryImp;
 import se.uu.ub.cora.sqldatabase.RecordDeleterFactory;
 import se.uu.ub.cora.sqldatabase.RecordDeleterFactoryImp;
+import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactoryImp;
 import se.uu.ub.cora.storage.MetadataStorage;
 import se.uu.ub.cora.storage.MetadataStorageProvider;
@@ -140,7 +141,7 @@ public class DivaMixedRecordStorageProvider
 	}
 
 	private RecordStorageForOneTypeFactoryImp createRecordStorageForOneTypeFactory(
-			RecordReaderFactoryImp recordReaderFactory) {
+			RecordReaderFactory recordReaderFactory) {
 		DivaDataToDbTranslaterFactoryImp translaterFactory = new DivaDataToDbTranslaterFactoryImp(
 				recordReaderFactory);
 

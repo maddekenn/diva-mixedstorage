@@ -41,7 +41,7 @@ public class RecordStorageForOneTypeFactoryImp implements RecordStorageForOneTyp
 
 	@Override
 	public RecordStorageForOneType factor(String tableName) {
-		if (tableName.equals("organisation")) {
+		if ("organisation".equals(tableName)) {
 			return factorForOrganisation();
 		}
 		throw NotImplementedException.withMessage("Main table not implemented for " + tableName);

@@ -55,7 +55,7 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 			List<Map<String, Object>> existingPredecessors) {
 		setIdAsInt(organisation);
 
-		mapWithPredecessorAsKey = new HashMap<>();
+		mapWithPredecessorAsKey = new HashMap<>(existingPredecessors.size());
 		for (Map<String, Object> dbRow : existingPredecessors) {
 			int predecessorId = (int) dbRow.get(ORGANISATION_PREDECESSOR_ID);
 			mapWithPredecessorAsKey.put(predecessorId, dbRow);
@@ -74,9 +74,8 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 	}
 
 	private void populateCollectionWithPredecessorsFromDataGroup(DataGroup organisation) {
-		predecessorsInDataGroup = new HashMap<>();
-
 		List<DataGroup> predecessors = organisation.getAllGroupsWithNameInData("formerName");
+		predecessorsInDataGroup = new HashMap<>(predecessors.size());
 		for (DataGroup predecessor : predecessors) {
 			String predecessorId = extractPredecessorId(predecessor);
 			predecessorsInDataGroup.put(predecessorId, predecessor);
@@ -151,7 +150,7 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 	@Override
 	protected Set<String> getIdsForCurrentRowsInDatabase(
 			List<Map<String, Object>> allCurrentPredecessorsInDb) {
-		Set<String> predecessorIdsInDatabase = new HashSet<>();
+		Set<String> predecessorIdsInDatabase = new HashSet<>(allCurrentPredecessorsInDb.size());
 		for (Map<String, Object> readRow : allCurrentPredecessorsInDb) {
 			predecessorIdsInDatabase.add(String.valueOf(readRow.get(ORGANISATION_PREDECESSOR_ID)));
 		}
@@ -206,7 +205,7 @@ public class OrganisationPredecessorRelatedTable extends OrganisationRelatedTabl
 			Set<String> predecessorsIdsInDatabase, Set<String> originalPredecessorsInDataGroup) {
 		predecessorsIdsInDatabase.removeAll(originalPredecessorsInDataGroup);
 		for (String predecessorId : predecessorsIdsInDatabase) {
-			createDeleteForPredecessorAndDescription(dbStatements, Integer.valueOf(predecessorId));
+			createDeleteForPredecessorAndDescription(dbStatements, Integer.parseInt(predecessorId));
 		}
 	}
 

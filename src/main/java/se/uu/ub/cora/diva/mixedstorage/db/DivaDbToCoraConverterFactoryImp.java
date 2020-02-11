@@ -20,7 +20,6 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbToCoraOrganisationConverter;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbToCoraOrganisationConverter;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbToCoraOrganisationParentConverter;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbToCoraOrganisationPredecessorConverter;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbToCoraOrganisationSuccessorConverter;

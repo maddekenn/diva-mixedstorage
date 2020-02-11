@@ -37,7 +37,7 @@ public abstract class OrganisationRelatedTable {
 	protected void setIdAsInt(DataGroup organisation) {
 		String organisationIdAsString = DataToDbHelper.extractIdFromDataGroup(organisation);
 		DataToDbHelper.throwDbExceptionIfIdNotAnIntegerValue(organisationIdAsString);
-		organisationId = Integer.valueOf(organisationIdAsString);
+		organisationId = Integer.parseInt(organisationIdAsString);
 	}
 
 	protected void handleDeleteAndCreate(List<DbStatement> dbStatements,

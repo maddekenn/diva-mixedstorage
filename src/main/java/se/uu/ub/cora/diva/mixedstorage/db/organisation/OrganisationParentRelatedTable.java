@@ -89,8 +89,8 @@ public class OrganisationParentRelatedTable extends OrganisationRelatedTable
 	}
 
 	private Set<String> getParentIdsInDataGroup(DataGroup organisation) {
-		Set<String> parentIds = new HashSet<>();
 		List<DataGroup> parents = organisation.getAllGroupsWithNameInData("parentOrganisation");
+		Set<String> parentIds = new HashSet<>(parents.size());
 		for (DataGroup parent : parents) {
 			String parentId = extractParentId(parent);
 			parentIds.add(parentId);
@@ -106,7 +106,7 @@ public class OrganisationParentRelatedTable extends OrganisationRelatedTable
 	@Override
 	protected Set<String> getIdsForCurrentRowsInDatabase(
 			List<Map<String, Object>> allCurrentParentsInDb) {
-		Set<String> parentIdsInDatabase = new HashSet<>();
+		Set<String> parentIdsInDatabase = new HashSet<>(allCurrentParentsInDb.size());
 		for (Map<String, Object> readRow : allCurrentParentsInDb) {
 			parentIdsInDatabase.add(String.valueOf(readRow.get(ORGANISATION_PARENT_ID)));
 		}
@@ -145,7 +145,7 @@ public class OrganisationParentRelatedTable extends OrganisationRelatedTable
 			Set<String> parentIdsInDatabase, Set<String> originalParentsInDataGroup) {
 		parentIdsInDatabase.removeAll(originalParentsInDataGroup);
 		for (String parentId : parentIdsInDatabase) {
-			dbStatements.add(createDeleteStatement(Integer.valueOf(parentId)));
+			dbStatements.add(createDeleteStatement(Integer.parseInt(parentId)));
 		}
 	}
 
