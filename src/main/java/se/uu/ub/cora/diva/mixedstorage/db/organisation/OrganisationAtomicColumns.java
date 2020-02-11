@@ -16,27 +16,22 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.diva.mixedstorage.db;
+package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
-import java.util.Map;
+public enum OrganisationAtomicColumns {
+	NAME("organisation_name", "organisationName", "string"), CLOSED_DATE("closed_date",
+			"closedDate", "date"), ORGANISATION_CODE("organisation_code", "organisationCode",
+					"string"), ORGANISATION_NUMBER("orgnumber", "organisationNumber",
+							"string"), URL("organisation_homepage", "URL", "string");
 
-import se.uu.ub.cora.sqldatabase.RecordUpdater;
+	public final String dbName;
+	public final String coraName;
+	public final String type;
 
-public class RecordUpdaterSpy implements RecordUpdater {
-
-	public String tableName;
-	public Map<String, Object> values;
-	public Map<String, Object> conditions;
-	public boolean updateWasCalled = false;
-
-	@Override
-	public void updateTableUsingNameAndColumnsWithValuesAndConditions(String tableName,
-			Map<String, Object> values, Map<String, Object> conditions) {
-		updateWasCalled = true;
-		this.tableName = tableName;
-		this.values = values;
-		this.conditions = conditions;
-
+	OrganisationAtomicColumns(String dbName, String coraName, String type) {
+		this.dbName = dbName;
+		this.coraName = coraName;
+		this.type = type;
 	}
 
 }

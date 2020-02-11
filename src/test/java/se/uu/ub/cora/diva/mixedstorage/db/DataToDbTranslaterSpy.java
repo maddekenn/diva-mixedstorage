@@ -18,25 +18,39 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import java.util.HashMap;
 import java.util.Map;
 
-import se.uu.ub.cora.sqldatabase.RecordUpdater;
+import se.uu.ub.cora.data.DataGroup;
 
-public class RecordUpdaterSpy implements RecordUpdater {
+public class DataToDbTranslaterSpy implements DataToDbTranslater {
 
-	public String tableName;
-	public Map<String, Object> values;
+	public DataGroup dataGroup;
 	public Map<String, Object> conditions;
-	public boolean updateWasCalled = false;
+	public Map<String, Object> values;
 
 	@Override
-	public void updateTableUsingNameAndColumnsWithValuesAndConditions(String tableName,
-			Map<String, Object> values, Map<String, Object> conditions) {
-		updateWasCalled = true;
-		this.tableName = tableName;
-		this.values = values;
-		this.conditions = conditions;
+	public void translate(DataGroup dataGroup) {
+		this.dataGroup = dataGroup;
+		DataGroup recordInfo = dataGroup.getFirstGroupWithNameInData("recordInfo");
+		String organistaionId = recordInfo.getFirstAtomicValueWithNameInData("id");
 
+		conditions = new HashMap<>();
+		conditions.put("organisation_id", Integer.parseInt(organistaionId));
+		conditions.put("someConditionKeyFromSpy", "someConditionValueFromSpy");
+		values = new HashMap<>();
+		values.put("someValuesKeyFromSpy", "someValuesValueFromSpy");
+
+	}
+
+	@Override
+	public Map<String, Object> getConditions() {
+		return conditions;
+	}
+
+	@Override
+	public Map<String, Object> getValues() {
+		return values;
 	}
 
 }

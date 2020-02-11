@@ -42,19 +42,18 @@ public class DivaDbToCoraRecordStorageTest {
 	private DivaDbToCoraConverterFactorySpy converterFactory;
 	private RecordReaderFactorySpy recordReaderFactory;
 	private DivaDbToCoraFactorySpy divaDbToCoraFactory;
-	private RecordUpdaterFactorySpy recordUpdaterFactory;
+	private RecordStorageForOneTypeFactorySpy recordStorageForOneTypeFactorySpy;
 
 	@BeforeMethod
 	public void BeforeMethod() {
 		converterFactory = new DivaDbToCoraConverterFactorySpy();
 		recordReaderFactory = new RecordReaderFactorySpy();
-		recordUpdaterFactory = new RecordUpdaterFactorySpy();
 		divaDbToCoraFactory = new DivaDbToCoraFactorySpy();
-
+		recordStorageForOneTypeFactorySpy = new RecordStorageForOneTypeFactorySpy();
 		divaToCoraRecordStorage = DivaDbToCoraRecordStorage
-				.usingRecordReaderFactoryAndRecordUpdaterFactoryConverterFactoryAndDbToCoraFactory(
+				.usingRecordReaderFactoryConverterFactoryDbToCoraFactoryAndRecordStorageForOneTypeFactory(
 						recordReaderFactory, converterFactory, divaDbToCoraFactory,
-						recordUpdaterFactory);
+						recordStorageForOneTypeFactorySpy);
 	}
 
 	@Test
@@ -113,56 +112,82 @@ public class DivaDbToCoraRecordStorageTest {
 		divaToCoraRecordStorage.linksExistForRecord(null, null);
 	}
 
+	// @Test
+	// public void testUpdateOrganisationFactorOrganisationTranslater() throws Exception {
+	// DataGroup record = new DataGroupSpy("organisation");
+	// record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
+	//
+	// String dataDivider = "";
+	// divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
+	// assertTrue(dataToDbTranslaterFactory.factorWasCalled);
+	//
+	// }
+
 	@Test
-	public void testUpdateOrganisationFactorDbReader() throws Exception {
+	public void testUpdateOrganisationFactorOrganisationDbRecordStorageForOneType()
+			throws Exception {
 		DataGroup record = new DataGroupSpy("organisation");
 		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 
 		String dataDivider = "";
 		divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
-		assertTrue(recordUpdaterFactory.factorWasCalled);
+		assertTrue(recordStorageForOneTypeFactorySpy.factorWasCalled);
 
 	}
 
+	// @Test
+	// public void testUpdateOrganisationFactorDbUpdater() throws Exception {
+	// DataGroup record = new DataGroupSpy("organisation");
+	// record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
+	//
+	// String dataDivider = "";
+	// divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
+	// assertTrue(recordUpdaterFactory.factorWasCalled);
+	//
+	// }
+
+	// @Test
+	// public void testUpdateOrganisationUsesTranslaterFromFactory() throws Exception {
+	// DataGroup organisation = new DataGroupSpy("organisation");
+	// organisation.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
+	//
+	// String dataDivider = "";
+	// divaToCoraRecordStorage.update("divaOrganisation", "56", organisation, null, null,
+	// dataDivider);
+	//
+	// DataToDbTranslaterSpy toDbTranslater = dataToDbTranslaterFactory.factoredTranslater;
+	// assertEquals(toDbTranslater.dataGroup, organisation);
+	//
+	// RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
+	// assertSame(factoredUpdater.conditions, toDbTranslater.conditions);
+	// assertSame(factoredUpdater.values, toDbTranslater.values);
+	// assertEquals(factoredUpdater.tableName, "organisation");
+	// }
 	@Test
-	public void testUpdateNameInOrganisation() throws Exception {
-		DataGroup record = new DataGroupSpy("organisation");
-		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
+	public void testUpdateOrganisationUsesRecordStorageForOneTypeFromFactory() throws Exception {
+		DataGroup organisation = new DataGroupSpy("organisation");
+		organisation.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 
 		String dataDivider = "";
-		divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
-
-		RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
-		assertEquals(factoredUpdater.tableName, "organisation");
-		assertEquals(factoredUpdater.conditions.get("organisation_id"), 56);
-
-		assertEquals(factoredUpdater.values.get("organisation_name"), "someChangedName");
-
-	}
-
-	@Test(expectedExceptions = DbException.class)
-	public void testUpdateOrganisationIdNotAnInt() throws Exception {
-		DataGroup record = new DataGroupSpy("organisation");
-		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
-
-		String dataDivider = "";
-		divaToCoraRecordStorage.update("divaOrganisation", "notAnInt", record, null, null,
+		divaToCoraRecordStorage.update("divaOrganisation", "56", organisation, null, null,
 				dataDivider);
 
+		RecordStorageForOneTypeSpy recordStorageForOneTypeSpy = (RecordStorageForOneTypeSpy) recordStorageForOneTypeFactorySpy.RecordStorageForOneType
+				.get(0);
+		assertEquals(recordStorageForOneTypeSpy.dataGroup, organisation);
 	}
 
-	@Test
-	public void testUpdateOrganisationIdNotAnIntSendsAlongInitalException() throws Exception {
-		DataGroup record = new DataGroupSpy("organisation");
-		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
-
-		try {
-			divaToCoraRecordStorage.update("divaOrganisation", "notAnInt", record, null, null, "");
-		} catch (Exception e) {
-			assertTrue(e.getCause() instanceof NumberFormatException);
-		}
-
-	}
+	// @Test
+	// public void testUpdateOrganisationUsesOrganisationAlternativeName() throws Exception {
+	// // TODO: kolla att OrganisationAlternativeName används
+	// DataGroup record = new DataGroupSpy("organisation");
+	// record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
+	//
+	// String dataDivider = "";
+	// divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
+	// assertTrue(recordUpdaterFactory.factorWasCalled);
+	//
+	// }
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
 			+ "update is not implemented")

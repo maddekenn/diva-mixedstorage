@@ -16,7 +16,7 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.diva.mixedstorage.db;
+package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -33,7 +33,10 @@ import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupFactory;
 import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.data.DataRecordLinkFactory;
+import se.uu.ub.cora.data.DataRecordLinkProvider;
 import se.uu.ub.cora.diva.mixedstorage.DataAtomicFactorySpy;
+import se.uu.ub.cora.diva.mixedstorage.db.ConversionException;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DataGroupFactorySpy;
 
 public class DivaDbToCoraOrganisationPredecessorConverterTest {
@@ -42,6 +45,7 @@ public class DivaDbToCoraOrganisationPredecessorConverterTest {
 
 	private DataGroupFactory dataGroupFactorySpy;
 	private DataAtomicFactory dataAtomicFactorySpy;
+	private DataRecordLinkFactory dataRecordLinkFactory;
 
 	@BeforeMethod
 	public void beforeMethod() {
@@ -49,9 +53,11 @@ public class DivaDbToCoraOrganisationPredecessorConverterTest {
 		DataGroupProvider.setDataGroupFactory(dataGroupFactorySpy);
 		dataAtomicFactorySpy = new DataAtomicFactorySpy();
 		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactorySpy);
+		dataRecordLinkFactory = new DataRecordLinkFactorySpy();
+		DataRecordLinkProvider.setDataRecordLinkFactory(dataRecordLinkFactory);
 		rowFromDb = new HashMap<>();
 		rowFromDb.put("organisation_id", "someOrgId");
-		rowFromDb.put("predecessor_id", "somePredecessorId");
+		rowFromDb.put("organisation_predecessor_id", 7788);
 		converter = new DivaDbToCoraOrganisationPredecessorConverter();
 
 	}
@@ -90,60 +96,57 @@ public class DivaDbToCoraOrganisationPredecessorConverterTest {
 	}
 
 	@Test
-	public void testMinimalValuesReturnsDataGroupWithCorrectStructure() {
+	public void testMinimalValuesReturnsDataGroupWithCorrectChildren() {
 		DataGroup predecessor = converter.fromMap(rowFromDb);
 		assertEquals(predecessor.getNameInData(), "formerName");
-		DataGroup linkedOrganisation = predecessor.getFirstGroupWithNameInData("organisationLink");
+		DataRecordLinkSpy linkedOrganisation = (DataRecordLinkSpy) predecessor
+				.getFirstGroupWithNameInData("organisationLink");
 
-		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordType"),
-				"divaOrganisation");
-		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				"somePredecessorId");
 		assertFalse(predecessor.containsChildWithNameInData("organisationComment"));
+
+		assertEquals(linkedOrganisation.recordType, "divaOrganisation");
+		assertEquals(linkedOrganisation.recordId, "7788");
 	}
 
 	@Test
-	public void testMinimalValuesWithEmptyValueForDescriptionReturnsDataGroupWithCorrectStructure() {
+	public void testMinimalValuesWithEmptyValueForDescriptionReturnsDataGroupWithCorrectChildren() {
 		rowFromDb.put("description", "");
 		DataGroup predecessor = converter.fromMap(rowFromDb);
 		assertEquals(predecessor.getNameInData(), "formerName");
-		DataGroup linkedOrganisation = predecessor.getFirstGroupWithNameInData("organisationLink");
-
-		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordType"),
-				"divaOrganisation");
-		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				"somePredecessorId");
+		DataRecordLinkSpy linkedOrganisation = (DataRecordLinkSpy) predecessor
+				.getFirstGroupWithNameInData("organisationLink");
 		assertFalse(predecessor.containsChildWithNameInData("organisationComment"));
+
+		assertEquals(linkedOrganisation.recordType, "divaOrganisation");
+		assertEquals(linkedOrganisation.recordId, "7788");
 	}
 
 	@Test
-	public void testMinimalValuesWithNullValueForDescriptionReturnsDataGroupWithCorrectStructure() {
+	public void testMinimalValuesWithNullValueForDescriptionReturnsDataGroupWithCorrectChildren() {
 		rowFromDb.put("description", null);
 		DataGroup predecessor = converter.fromMap(rowFromDb);
 		assertEquals(predecessor.getNameInData(), "formerName");
-		DataGroup linkedOrganisation = predecessor.getFirstGroupWithNameInData("organisationLink");
 
-		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordType"),
-				"divaOrganisation");
-		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				"somePredecessorId");
+		DataRecordLinkSpy linkedOrganisation = (DataRecordLinkSpy) predecessor
+				.getFirstGroupWithNameInData("organisationLink");
 		assertFalse(predecessor.containsChildWithNameInData("organisationComment"));
+
+		assertEquals(linkedOrganisation.recordType, "divaOrganisation");
+		assertEquals(linkedOrganisation.recordId, "7788");
 	}
 
 	@Test
-	public void testCompleteValuesReturnsDataGroupWithCorrectStructure() {
+	public void testCompleteValuesReturnsDataGroupWithCorrectChildren() {
 		rowFromDb.put("description", "some description text");
 		DataGroup predecessor = converter.fromMap(rowFromDb);
 		assertEquals(predecessor.getNameInData(), "formerName");
-		DataGroup linkedOrganisation = predecessor.getFirstGroupWithNameInData("organisationLink");
-
-		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordType"),
-				"divaOrganisation");
-		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				"somePredecessorId");
-
 		assertEquals(predecessor.getFirstAtomicValueWithNameInData("organisationComment"),
 				"some description text");
+
+		DataRecordLinkSpy linkedOrganisation = (DataRecordLinkSpy) predecessor
+				.getFirstGroupWithNameInData("organisationLink");
+		assertEquals(linkedOrganisation.recordType, "divaOrganisation");
+		assertEquals(linkedOrganisation.recordId, "7788");
 
 	}
 

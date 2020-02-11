@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2020 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -18,25 +18,24 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
-import java.util.Map;
+import se.uu.ub.cora.connection.SqlConnectionProvider;
+import se.uu.ub.cora.sqldatabase.RecordDeleter;
+import se.uu.ub.cora.sqldatabase.RecordDeleterFactory;
 
-import se.uu.ub.cora.sqldatabase.RecordUpdater;
+public class RecordDeleterFactorySpy implements RecordDeleterFactory {
 
-public class RecordUpdaterSpy implements RecordUpdater {
-
-	public String tableName;
-	public Map<String, Object> values;
-	public Map<String, Object> conditions;
-	public boolean updateWasCalled = false;
+	public RecordDeleter factored;
 
 	@Override
-	public void updateTableUsingNameAndColumnsWithValuesAndConditions(String tableName,
-			Map<String, Object> values, Map<String, Object> conditions) {
-		updateWasCalled = true;
-		this.tableName = tableName;
-		this.values = values;
-		this.conditions = conditions;
+	public SqlConnectionProvider getSqlConnectionProvider() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
+	@Override
+	public RecordDeleter factor() {
+		factored = new RecordDeleterSpy();
+		return factored;
 	}
 
 }

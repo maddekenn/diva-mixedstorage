@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2020 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -16,27 +16,26 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.diva.mixedstorage.db;
+package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
-import java.util.Map;
+import java.sql.Connection;
 
-import se.uu.ub.cora.sqldatabase.RecordUpdater;
+import se.uu.ub.cora.connection.SqlConnectionProvider;
+import se.uu.ub.cora.diva.mixedstorage.db.ConnectionSpy;
 
-public class RecordUpdaterSpy implements RecordUpdater {
-
-	public String tableName;
-	public Map<String, Object> values;
-	public Map<String, Object> conditions;
-	public boolean updateWasCalled = false;
+public class SqlConnectionProviderSpy implements SqlConnectionProvider {
+	public ConnectionSpy factoredConnection;
+	public boolean returnErrorConnection = false;
+	public boolean getConnectionHasBeenCalled = false;
 
 	@Override
-	public void updateTableUsingNameAndColumnsWithValuesAndConditions(String tableName,
-			Map<String, Object> values, Map<String, Object> conditions) {
-		updateWasCalled = true;
-		this.tableName = tableName;
-		this.values = values;
-		this.conditions = conditions;
-
+	public Connection getConnection() {
+		getConnectionHasBeenCalled = true;
+		factoredConnection = new ConnectionSpy();
+		if (returnErrorConnection) {
+			factoredConnection.throwException = true;
+		}
+		return factoredConnection;
 	}
 
 }

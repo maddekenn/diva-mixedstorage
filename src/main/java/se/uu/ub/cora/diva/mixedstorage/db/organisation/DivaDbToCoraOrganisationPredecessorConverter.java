@@ -16,13 +16,15 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.diva.mixedstorage.db;
+package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import java.util.Map;
 
 import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.diva.mixedstorage.db.ConversionException;
+import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverter;
 
 public class DivaDbToCoraOrganisationPredecessorConverter
 		extends DivaDbToCoraOrganisationAncestryConverter implements DivaDbToCoraConverter {
@@ -50,7 +52,7 @@ public class DivaDbToCoraOrganisationPredecessorConverter
 
 	private void addPredecessorLink(DataGroup formerName) {
 		DataGroup predecessor = createOrganisationLinkUsingLinkedRecordId(
-				(String) dbRow.get(PREDECESSOR_ID));
+				String.valueOf(dbRow.get(PREDECESSOR_ID)));
 		formerName.addChild(predecessor);
 	}
 

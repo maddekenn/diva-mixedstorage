@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2020 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -18,25 +18,14 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import java.util.List;
 import java.util.Map;
 
-import se.uu.ub.cora.sqldatabase.RecordUpdater;
+import se.uu.ub.cora.data.DataGroup;
 
-public class RecordUpdaterSpy implements RecordUpdater {
+public interface RelatedTable {
 
-	public String tableName;
-	public Map<String, Object> values;
-	public Map<String, Object> conditions;
-	public boolean updateWasCalled = false;
-
-	@Override
-	public void updateTableUsingNameAndColumnsWithValuesAndConditions(String tableName,
-			Map<String, Object> values, Map<String, Object> conditions) {
-		updateWasCalled = true;
-		this.tableName = tableName;
-		this.values = values;
-		this.conditions = conditions;
-
-	}
+	List<DbStatement> handleDbForDataGroup(DataGroup organisation,
+			List<Map<String, Object>> dbRows);
 
 }

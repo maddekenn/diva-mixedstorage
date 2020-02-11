@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2020 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -7,6 +7,7 @@
  *     it under the terms of the GNU General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
+ *     
  *
  *     Cora is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,28 +19,21 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
-import java.util.Map;
-
 import se.uu.ub.cora.data.DataGroup;
 
-public class DivaDbToCoraOrganisationSuccessorConverter
-		extends DivaDbToCoraOrganisationAncestryConverter implements DivaDbToCoraConverter {
+/**
+ * RecordStorageForOneType interface is intended to handle database operations for a Datagroup.
+ * 
+ * The interface provides a common way to interact with specific table implementations which might
+ * span multiple sepearate db tables.
+ */
+public interface RecordStorageForOneType {
 
-	@Override
-	public DataGroup fromMap(Map<String, Object> dbRow) {
-		this.dbRow = dbRow;
-		if (mandatoryValuesAreMissing()) {
-			throw ConversionException.withMessageAndException(
-					"Error converting organisation successor to Cora organisation successor: Map does not "
-							+ "contain mandatory values for organisation id and prdecessor id",
-					null);
-		}
-		return createDataGroup();
-	}
-
-	private DataGroup createDataGroup() {
-		String id = (String) dbRow.get(ORGANISATION_ID);
-		return createOrganisationLinkUsingLinkedRecordId(id);
-	}
+	/**
+	 * update methods can be used in order to implement the update operation in the database.
+	 * 
+	 * @param dataGroup
+	 */
+	void update(DataGroup dataGroup);
 
 }

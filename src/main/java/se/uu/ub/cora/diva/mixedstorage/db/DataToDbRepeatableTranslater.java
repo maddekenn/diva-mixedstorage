@@ -18,25 +18,13 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import java.util.List;
 import java.util.Map;
 
-import se.uu.ub.cora.sqldatabase.RecordUpdater;
+import se.uu.ub.cora.data.DataGroup;
 
-public class RecordUpdaterSpy implements RecordUpdater {
+public interface DataToDbRepeatableTranslater {
+	List<Map<String, Object>> getRepeatableValues();
 
-	public String tableName;
-	public Map<String, Object> values;
-	public Map<String, Object> conditions;
-	public boolean updateWasCalled = false;
-
-	@Override
-	public void updateTableUsingNameAndColumnsWithValuesAndConditions(String tableName,
-			Map<String, Object> values, Map<String, Object> conditions) {
-		updateWasCalled = true;
-		this.tableName = tableName;
-		this.values = values;
-		this.conditions = conditions;
-
-	}
-
+	void translate(DataGroup dataGroup);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2020 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -18,25 +18,25 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertSame;
+
+import java.util.HashMap;
 import java.util.Map;
 
-import se.uu.ub.cora.sqldatabase.RecordUpdater;
+import org.testng.annotations.Test;
 
-public class RecordUpdaterSpy implements RecordUpdater {
+public class DbStatementTest {
 
-	public String tableName;
-	public Map<String, Object> values;
-	public Map<String, Object> conditions;
-	public boolean updateWasCalled = false;
-
-	@Override
-	public void updateTableUsingNameAndColumnsWithValuesAndConditions(String tableName,
-			Map<String, Object> values, Map<String, Object> conditions) {
-		updateWasCalled = true;
-		this.tableName = tableName;
-		this.values = values;
-		this.conditions = conditions;
-
+	@Test
+	public void testInit() {
+		Map<String, Object> values = new HashMap<>();
+		Map<String, Object> conditions = new HashMap<>();
+		DbStatement dbStatement = new DbStatement("insert", "organisation", values, conditions);
+		assertEquals(dbStatement.getOperation(), "insert");
+		assertEquals(dbStatement.getTableName(), "organisation");
+		assertSame(dbStatement.getValues(), values);
+		assertSame(dbStatement.getConditions(), conditions);
 	}
 
 }

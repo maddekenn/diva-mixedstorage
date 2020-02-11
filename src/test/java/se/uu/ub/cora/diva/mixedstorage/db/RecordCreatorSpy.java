@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2020 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -18,25 +18,37 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-import se.uu.ub.cora.sqldatabase.RecordUpdater;
+import se.uu.ub.cora.sqldatabase.DataUpdater;
+import se.uu.ub.cora.sqldatabase.RecordCreator;
 
-public class RecordUpdaterSpy implements RecordUpdater {
+public class RecordCreatorSpy implements RecordCreator {
 
-	public String tableName;
+	public boolean insertWasCalled = false;
 	public Map<String, Object> values;
-	public Map<String, Object> conditions;
-	public boolean updateWasCalled = false;
+	public String usedTableName;
+	public List<String> usedTableNames = new ArrayList<>();
+	public List<Map<String, Object>> listOfValues = new ArrayList<>();
+	public boolean createWasCalled = false;
 
 	@Override
-	public void updateTableUsingNameAndColumnsWithValuesAndConditions(String tableName,
-			Map<String, Object> values, Map<String, Object> conditions) {
-		updateWasCalled = true;
-		this.tableName = tableName;
+	public void insertIntoTableUsingNameAndColumnsWithValues(String tableName,
+			Map<String, Object> values) {
+		createWasCalled = true;
+		usedTableName = tableName;
+		usedTableNames.add(tableName);
 		this.values = values;
-		this.conditions = conditions;
+		listOfValues.add(values);
+		insertWasCalled = true;
 
 	}
 
+	@Override
+	public DataUpdater getDataUpdater() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

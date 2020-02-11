@@ -18,25 +18,26 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
-import java.util.Map;
+import se.uu.ub.cora.data.DataGroup;
 
-import se.uu.ub.cora.sqldatabase.RecordUpdater;
+public class DataToDbHelper {
 
-public class RecordUpdaterSpy implements RecordUpdater {
+	private DataToDbHelper() {
+		// not called
+		throw new UnsupportedOperationException();
+	}
 
-	public String tableName;
-	public Map<String, Object> values;
-	public Map<String, Object> conditions;
-	public boolean updateWasCalled = false;
+	public static String extractIdFromDataGroup(DataGroup dataGroup) {
+		DataGroup recordInfo = dataGroup.getFirstGroupWithNameInData("recordInfo");
+		return recordInfo.getFirstAtomicValueWithNameInData("id");
+	}
 
-	@Override
-	public void updateTableUsingNameAndColumnsWithValuesAndConditions(String tableName,
-			Map<String, Object> values, Map<String, Object> conditions) {
-		updateWasCalled = true;
-		this.tableName = tableName;
-		this.values = values;
-		this.conditions = conditions;
-
+	public static void throwDbExceptionIfIdNotAnIntegerValue(String id) {
+		try {
+			Integer.valueOf(id);
+		} catch (NumberFormatException ne) {
+			throw DbException.withMessageAndException("Id is not an int: " + id, ne);
+		}
 	}
 
 }

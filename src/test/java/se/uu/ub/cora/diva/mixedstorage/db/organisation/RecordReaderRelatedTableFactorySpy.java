@@ -1,5 +1,5 @@
 /*
- * Copyright 2018, 2019 Uppsala University Library
+ * Copyright 2020 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -16,34 +16,26 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.diva.mixedstorage.db;
+package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
-public class RecordReaderFactorySpy implements RecordReaderFactory {
+public class RecordReaderRelatedTableFactorySpy implements RecordReaderFactory {
 
-	public boolean factorWasCalled;
-	public RecordReaderSpy factored;
-	public int noOfRecordsToReturn = 1;
-	public int numOfPredecessorsToReturn = 0;
-	public int numOfSuccessorsToReturn = 0;
-	public int numOfParentsToReturn = 0;
-	public List<RecordReaderSpy> factoredReaders = new ArrayList<>();
+	public List<RecordReaderAddressSpy> factoredReaders = new ArrayList<>();
+	public Map<String, List<Map<String, Object>>> rowsToReturn = new HashMap<>();
 
 	@Override
 	public RecordReader factor() {
-		factorWasCalled = true;
-		factored = new RecordReaderSpy();
-		factoredReaders.add(factored);
-		factored.numOfPredecessorsToReturn = numOfPredecessorsToReturn;
-		factored.numOfSuccessorsToReturn = numOfSuccessorsToReturn;
-		factored.numOfParentsToReturn = numOfParentsToReturn;
-		factored.noOfRecordsToReturn = noOfRecordsToReturn;
-		return factored;
+		RecordReaderAddressSpy factoredRecordReader = new RecordReaderAddressSpy(rowsToReturn);
+		factoredReaders.add(factoredRecordReader);
+		return factoredRecordReader;
 	}
 
 }

@@ -16,10 +16,9 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.diva.mixedstorage.db;
+package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNull;
 
 import java.util.HashMap;
@@ -33,14 +32,18 @@ import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupFactory;
 import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.data.DataRecordLinkFactory;
+import se.uu.ub.cora.data.DataRecordLinkProvider;
 import se.uu.ub.cora.diva.mixedstorage.DataAtomicFactorySpy;
+import se.uu.ub.cora.diva.mixedstorage.db.ConversionException;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DataGroupFactorySpy;
 
-public class DivaDbToCoraOrganisationSuccessorConverterTest {
-	private DivaDbToCoraOrganisationSuccessorConverter converter;
+public class DivaDbToCoraOrganisationParentConverterTest {
+	private DivaDbToCoraOrganisationParentConverter converter;
 	private Map<String, Object> rowFromDb;
 	private DataGroupFactory dataGroupFactory;
 	private DataAtomicFactory dataAtomicFactory;
+	private DataRecordLinkFactory dataRecordLinkFactory;
 
 	@BeforeMethod
 	public void beforeMethod() {
@@ -48,15 +51,17 @@ public class DivaDbToCoraOrganisationSuccessorConverterTest {
 		DataGroupProvider.setDataGroupFactory(dataGroupFactory);
 		dataAtomicFactory = new DataAtomicFactorySpy();
 		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactory);
+		dataRecordLinkFactory = new DataRecordLinkFactorySpy();
+		DataRecordLinkProvider.setDataRecordLinkFactory(dataRecordLinkFactory);
 		rowFromDb = new HashMap<>();
 		rowFromDb.put("organisation_id", "someOrgId");
-		rowFromDb.put("predecessor_id", "somePredecessorId");
-		converter = new DivaDbToCoraOrganisationSuccessorConverter();
+		rowFromDb.put("organisation_parent_id", 52);
+		converter = new DivaDbToCoraOrganisationParentConverter();
 
 	}
 
 	@Test(expectedExceptions = ConversionException.class, expectedExceptionsMessageRegExp = ""
-			+ "Error converting organisation successor to Cora organisation successor: Map does not contain mandatory values for organisation id and prdecessor id")
+			+ "Error converting organisation parent to Cora organisation parent: Map does not contain mandatory values for organisation id and parent id")
 	public void testEmptyMap() {
 		rowFromDb = new HashMap<>();
 		DataGroup organisation = converter.fromMap(rowFromDb);
@@ -64,7 +69,8 @@ public class DivaDbToCoraOrganisationSuccessorConverterTest {
 	}
 
 	@Test(expectedExceptions = ConversionException.class, expectedExceptionsMessageRegExp = ""
-			+ "Error converting organisation successor to Cora organisation successor: Map does not contain mandatory values for organisation id and prdecessor id")
+			+ "Error converting organisation parent to Cora organisation parent: "
+			+ "Map does not contain mandatory values for organisation id and parent id")
 	public void testMapWithEmptyValueForOrganisationIdThrowsError() {
 		rowFromDb = new HashMap<>();
 		rowFromDb.put("organisation_id", "");
@@ -72,32 +78,33 @@ public class DivaDbToCoraOrganisationSuccessorConverterTest {
 	}
 
 	@Test(expectedExceptions = ConversionException.class, expectedExceptionsMessageRegExp = ""
-			+ "Error converting organisation successor to Cora organisation successor: Map does not contain mandatory values for organisation id and prdecessor id")
-	public void testMapWithMissingPredecessorIdThrowsError() {
+			+ "Error converting organisation parent to Cora organisation parent:"
+			+ " Map does not contain mandatory values for organisation id and parent id")
+	public void testMapWithMissingParentIdThrowsError() {
 		rowFromDb = new HashMap<>();
 		rowFromDb.put("organisation_id", "someOrgId");
 		converter.fromMap(rowFromDb);
 	}
 
 	@Test(expectedExceptions = ConversionException.class, expectedExceptionsMessageRegExp = ""
-			+ "Error converting organisation successor to Cora organisation successor: Map does not contain mandatory values for organisation id and prdecessor id")
-	public void testMapWithEmptyValueForPredecessorIdThrowsError() {
+			+ "Error converting organisation parent to Cora organisation parent: "
+			+ "Map does not contain mandatory values for organisation id and parent id")
+	public void testMapWithEmptyValueForParentIdThrowsError() {
 		rowFromDb = new HashMap<>();
 		rowFromDb.put("organisation_id", "someOrgId");
-		rowFromDb.put("predecessorid", "");
+		rowFromDb.put("organisation_parent_id", "");
 		converter.fromMap(rowFromDb);
 	}
 
 	@Test
-	public void testCompleteValuesReturnsDataGroupWithCorrectStructure() {
-		DataGroup linkedOrganisation = converter.fromMap(rowFromDb);
-		assertEquals(linkedOrganisation.getNameInData(), "organisationLink");
+	public void testMinimalValuesReturnsDataGroupWithCorrectStructure() {
+		DataGroup parent = converter.fromMap(rowFromDb);
+		assertEquals(parent.getNameInData(), "parentOrganisation");
+		DataRecordLinkSpy linkedOrganisation = (DataRecordLinkSpy) parent
+				.getFirstGroupWithNameInData("organisationLink");
 
-		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordType"),
-				"divaOrganisation");
-		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				"someOrgId");
-		assertFalse(linkedOrganisation.containsChildWithNameInData("closedDate"));
+		assertEquals(linkedOrganisation.recordType, "divaOrganisation");
+		assertEquals(linkedOrganisation.recordId, "52");
 	}
 
 }

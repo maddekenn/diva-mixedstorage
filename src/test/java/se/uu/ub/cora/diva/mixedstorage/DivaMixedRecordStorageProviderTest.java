@@ -42,17 +42,24 @@ import se.uu.ub.cora.basicstorage.RecordStorageInMemoryReadFromDisk;
 import se.uu.ub.cora.basicstorage.RecordStorageInstance;
 import se.uu.ub.cora.basicstorage.RecordStorageOnDisk;
 import se.uu.ub.cora.connection.ContextConnectionProviderImp;
+import se.uu.ub.cora.data.DataGroupFactory;
+import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.diva.mixedstorage.db.DivaDataToDbTranslaterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraRecordStorage;
+import se.uu.ub.cora.diva.mixedstorage.db.RecordStorageForOneTypeFactoryImp;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.RelatedTableFactoryImp;
+import se.uu.ub.cora.diva.mixedstorage.fedora.DataGroupFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraConverterFactory;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraConverterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraRecordStorage;
 import se.uu.ub.cora.diva.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.httphandler.HttpHandlerFactoryImp;
 import se.uu.ub.cora.logger.LoggerProvider;
+import se.uu.ub.cora.sqldatabase.RecordCreatorFactoryImp;
+import se.uu.ub.cora.sqldatabase.RecordDeleterFactoryImp;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactoryImp;
-import se.uu.ub.cora.sqldatabase.RecordUpdaterFactoryImp;
 import se.uu.ub.cora.storage.MetadataStorage;
 import se.uu.ub.cora.storage.MetadataStorageProvider;
 import se.uu.ub.cora.storage.RecordStorage;
@@ -63,11 +70,14 @@ public class DivaMixedRecordStorageProviderTest {
 	private LoggerFactorySpy loggerFactorySpy;
 	private String testedClassName = "DivaMixedRecordStorageProvider";
 	private DivaMixedRecordStorageProvider recordStorageOnDiskProvider;
+	private DataGroupFactory dataGroupFactory;
 
 	@BeforeMethod
 	public void beforeMethod() throws Exception {
 		loggerFactorySpy = new LoggerFactorySpy();
 		LoggerProvider.setLoggerFactory(loggerFactorySpy);
+		dataGroupFactory = new DataGroupFactorySpy();
+		DataGroupProvider.setDataGroupFactory(dataGroupFactory);
 		initInfo = new HashMap<>();
 		initInfo.put("storageType", "memory");
 		initInfo.put("storageOnDiskBasePath", basePath);
@@ -120,7 +130,7 @@ public class DivaMixedRecordStorageProviderTest {
 	}
 
 	@Test
-	public void testDivaMixedRecordStorageContainsCorrectBasicStorageinMempry() {
+	public void testDivaMixedRecordStorageContainsCorrectBasicStorageinMemory() {
 		recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
 		DivaMixedRecordStorage recordStorage = (DivaMixedRecordStorage) recordStorageOnDiskProvider
 				.getRecordStorage();
@@ -183,15 +193,45 @@ public class DivaMixedRecordStorageProviderTest {
 
 		RecordReaderFactoryImp recordReaderFactory = assertCorrectRecordReaderFactory(dbStorage);
 
-		assertCorrectRecordUpdaterFactory(dbStorage);
-
 		assertTrue(dbStorage.getConverterFactory() instanceof DivaDbToCoraConverterFactoryImp);
+		assertCorrectRecordStorageForOneTypeFactory(dbStorage);
 
 		DivaDbToCoraFactoryImp divaDbToCoraFactory = (DivaDbToCoraFactoryImp) dbStorage
 				.getDivaDbToCoraFactory();
 		assertSame(divaDbToCoraFactory.getReaderFactory(), recordReaderFactory);
 		assertSame(divaDbToCoraFactory.getConverterFactory(), dbStorage.getConverterFactory());
 
+	}
+
+	private void assertCorrectRecordStorageForOneTypeFactory(DivaDbToCoraRecordStorage dbStorage) {
+		RecordStorageForOneTypeFactoryImp recordStorageForOneTypeFactory = (RecordStorageForOneTypeFactoryImp) dbStorage
+				.getRecordStorageForOneTypeFactory();
+		assertTrue(recordStorageForOneTypeFactory instanceof RecordStorageForOneTypeFactoryImp);
+
+		DivaDataToDbTranslaterFactoryImp translaterFactory = (DivaDataToDbTranslaterFactoryImp) recordStorageForOneTypeFactory
+				.getTranslaterFactory();
+		assertTrue(translaterFactory instanceof DivaDataToDbTranslaterFactoryImp);
+		assertTrue(translaterFactory.getRecordReaderFactory() instanceof RecordReaderFactoryImp);
+
+		ContextConnectionProviderImp connectionProvider = (ContextConnectionProviderImp) recordStorageForOneTypeFactory
+				.getSqlConnectionProvider();
+		assertCorrectSqlConnectionProvider(connectionProvider);
+		assertTrue(recordStorageForOneTypeFactory
+				.getRecordReaderFactory() instanceof RecordReaderFactoryImp);
+		assertCorrectRelatedTableFactory(recordStorageForOneTypeFactory);
+
+	}
+
+	private void assertCorrectRelatedTableFactory(
+			RecordStorageForOneTypeFactoryImp recordStorageForOneTypeFactory) {
+		RelatedTableFactoryImp relatedTableFactory = (RelatedTableFactoryImp) recordStorageForOneTypeFactory
+				.getRelatedTableFactory();
+
+		assertTrue(relatedTableFactory.getRecordReaderFactory() instanceof RecordReaderFactoryImp);
+		assertTrue(
+				relatedTableFactory.getRecordDeleterFactory() instanceof RecordDeleterFactoryImp);
+		assertTrue(
+				relatedTableFactory.getRecordCreatorFactory() instanceof RecordCreatorFactoryImp);
 	}
 
 	private RecordReaderFactoryImp assertCorrectRecordReaderFactory(
@@ -210,14 +250,6 @@ public class DivaMixedRecordStorageProviderTest {
 			ContextConnectionProviderImp connectionProvider) {
 		assertEquals(connectionProvider.getName(), initInfo.get("databaseLookupName"));
 		assertTrue(connectionProvider.getContext() instanceof InitialContext);
-	}
-
-	private void assertCorrectRecordUpdaterFactory(DivaDbToCoraRecordStorage dbStorage) {
-		RecordUpdaterFactoryImp recordUpdaterFactory = (RecordUpdaterFactoryImp) dbStorage
-				.getRecordUpdaterFactory();
-		ContextConnectionProviderImp updaterConnectionProvider = (ContextConnectionProviderImp) recordUpdaterFactory
-				.getSqlConnectionProvider();
-		assertCorrectSqlConnectionProvider(updaterConnectionProvider);
 	}
 
 	@Test
@@ -253,8 +285,12 @@ public class DivaMixedRecordStorageProviderTest {
 		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 5),
 				"Found java:/comp/env/jdbc/postgres as databaseLookupName");
 		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 6),
+				"Found java:/comp/env/jdbc/postgres as databaseLookupName");
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 7),
+				"Found java:/comp/env/jdbc/postgres as databaseLookupName");
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 8),
 				"DivaMixedRecordStorageProvider started DivaMixedRecordStorage");
-		assertEquals(loggerFactorySpy.getNoOfInfoLogMessagesUsingClassName(testedClassName), 7);
+		assertEquals(loggerFactorySpy.getNoOfInfoLogMessagesUsingClassName(testedClassName), 9);
 	}
 
 	@Test

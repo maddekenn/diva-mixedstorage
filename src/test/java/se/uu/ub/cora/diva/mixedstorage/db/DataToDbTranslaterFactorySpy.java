@@ -18,25 +18,16 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
-import java.util.Map;
+public class DataToDbTranslaterFactorySpy implements DataToDbTranslaterFactory {
 
-import se.uu.ub.cora.sqldatabase.RecordUpdater;
-
-public class RecordUpdaterSpy implements RecordUpdater {
-
-	public String tableName;
-	public Map<String, Object> values;
-	public Map<String, Object> conditions;
-	public boolean updateWasCalled = false;
+	public boolean factorWasCalled = false;
+	public DataToDbTranslaterSpy factoredTranslater;
 
 	@Override
-	public void updateTableUsingNameAndColumnsWithValuesAndConditions(String tableName,
-			Map<String, Object> values, Map<String, Object> conditions) {
-		updateWasCalled = true;
-		this.tableName = tableName;
-		this.values = values;
-		this.conditions = conditions;
-
+	public DataToDbTranslater factorForTableName(String tableName) {
+		factorWasCalled = true;
+		factoredTranslater = new DataToDbTranslaterSpy();
+		return factoredTranslater;
 	}
 
 }

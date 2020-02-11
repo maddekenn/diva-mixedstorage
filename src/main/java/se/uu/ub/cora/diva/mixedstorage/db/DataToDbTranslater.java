@@ -20,23 +20,18 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 
 import java.util.Map;
 
-import se.uu.ub.cora.sqldatabase.RecordUpdater;
+import se.uu.ub.cora.data.DataGroup;
 
-public class RecordUpdaterSpy implements RecordUpdater {
+/**
+ * DataToDbTranslater makes it possible to get conditions and values from a DataGroup to use in SQL
+ * statements
+ */
+public interface DataToDbTranslater {
 
-	public String tableName;
-	public Map<String, Object> values;
-	public Map<String, Object> conditions;
-	public boolean updateWasCalled = false;
+	void translate(DataGroup dataGroup);
 
-	@Override
-	public void updateTableUsingNameAndColumnsWithValuesAndConditions(String tableName,
-			Map<String, Object> values, Map<String, Object> conditions) {
-		updateWasCalled = true;
-		this.tableName = tableName;
-		this.values = values;
-		this.conditions = conditions;
+	Map<String, Object> getConditions();
 
-	}
+	Map<String, Object> getValues();
 
 }

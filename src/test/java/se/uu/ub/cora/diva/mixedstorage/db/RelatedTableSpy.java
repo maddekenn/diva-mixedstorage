@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2020 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -18,24 +18,29 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
-import se.uu.ub.cora.sqldatabase.RecordUpdater;
+import se.uu.ub.cora.data.DataGroup;
 
-public class RecordUpdaterSpy implements RecordUpdater {
+public class RelatedTableSpy implements RelatedTable {
 
-	public String tableName;
-	public Map<String, Object> values;
-	public Map<String, Object> conditions;
-	public boolean updateWasCalled = false;
+	public DataGroup dataGroup;
+	public List<Map<String, Object>> dbRows;
+	private List<DbStatement> dbStatements;
 
 	@Override
-	public void updateTableUsingNameAndColumnsWithValuesAndConditions(String tableName,
-			Map<String, Object> values, Map<String, Object> conditions) {
-		updateWasCalled = true;
-		this.tableName = tableName;
-		this.values = values;
-		this.conditions = conditions;
+	public List<DbStatement> handleDbForDataGroup(DataGroup dataGroup,
+			List<Map<String, Object>> dbRows) {
+		this.dataGroup = dataGroup;
+		this.dbRows = dbRows;
+		dbStatements = new ArrayList<>();
+		DbStatement dbStatement = new DbStatement("operationFromSpy", "spyTableName",
+				Collections.emptyMap(), Collections.emptyMap());
+		dbStatements.add(dbStatement);
+		return dbStatements;
 
 	}
 
