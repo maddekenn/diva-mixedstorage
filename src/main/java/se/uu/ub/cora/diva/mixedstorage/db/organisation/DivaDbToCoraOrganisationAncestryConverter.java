@@ -20,9 +20,8 @@ package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 import java.util.Map;
 
-import se.uu.ub.cora.data.DataAtomicProvider;
-import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.data.DataRecordLink;
+import se.uu.ub.cora.data.DataRecordLinkProvider;
 
 public class DivaDbToCoraOrganisationAncestryConverter {
 	protected static final String PREDECESSOR_ID = "organisation_predecessor_id";
@@ -46,12 +45,9 @@ public class DivaDbToCoraOrganisationAncestryConverter {
 		return !dbRowHasValueForKey(PREDECESSOR_ID);
 	}
 
-	protected DataGroup createOrganisationLinkUsingLinkedRecordId(String organisationId) {
-		DataGroup predecessor = DataGroupProvider.getDataGroupUsingNameInData("organisationLink");
-		predecessor.addChild(DataAtomicProvider
-				.getDataAtomicUsingNameInDataAndValue("linkedRecordType", "divaOrganisation"));
-		predecessor.addChild(DataAtomicProvider
-				.getDataAtomicUsingNameInDataAndValue("linkedRecordId", organisationId));
-		return predecessor;
+	protected DataRecordLink createOrganisationLinkUsingLinkedRecordId(String organisationId) {
+		return DataRecordLinkProvider
+				.getDataRecordLinkAsLinkUsingNameInDataTypeAndId("organisationLink",
+						"divaOrganisation", organisationId);
 	}
 }

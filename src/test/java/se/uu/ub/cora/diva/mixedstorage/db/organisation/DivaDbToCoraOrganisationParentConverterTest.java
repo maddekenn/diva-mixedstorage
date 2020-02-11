@@ -32,9 +32,10 @@ import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupFactory;
 import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.data.DataRecordLinkFactory;
+import se.uu.ub.cora.data.DataRecordLinkProvider;
 import se.uu.ub.cora.diva.mixedstorage.DataAtomicFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.ConversionException;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbToCoraOrganisationParentConverter;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DataGroupFactorySpy;
 
 public class DivaDbToCoraOrganisationParentConverterTest {
@@ -42,6 +43,7 @@ public class DivaDbToCoraOrganisationParentConverterTest {
 	private Map<String, Object> rowFromDb;
 	private DataGroupFactory dataGroupFactory;
 	private DataAtomicFactory dataAtomicFactory;
+	private DataRecordLinkFactory dataRecordLinkFactory;
 
 	@BeforeMethod
 	public void beforeMethod() {
@@ -49,6 +51,8 @@ public class DivaDbToCoraOrganisationParentConverterTest {
 		DataGroupProvider.setDataGroupFactory(dataGroupFactory);
 		dataAtomicFactory = new DataAtomicFactorySpy();
 		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactory);
+		dataRecordLinkFactory = new DataRecordLinkFactorySpy();
+		DataRecordLinkProvider.setDataRecordLinkFactory(dataRecordLinkFactory);
 		rowFromDb = new HashMap<>();
 		rowFromDb.put("organisation_id", "someOrgId");
 		rowFromDb.put("organisation_parent_id", 52);
@@ -96,11 +100,11 @@ public class DivaDbToCoraOrganisationParentConverterTest {
 	public void testMinimalValuesReturnsDataGroupWithCorrectStructure() {
 		DataGroup parent = converter.fromMap(rowFromDb);
 		assertEquals(parent.getNameInData(), "parentOrganisation");
-		DataGroup linkedOrganisation = parent.getFirstGroupWithNameInData("organisationLink");
+		DataRecordLinkSpy linkedOrganisation = (DataRecordLinkSpy) parent
+				.getFirstGroupWithNameInData("organisationLink");
 
-		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordType"),
-				"divaOrganisation");
-		assertEquals(linkedOrganisation.getFirstAtomicValueWithNameInData("linkedRecordId"), "52");
+		assertEquals(linkedOrganisation.recordType, "divaOrganisation");
+		assertEquals(linkedOrganisation.recordId, "52");
 	}
 
 }
