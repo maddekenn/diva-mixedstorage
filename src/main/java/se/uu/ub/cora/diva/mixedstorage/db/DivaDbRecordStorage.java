@@ -60,11 +60,8 @@ public class DivaDbRecordStorage implements RecordStorage {
 
 	@Override
 	public DataGroup read(String type, String id) {
-		if (DIVA_ORGANISATION.equals(type)) {
-			DivaDbReader divaDbOrganisationReader = divaDbFactory.factor(type);
-			return divaDbOrganisationReader.read(type, id);
-		}
-		throw NotImplementedException.withMessage("read is not implemented for type: " + type);
+		DivaDbReader divaDbReader = divaDbFactory.factor(type);
+		return divaDbReader.read(type, id);
 	}
 
 	@Override
@@ -86,16 +83,8 @@ public class DivaDbRecordStorage implements RecordStorage {
 	@Override
 	public void update(String type, String id, DataGroup record, DataGroup collectedTerms,
 			DataGroup linkList, String dataDivider) {
-		if (DIVA_ORGANISATION.equals(type)) {
-			updateOrganisation(record);
-		} else {
-			throw NotImplementedException.withMessage("update is not implemented");
-		}
-	}
-
-	private void updateOrganisation(DataGroup dataGroup) {
-		DivaDbUpdater divaDbOrganisationUpdater = divaDbUpdaterFactory.factor(DIVA_ORGANISATION);
-		divaDbOrganisationUpdater.update(dataGroup);
+		DivaDbUpdater divaDbUpdater = divaDbUpdaterFactory.factor(DIVA_ORGANISATION);
+		divaDbUpdater.update(record);
 	}
 
 	private Map<String, Object> createConditionsAddingOrganisationId(String id) {

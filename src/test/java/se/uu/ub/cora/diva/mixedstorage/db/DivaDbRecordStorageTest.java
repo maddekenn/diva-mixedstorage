@@ -66,12 +66,6 @@ public class DivaDbRecordStorageTest {
 		assertTrue(divaRecordStorage instanceof RecordStorage);
 	}
 
-	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
-			+ "read is not implemented for type: null")
-	public void readThrowsNotImplementedException() throws Exception {
-		divaRecordStorage.read(null, null);
-	}
-
 	@Test
 	public void testCallToDivaDbToCoraFactory() throws Exception {
 		divaRecordStorage.read(ORGANISATION_TYPE, "someId");
@@ -112,19 +106,8 @@ public class DivaDbRecordStorageTest {
 		divaRecordStorage.linksExistForRecord(null, null);
 	}
 
-	// @Test
-	// public void testUpdateOrganisationFactorOrganisationTranslater() throws Exception {
-	// DataGroup record = new DataGroupSpy("organisation");
-	// record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
-	//
-	// String dataDivider = "";
-	// divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
-	// assertTrue(dataToDbTranslaterFactory.factorWasCalled);
-	//
-	// }
-
 	@Test
-	public void testUpdateOrganisationFactorOrganisationDbRecordStorageForOneType()
+	public void testUpndateOrganisationFactorOrganisationDbRecordStorageForOneType()
 			throws Exception {
 		DataGroup record = new DataGroupSpy("organisation");
 		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
@@ -133,37 +116,8 @@ public class DivaDbRecordStorageTest {
 		divaRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
 		assertTrue(divaDbUpdaterFactorySpy.factorWasCalled);
 		assertEquals(divaDbUpdaterFactorySpy.types.get(0), "divaOrganisation");
-
 	}
 
-	// @Test
-	// public void testUpdateOrganisationFactorDbUpdater() throws Exception {
-	// DataGroup record = new DataGroupSpy("organisation");
-	// record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
-	//
-	// String dataDivider = "";
-	// divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
-	// assertTrue(recordUpdaterFactory.factorWasCalled);
-	//
-	// }
-
-	// @Test
-	// public void testUpdateOrganisationUsesTranslaterFromFactory() throws Exception {
-	// DataGroup organisation = new DataGroupSpy("organisation");
-	// organisation.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
-	//
-	// String dataDivider = "";
-	// divaToCoraRecordStorage.update("divaOrganisation", "56", organisation, null, null,
-	// dataDivider);
-	//
-	// DataToDbTranslaterSpy toDbTranslater = dataToDbTranslaterFactory.factoredTranslater;
-	// assertEquals(toDbTranslater.dataGroup, organisation);
-	//
-	// RecordUpdaterSpy factoredUpdater = recordUpdaterFactory.factoredUpdater;
-	// assertSame(factoredUpdater.conditions, toDbTranslater.conditions);
-	// assertSame(factoredUpdater.values, toDbTranslater.values);
-	// assertEquals(factoredUpdater.tableName, "organisation");
-	// }
 	@Test
 	public void testUpdateOrganisationUsesRecordStorageForOneTypeFromFactory() throws Exception {
 		DataGroup organisation = new DataGroupSpy("organisation");
@@ -175,24 +129,6 @@ public class DivaDbRecordStorageTest {
 		DivaDbUpdaterSpy recordStorageForOneTypeSpy = (DivaDbUpdaterSpy) divaDbUpdaterFactorySpy.divaDbUpdaterList
 				.get(0);
 		assertEquals(recordStorageForOneTypeSpy.dataGroup, organisation);
-	}
-
-	// @Test
-	// public void testUpdateOrganisationUsesOrganisationAlternativeName() throws Exception {
-	// // TODO: kolla att OrganisationAlternativeName används
-	// DataGroup record = new DataGroupSpy("organisation");
-	// record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
-	//
-	// String dataDivider = "";
-	// divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
-	// assertTrue(recordUpdaterFactory.factorWasCalled);
-	//
-	// }
-
-	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
-			+ "update is not implemented")
-	public void updateThrowsNotImplementedException() throws Exception {
-		divaRecordStorage.update(null, null, null, null, null, null);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
