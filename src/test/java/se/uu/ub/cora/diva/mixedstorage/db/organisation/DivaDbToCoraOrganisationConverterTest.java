@@ -130,10 +130,13 @@ public class DivaDbToCoraOrganisationConverterTest {
 	@Test
 	public void testOrganisationName() {
 		rowFromDb.put("defaultname", "Java-fakulteten");
+		rowFromDb.put("organisation_name_locale", "sv");
 		DataGroup organisation = converter.fromMap(rowFromDb);
 		assertEquals(organisation.getNameInData(), "organisation");
-		assertEquals(organisation.getFirstAtomicValueWithNameInData("organisationName"),
+		DataGroup nameGroup = organisation.getFirstGroupWithNameInData("name");
+		assertEquals(nameGroup.getFirstAtomicValueWithNameInData("organisationName"),
 				"Java-fakulteten");
+		assertEquals(nameGroup.getFirstAtomicValueWithNameInData("language"), "sv");
 	}
 
 	@Test
@@ -215,7 +218,7 @@ public class DivaDbToCoraOrganisationConverterTest {
 		assertFalse(organisation.containsChildWithNameInData("box"));
 		assertFalse(organisation.containsChildWithNameInData("postcode"));
 		assertFalse(organisation.containsChildWithNameInData("country"));
-		
+
 	}
 
 	@Test
@@ -351,7 +354,7 @@ public class DivaDbToCoraOrganisationConverterTest {
 		DataGroup organisation = converter.fromMap(rowFromDb);
 		assertFalse(organisation.containsChildWithNameInData("closedDate"));
 	}
- 
+
 	@Test
 	public void testOrganisationClosedDateIsEmpty() {
 		rowFromDb.put("closed_date", "");
