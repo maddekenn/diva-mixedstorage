@@ -18,8 +18,8 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
-public interface RecordStorageForOneTypeFactory {
+public interface DivaDbUpdaterFactory {
 
-	RecordStorageForOneType factor(String tableName);
+	DivaDbUpdater factor(String tableName);
 
 }

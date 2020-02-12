@@ -29,7 +29,7 @@ import se.uu.ub.cora.connection.SqlConnectionProvider;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslater;
 import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
-import se.uu.ub.cora.diva.mixedstorage.db.RecordStorageForOneType;
+import se.uu.ub.cora.diva.mixedstorage.db.DivaDbUpdater;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTable;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTableFactory;
 import se.uu.ub.cora.diva.mixedstorage.db.StatementExecutor;
@@ -37,7 +37,7 @@ import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
 
-public class OrganisationDbRecordStorage implements RecordStorageForOneType {
+public class DivaDbOrganisationUpdater implements DivaDbUpdater {
 
 	private static final String ORGANISATION_ID = "organisation_id";
 	private DataToDbTranslater organisationToDbTranslater;
@@ -49,7 +49,7 @@ public class OrganisationDbRecordStorage implements RecordStorageForOneType {
 	private Map<String, Object> organisationConditions;
 	private Map<String, Object> organisationValues;
 
-	public OrganisationDbRecordStorage(DataToDbTranslater dataTranslater,
+	public DivaDbOrganisationUpdater(DataToDbTranslater dataTranslater,
 			RecordReaderFactory recordReaderFactory, RelatedTableFactory relatedTableFactory,
 			SqlConnectionProvider connectionProvider, StatementExecutor preparedStatementCreator) {
 		this.organisationToDbTranslater = dataTranslater;

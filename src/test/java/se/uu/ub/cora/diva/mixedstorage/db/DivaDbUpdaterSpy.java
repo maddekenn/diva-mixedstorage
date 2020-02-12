@@ -20,7 +20,7 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 
 import se.uu.ub.cora.data.DataGroup;
 
-public class RecordStorageForOneTypeSpy implements RecordStorageForOneType {
+public class DivaDbUpdaterSpy implements DivaDbUpdater {
 
 	public DataGroup dataGroup;
 

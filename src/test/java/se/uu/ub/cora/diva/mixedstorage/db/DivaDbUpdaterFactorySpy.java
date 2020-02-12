@@ -7,7 +7,6 @@
  *     it under the terms of the GNU General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
- *     
  *
  *     Cora is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,21 +18,22 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
-import se.uu.ub.cora.data.DataGroup;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * RecordStorageForOneType interface is intended to handle database operations for a Datagroup.
- * 
- * The interface provides a common way to interact with specific table implementations which might
- * span multiple sepearate db tables.
- */
-public interface RecordStorageForOneType {
+public class DivaDbUpdaterFactorySpy implements DivaDbUpdaterFactory {
 
-	/**
-	 * update methods can be used in order to implement the update operation in the database.
-	 * 
-	 * @param dataGroup
-	 */
-	void update(DataGroup dataGroup);
+	public List<String> types = new ArrayList<>();
+	public List<DivaDbUpdater> divaDbUpdaterList = new ArrayList<>();
+	public boolean factorWasCalled = false;
+
+	@Override
+	public DivaDbUpdater factor(String type) {
+		factorWasCalled = true;
+		types.add(type);
+		var divaDbUpdaterSpy = new DivaDbUpdaterSpy();
+		divaDbUpdaterList.add(divaDbUpdaterSpy);
+		return divaDbUpdaterSpy;
+	}
 
 }

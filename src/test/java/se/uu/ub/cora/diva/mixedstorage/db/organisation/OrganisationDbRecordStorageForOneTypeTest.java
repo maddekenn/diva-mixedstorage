@@ -34,13 +34,13 @@ import se.uu.ub.cora.diva.mixedstorage.db.DataToDbTranslaterSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.DbStatement;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordReaderFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordReaderSpy;
-import se.uu.ub.cora.diva.mixedstorage.db.RecordStorageForOneType;
+import se.uu.ub.cora.diva.mixedstorage.db.DivaDbUpdater;
 import se.uu.ub.cora.diva.mixedstorage.db.RelatedTableSpy;
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
 
 public class OrganisationDbRecordStorageForOneTypeTest {
 
-	private RecordStorageForOneType recordStorageForOneType;
+	private DivaDbUpdater recordStorageForOneType;
 	private DataToDbTranslaterSpy dataTranslater;
 	private RelatedTableFactorySpy relatedTableFactory;
 	private RecordReaderFactorySpy recordReaderFactory;
@@ -56,7 +56,7 @@ public class OrganisationDbRecordStorageForOneTypeTest {
 		relatedTableFactory = new RelatedTableFactorySpy();
 		connectionProvider = new SqlConnectionProviderSpy();
 		preparedStatementCreator = new PreparedStatementExecutorSpy();
-		recordStorageForOneType = new OrganisationDbRecordStorage(dataTranslater,
+		recordStorageForOneType = new DivaDbOrganisationUpdater(dataTranslater,
 				recordReaderFactory, relatedTableFactory, connectionProvider,
 				preparedStatementCreator);
 	}

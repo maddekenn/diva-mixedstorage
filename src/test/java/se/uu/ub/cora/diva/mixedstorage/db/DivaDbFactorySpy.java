@@ -6,7 +6,7 @@ public class DivaDbFactorySpy implements DivaDbFactory {
 	public String type;
 
 	@Override
-	public DivaDb factor(String type) {
+	public DivaDbReader factor(String type) {
 		factorWasCalled = true;
 		this.type = type;
 		factored = new DivaDbSpy();

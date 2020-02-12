@@ -19,24 +19,24 @@
 package se.uu.ub.cora.diva.mixedstorage.db;
 
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbToCoraOrganisation;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbOrganisationReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
-public class DivaDbToCoraFactoryImp implements DivaDbFactory {
+public class DivaDbFactoryImp implements DivaDbFactory {
 
 	private RecordReaderFactory readerFactory;
 	private DivaDbToCoraConverterFactory converterFactory;
 
-	public DivaDbToCoraFactoryImp(RecordReaderFactory readerFactory,
+	public DivaDbFactoryImp(RecordReaderFactory readerFactory,
 			DivaDbToCoraConverterFactory converterFactory) {
 		this.readerFactory = readerFactory;
 		this.converterFactory = converterFactory;
 	}
 
 	@Override
-	public DivaDb factor(String type) {
+	public DivaDbReader factor(String type) {
 		if ("divaOrganisation".equals(type)) {
-			return DivaDbToCoraOrganisation
+			return DivaDbOrganisationReader
 					.usingRecordReaderFactoryAndConverterFactory(readerFactory, converterFactory);
 		}
 		throw NotImplementedException.withMessage("No implementation found for: " + type);

@@ -46,9 +46,9 @@ import se.uu.ub.cora.data.DataGroupFactory;
 import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDataToDbTranslaterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactoryImp;
-import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraFactoryImp;
+import se.uu.ub.cora.diva.mixedstorage.db.DivaDbFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbRecordStorage;
-import se.uu.ub.cora.diva.mixedstorage.db.RecordStorageForOneTypeFactoryImp;
+import se.uu.ub.cora.diva.mixedstorage.db.DivaDbUpdaterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.RelatedTableFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DataGroupFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraConverterFactory;
@@ -196,7 +196,7 @@ public class DivaMixedRecordStorageProviderTest {
 		assertTrue(dbStorage.getConverterFactory() instanceof DivaDbToCoraConverterFactoryImp);
 		assertCorrectRecordStorageForOneTypeFactory(dbStorage);
 
-		DivaDbToCoraFactoryImp divaDbToCoraFactory = (DivaDbToCoraFactoryImp) dbStorage
+		DivaDbFactoryImp divaDbToCoraFactory = (DivaDbFactoryImp) dbStorage
 				.getDivaDbToCoraFactory();
 		assertSame(divaDbToCoraFactory.getReaderFactory(), recordReaderFactory);
 		assertSame(divaDbToCoraFactory.getConverterFactory(), dbStorage.getConverterFactory());
@@ -204,9 +204,9 @@ public class DivaMixedRecordStorageProviderTest {
 	}
 
 	private void assertCorrectRecordStorageForOneTypeFactory(DivaDbRecordStorage dbStorage) {
-		RecordStorageForOneTypeFactoryImp recordStorageForOneTypeFactory = (RecordStorageForOneTypeFactoryImp) dbStorage
+		DivaDbUpdaterFactoryImp recordStorageForOneTypeFactory = (DivaDbUpdaterFactoryImp) dbStorage
 				.getRecordStorageForOneTypeFactory();
-		assertTrue(recordStorageForOneTypeFactory instanceof RecordStorageForOneTypeFactoryImp);
+		assertTrue(recordStorageForOneTypeFactory instanceof DivaDbUpdaterFactoryImp);
 
 		DivaDataToDbTranslaterFactoryImp translaterFactory = (DivaDataToDbTranslaterFactoryImp) recordStorageForOneTypeFactory
 				.getTranslaterFactory();
@@ -223,7 +223,7 @@ public class DivaMixedRecordStorageProviderTest {
 	}
 
 	private void assertCorrectRelatedTableFactory(
-			RecordStorageForOneTypeFactoryImp recordStorageForOneTypeFactory) {
+			DivaDbUpdaterFactoryImp recordStorageForOneTypeFactory) {
 		RelatedTableFactoryImp relatedTableFactory = (RelatedTableFactoryImp) recordStorageForOneTypeFactory
 				.getRelatedTableFactory();
 

@@ -23,29 +23,29 @@ import java.util.List;
 import java.util.Map;
 
 import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.diva.mixedstorage.db.DivaDb;
+import se.uu.ub.cora.diva.mixedstorage.db.DivaDbReader;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverter;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactory;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
-public class DivaDbToCoraOrganisation implements DivaDb {
+public class DivaDbOrganisationReader implements DivaDbReader {
 
 	private static final String DIVA_ORGANISATION_PREDECESSOR = "divaOrganisationPredecessor";
 	private RecordReaderFactory recordReaderFactory;
 	private DivaDbToCoraConverterFactory converterFactory;
 	private RecordReader recordReader;
 
-	public DivaDbToCoraOrganisation(RecordReaderFactory recordReaderFactory,
+	public DivaDbOrganisationReader(RecordReaderFactory recordReaderFactory,
 			DivaDbToCoraConverterFactory converterFactory) {
 		this.recordReaderFactory = recordReaderFactory;
 		this.converterFactory = converterFactory;
 	}
 
-	public static DivaDbToCoraOrganisation usingRecordReaderFactoryAndConverterFactory(
+	public static DivaDbOrganisationReader usingRecordReaderFactoryAndConverterFactory(
 			RecordReaderFactory recordReaderFactory,
 			DivaDbToCoraConverterFactory converterFactory) {
-		return new DivaDbToCoraOrganisation(recordReaderFactory, converterFactory);
+		return new DivaDbOrganisationReader(recordReaderFactory, converterFactory);
 	}
 
 	@Override

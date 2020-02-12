@@ -25,11 +25,11 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbToCoraOrganisation;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbOrganisationReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
 public class DivaDbFactoryTest {
-	private DivaDbToCoraFactoryImp divaDbToCoraFactoryImp;
+	private DivaDbFactoryImp divaDbToCoraFactoryImp;
 	private RecordReaderFactory readerFactory;
 	private DivaDbToCoraConverterFactory converterFactory;
 
@@ -38,7 +38,7 @@ public class DivaDbFactoryTest {
 		readerFactory = new RecordReaderFactorySpy();
 		converterFactory = new DivaDbToCoraConverterFactorySpy();
 
-		divaDbToCoraFactoryImp = new DivaDbToCoraFactoryImp(readerFactory, converterFactory);
+		divaDbToCoraFactoryImp = new DivaDbFactoryImp(readerFactory, converterFactory);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
@@ -49,13 +49,13 @@ public class DivaDbFactoryTest {
 
 	@Test
 	public void testFactoryOrganisation() {
-		DivaDb divaDbToCoraOrganisation = divaDbToCoraFactoryImp.factor("divaOrganisation");
-		assertTrue(divaDbToCoraOrganisation instanceof DivaDbToCoraOrganisation);
+		DivaDbReader divaDbToCoraOrganisation = divaDbToCoraFactoryImp.factor("divaOrganisation");
+		assertTrue(divaDbToCoraOrganisation instanceof DivaDbOrganisationReader);
 	}
 
 	@Test
 	public void testFactoryOrganisationSentInFactoriesAreSentToImplementation() {
-		DivaDbToCoraOrganisation divaDbToCoraOrganisation = (DivaDbToCoraOrganisation) divaDbToCoraFactoryImp
+		DivaDbOrganisationReader divaDbToCoraOrganisation = (DivaDbOrganisationReader) divaDbToCoraFactoryImp
 				.factor("divaOrganisation");
 		assertSame(divaDbToCoraOrganisation.getRecordReaderFactory(), readerFactory);
 		assertSame(divaDbToCoraOrganisation.getConverterFactory(), converterFactory);

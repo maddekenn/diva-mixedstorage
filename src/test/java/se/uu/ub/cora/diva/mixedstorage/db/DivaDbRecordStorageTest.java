@@ -37,79 +37,79 @@ import se.uu.ub.cora.storage.RecordStorage;
 import se.uu.ub.cora.storage.StorageReadResult;
 
 public class DivaDbRecordStorageTest {
-	private static final String TABLE_NAME = "divaOrganisation";
-	private DivaDbRecordStorage divaToCoraRecordStorage;
-	private DivaDbToCoraConverterFactorySpy converterFactory;
-	private RecordReaderFactorySpy recordReaderFactory;
-	private DivaDbFactorySpy divaDbToCoraFactory;
-	private RecordStorageForOneTypeFactorySpy recordStorageForOneTypeFactorySpy;
+	private static final String ORGANISATION_TYPE = "divaOrganisation";
+	private DivaDbRecordStorage divaRecordStorage;
+	private DivaDbToCoraConverterFactorySpy converterFactorySpy;
+	private RecordReaderFactorySpy recordReaderFactorySpy;
+	private DivaDbFactorySpy divaDbCreatorFactorySpy;
+	private DivaDbUpdaterFactorySpy divaDbUpdaterFactorySpy;
 
 	@BeforeMethod
 	public void BeforeMethod() {
-		converterFactory = new DivaDbToCoraConverterFactorySpy();
-		recordReaderFactory = new RecordReaderFactorySpy();
-		divaDbToCoraFactory = new DivaDbFactorySpy();
-		recordStorageForOneTypeFactorySpy = new RecordStorageForOneTypeFactorySpy();
-		divaToCoraRecordStorage = DivaDbRecordStorage
-				.usingRecordReaderFactoryConverterFactoryDbToCoraFactoryAndRecordStorageForOneTypeFactory(
-						recordReaderFactory, converterFactory, divaDbToCoraFactory,
-						recordStorageForOneTypeFactorySpy);
+		converterFactorySpy = new DivaDbToCoraConverterFactorySpy();
+		recordReaderFactorySpy = new RecordReaderFactorySpy();
+		divaDbCreatorFactorySpy = new DivaDbFactorySpy();
+		divaDbUpdaterFactorySpy = new DivaDbUpdaterFactorySpy();
+		divaRecordStorage = DivaDbRecordStorage
+				.usingRecordReaderFactoryConverterFactoryDivaFactoryAndDivaDbUpdaterFactory(
+						recordReaderFactorySpy, converterFactorySpy, divaDbCreatorFactorySpy,
+						divaDbUpdaterFactorySpy);
 	}
 
 	@Test
 	public void testInit() throws Exception {
-		assertNotNull(divaToCoraRecordStorage);
+		assertNotNull(divaRecordStorage);
 	}
 
 	@Test
 	public void divaToCoraRecordStorageImplementsRecordStorage() throws Exception {
-		assertTrue(divaToCoraRecordStorage instanceof RecordStorage);
+		assertTrue(divaRecordStorage instanceof RecordStorage);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
 			+ "read is not implemented for type: null")
 	public void readThrowsNotImplementedException() throws Exception {
-		divaToCoraRecordStorage.read(null, null);
+		divaRecordStorage.read(null, null);
 	}
 
 	@Test
 	public void testCallToDivaDbToCoraFactory() throws Exception {
-		divaToCoraRecordStorage.read(TABLE_NAME, "someId");
-		assertTrue(divaDbToCoraFactory.factorWasCalled);
-		assertEquals(divaDbToCoraFactory.type, "divaOrganisation");
+		divaRecordStorage.read(ORGANISATION_TYPE, "someId");
+		assertTrue(divaDbCreatorFactorySpy.factorWasCalled);
+		assertEquals(divaDbCreatorFactorySpy.type, "divaOrganisation");
 	}
 
 	@Test
 	public void testReadOrganisationMakeCorrectCalls() throws Exception {
-		divaToCoraRecordStorage.read(TABLE_NAME, "someId");
-		DivaDbSpy factored = divaDbToCoraFactory.factored;
-		assertEquals(factored.type, TABLE_NAME);
+		divaRecordStorage.read(ORGANISATION_TYPE, "someId");
+		DivaDbSpy factored = divaDbCreatorFactorySpy.factored;
+		assertEquals(factored.type, ORGANISATION_TYPE);
 		assertEquals(factored.id, "someId");
 	}
 
 	@Test
 	public void testOrganisationFromDivaDbToCoraIsReturnedFromRead() throws Exception {
-		DataGroup readOrganisation = divaToCoraRecordStorage.read(TABLE_NAME, "someId");
-		DivaDbSpy factored = divaDbToCoraFactory.factored;
+		DataGroup readOrganisation = divaRecordStorage.read(ORGANISATION_TYPE, "someId");
+		DivaDbSpy factored = divaDbCreatorFactorySpy.factored;
 		assertEquals(readOrganisation, factored.dataGroup);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
 			+ "create is not implemented")
 	public void createThrowsNotImplementedException() throws Exception {
-		divaToCoraRecordStorage.create(null, null, null, null, null, null);
+		divaRecordStorage.create(null, null, null, null, null, null);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
 			+ "deleteByTypeAndId is not implemented")
 	public void deleteByTypeAndIdThrowsNotImplementedException() throws Exception {
-		divaToCoraRecordStorage.deleteByTypeAndId(null, null);
+		divaRecordStorage.deleteByTypeAndId(null, null);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
 			+ "linksExistForRecord is not implemented")
 	public void linksExistForRecordThrowsNotImplementedException() throws Exception {
-		divaToCoraRecordStorage.linksExistForRecord(null, null);
+		divaRecordStorage.linksExistForRecord(null, null);
 	}
 
 	// @Test
@@ -130,8 +130,9 @@ public class DivaDbRecordStorageTest {
 		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 
 		String dataDivider = "";
-		divaToCoraRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
-		assertTrue(recordStorageForOneTypeFactorySpy.factorWasCalled);
+		divaRecordStorage.update("divaOrganisation", "56", record, null, null, dataDivider);
+		assertTrue(divaDbUpdaterFactorySpy.factorWasCalled);
+		assertEquals(divaDbUpdaterFactorySpy.types.get(0), "divaOrganisation");
 
 	}
 
@@ -169,10 +170,9 @@ public class DivaDbRecordStorageTest {
 		organisation.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 
 		String dataDivider = "";
-		divaToCoraRecordStorage.update("divaOrganisation", "56", organisation, null, null,
-				dataDivider);
+		divaRecordStorage.update("divaOrganisation", "56", organisation, null, null, dataDivider);
 
-		RecordStorageForOneTypeSpy recordStorageForOneTypeSpy = (RecordStorageForOneTypeSpy) recordStorageForOneTypeFactorySpy.RecordStorageForOneType
+		DivaDbUpdaterSpy recordStorageForOneTypeSpy = (DivaDbUpdaterSpy) divaDbUpdaterFactorySpy.divaDbUpdaterList
 				.get(0);
 		assertEquals(recordStorageForOneTypeSpy.dataGroup, organisation);
 	}
@@ -192,40 +192,40 @@ public class DivaDbRecordStorageTest {
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
 			+ "update is not implemented")
 	public void updateThrowsNotImplementedException() throws Exception {
-		divaToCoraRecordStorage.update(null, null, null, null, null, null);
+		divaRecordStorage.update(null, null, null, null, null, null);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
 			+ "readList is not implemented for type: null")
 	public void readListThrowsNotImplementedException() throws Exception {
-		divaToCoraRecordStorage.readList(null, null);
+		divaRecordStorage.readList(null, null);
 	}
 
 	@Test
 	public void testReadOrganisationListFactorDbReader() throws Exception {
-		divaToCoraRecordStorage.readList(TABLE_NAME, new DataGroupSpy("filter"));
-		assertTrue(recordReaderFactory.factorWasCalled);
+		divaRecordStorage.readList(ORGANISATION_TYPE, new DataGroupSpy("filter"));
+		assertTrue(recordReaderFactorySpy.factorWasCalled);
 	}
 
 	@Test
 	public void testReadOrganisationListCountryTableRequestedFromReader() throws Exception {
-		divaToCoraRecordStorage.readList(TABLE_NAME, new DataGroupSpy("filter"));
-		RecordReaderSpy recordReader = recordReaderFactory.factored;
-		assertEquals(recordReader.usedTableName, TABLE_NAME);
+		divaRecordStorage.readList(ORGANISATION_TYPE, new DataGroupSpy("filter"));
+		RecordReaderSpy recordReader = recordReaderFactorySpy.factored;
+		assertEquals(recordReader.usedTableName, ORGANISATION_TYPE);
 	}
 
 	@Test
 	public void testReadOrganisationListConverterIsFactored() throws Exception {
-		divaToCoraRecordStorage.readList(TABLE_NAME, new DataGroupSpy("filter"));
-		DivaDbToCoraConverter divaDbToCoraConverter = converterFactory.factoredConverters.get(0);
+		divaRecordStorage.readList(ORGANISATION_TYPE, new DataGroupSpy("filter"));
+		DivaDbToCoraConverter divaDbToCoraConverter = converterFactorySpy.factoredConverters.get(0);
 		assertNotNull(divaDbToCoraConverter);
 	}
 
 	@Test
 	public void testReadOrganisationListConverterIsCalledWithDataFromDbStorage() throws Exception {
-		divaToCoraRecordStorage.readList(TABLE_NAME, new DataGroupSpy("filter"));
-		RecordReaderSpy recordReader = recordReaderFactory.factored;
-		DivaDbToCoraConverterSpy divaDbToCoraConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
+		divaRecordStorage.readList(ORGANISATION_TYPE, new DataGroupSpy("filter"));
+		RecordReaderSpy recordReader = recordReaderFactorySpy.factored;
+		DivaDbToCoraConverterSpy divaDbToCoraConverter = (DivaDbToCoraConverterSpy) converterFactorySpy.factoredConverters
 				.get(0);
 		assertNotNull(divaDbToCoraConverter.mapToConvert);
 		assertEquals(recordReader.returnedList.get(0), divaDbToCoraConverter.mapToConvert);
@@ -233,11 +233,11 @@ public class DivaDbRecordStorageTest {
 
 	@Test
 	public void testReadOrganisationListConverteredIsAddedToList() throws Exception {
-		StorageReadResult spiderReadresult = divaToCoraRecordStorage.readList(TABLE_NAME,
+		StorageReadResult spiderReadresult = divaRecordStorage.readList(ORGANISATION_TYPE,
 				new DataGroupSpy("filter"));
 		List<DataGroup> readCountryList = spiderReadresult.listOfDataGroups;
-		RecordReaderSpy recordReader = recordReaderFactory.factored;
-		DivaDbToCoraConverterSpy divaDbToCoraConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
+		RecordReaderSpy recordReader = recordReaderFactorySpy.factored;
+		DivaDbToCoraConverterSpy divaDbToCoraConverter = (DivaDbToCoraConverterSpy) converterFactorySpy.factoredConverters
 				.get(0);
 		assertEquals(recordReader.returnedList.size(), 1);
 		assertEquals(recordReader.returnedList.get(0), divaDbToCoraConverter.mapToConvert);
@@ -246,25 +246,25 @@ public class DivaDbRecordStorageTest {
 
 	@Test
 	public void testReadOrganisationListConverteredMoreThanOneIsAddedToList() throws Exception {
-		recordReaderFactory.noOfRecordsToReturn = 3;
-		StorageReadResult storageReadResult = divaToCoraRecordStorage.readList(TABLE_NAME,
+		recordReaderFactorySpy.noOfRecordsToReturn = 3;
+		StorageReadResult storageReadResult = divaRecordStorage.readList(ORGANISATION_TYPE,
 				new DataGroupSpy("filter"));
 		List<DataGroup> readOrganisationList = storageReadResult.listOfDataGroups;
-		RecordReaderSpy recordReader = recordReaderFactory.factored;
+		RecordReaderSpy recordReader = recordReaderFactorySpy.factored;
 
 		assertEquals(recordReader.returnedList.size(), 3);
 
-		DivaDbToCoraConverterSpy divaDbToCoraConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
+		DivaDbToCoraConverterSpy divaDbToCoraConverter = (DivaDbToCoraConverterSpy) converterFactorySpy.factoredConverters
 				.get(0);
 		assertEquals(recordReader.returnedList.get(0), divaDbToCoraConverter.mapToConvert);
 		assertEquals(readOrganisationList.get(0), divaDbToCoraConverter.convertedDbDataGroup);
 
-		DivaDbToCoraConverterSpy divaDbToCoraConverter2 = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
+		DivaDbToCoraConverterSpy divaDbToCoraConverter2 = (DivaDbToCoraConverterSpy) converterFactorySpy.factoredConverters
 				.get(1);
 		assertEquals(recordReader.returnedList.get(1), divaDbToCoraConverter2.mapToConvert);
 		assertEquals(readOrganisationList.get(1), divaDbToCoraConverter2.convertedDbDataGroup);
 
-		DivaDbToCoraConverterSpy divaDbToCoraConverter3 = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
+		DivaDbToCoraConverterSpy divaDbToCoraConverter3 = (DivaDbToCoraConverterSpy) converterFactorySpy.factoredConverters
 				.get(2);
 		assertEquals(recordReader.returnedList.get(2), divaDbToCoraConverter3.mapToConvert);
 		assertEquals(readOrganisationList.get(2), divaDbToCoraConverter3.convertedDbDataGroup);
@@ -274,42 +274,41 @@ public class DivaDbRecordStorageTest {
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
 			+ "readAbstractList is not implemented")
 	public void readAbstractListThrowsNotImplementedException() throws Exception {
-		divaToCoraRecordStorage.readAbstractList(null, null);
+		divaRecordStorage.readAbstractList(null, null);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
 			+ "readLinkList is not implemented")
 	public void readLinkListThrowsNotImplementedException() throws Exception {
-		divaToCoraRecordStorage.readLinkList(null, null);
+		divaRecordStorage.readLinkList(null, null);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
 			+ "generateLinkCollectionPointingToRecord is not implemented")
 	public void generateLinkCollectionPointingToRecordThrowsNotImplementedException()
 			throws Exception {
-		divaToCoraRecordStorage.generateLinkCollectionPointingToRecord(null, null);
+		divaRecordStorage.generateLinkCollectionPointingToRecord(null, null);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
 			+ "recordsExistForRecordType is not implemented")
 	public void recordsExistForRecordTypeThrowsNotImplementedException() throws Exception {
-		divaToCoraRecordStorage.recordsExistForRecordType(null);
+		divaRecordStorage.recordsExistForRecordType(null);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
 			+ "recordExistsForAbstractOrImplementingRecordTypeAndRecordId is not implemented")
 	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdThrowsNotImplementedException()
 			throws Exception {
-		divaToCoraRecordStorage.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(null,
-				null);
+		divaRecordStorage.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(null, null);
 	}
 
 	@Test
 	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdForDivaOrganisation() {
-		boolean organisationExists = divaToCoraRecordStorage
+		boolean organisationExists = divaRecordStorage
 				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("divaOrganisation",
 						"26");
-		RecordReaderSpy readerSpy = recordReaderFactory.factored;
+		RecordReaderSpy readerSpy = recordReaderFactorySpy.factored;
 		assertEquals(readerSpy.usedTableName, "organisation");
 		Map<String, Object> usedConditions = readerSpy.usedConditions;
 		assertEquals(usedConditions.get("organisation_id"), 26);
@@ -318,10 +317,10 @@ public class DivaDbRecordStorageTest {
 
 	@Test
 	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdForDivaOrganisationWhenOrganisationDoesNotExist() {
-		boolean organisationExists = divaToCoraRecordStorage
+		boolean organisationExists = divaRecordStorage
 				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("divaOrganisation",
 						"600");
-		RecordReaderSpy readerSpy = recordReaderFactory.factored;
+		RecordReaderSpy readerSpy = recordReaderFactorySpy.factored;
 		assertEquals(readerSpy.usedTableName, "organisation");
 		Map<String, Object> usedConditions = readerSpy.usedConditions;
 		assertEquals(usedConditions.get("organisation_id"), 600);
@@ -331,7 +330,7 @@ public class DivaDbRecordStorageTest {
 	@Test
 	public void testRecordExistsDivaOrganisationCallsDataReaderWithStringIdReturnsFalse()
 			throws Exception {
-		boolean organisationExists = divaToCoraRecordStorage
+		boolean organisationExists = divaRecordStorage
 				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("divaOrganisation",
 						"notAnInt");
 		assertFalse(organisationExists);

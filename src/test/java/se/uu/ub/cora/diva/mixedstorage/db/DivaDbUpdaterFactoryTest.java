@@ -26,14 +26,14 @@ import org.testng.annotations.Test;
 
 import se.uu.ub.cora.connection.SqlConnectionProvider;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.OrganisationDbRecordStorage;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbOrganisationUpdater;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.RelatedTableFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.SqlConnectionProviderSpy;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
-public class RecordStorageForOneTypeFactoryTest {
+public class DivaDbUpdaterFactoryTest {
 
-	private RecordStorageForOneTypeFactory factory;
+	private DivaDbUpdaterFactory factory;
 	private DataToDbTranslaterFactorySpy translaterFactory;
 	private RelatedTableFactorySpy relatedTableFactory;
 	private RecordReaderFactory recordReaderFactory;
@@ -45,26 +45,26 @@ public class RecordStorageForOneTypeFactoryTest {
 		relatedTableFactory = new RelatedTableFactorySpy();
 		recordReaderFactory = new RecordReaderFactorySpy();
 		sqlConnectionProvider = new SqlConnectionProviderSpy();
-		factory = new RecordStorageForOneTypeFactoryImp(translaterFactory, recordReaderFactory,
+		factory = new DivaDbUpdaterFactoryImp(translaterFactory, recordReaderFactory,
 				relatedTableFactory, sqlConnectionProvider);
 	}
 
 	@Test
 	public void testFactorOrganisationTable() {
-		var organisationDbRecordStorage = (OrganisationDbRecordStorage) factory
-				.factor("organisation");
-		assertSame(organisationDbRecordStorage.getDataToDbTranslater(),
+		var divaDbOrganisationUpdater = (DivaDbOrganisationUpdater) factory
+				.factor("divaOrganisation");
+		assertSame(divaDbOrganisationUpdater.getDataToDbTranslater(),
 				translaterFactory.factoredTranslater);
-		assertSame(organisationDbRecordStorage.getRelatedTableFactory(), relatedTableFactory);
-		assertSame(organisationDbRecordStorage.getRecordReaderFactory(), recordReaderFactory);
-		assertSame(organisationDbRecordStorage.getSqlConnectionProvider(), sqlConnectionProvider);
-		assertTrue(organisationDbRecordStorage
+		assertSame(divaDbOrganisationUpdater.getRelatedTableFactory(), relatedTableFactory);
+		assertSame(divaDbOrganisationUpdater.getRecordReaderFactory(), recordReaderFactory);
+		assertSame(divaDbOrganisationUpdater.getSqlConnectionProvider(), sqlConnectionProvider);
+		assertTrue(divaDbOrganisationUpdater
 				.getPreparedStatementCreator() instanceof PreparedStatementExecutorImp);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
-			+ "Main table not implemented for someNonExistingRecordStorageForOneType")
+			+ "Updater not implemented for someNonExistingUpdaterType")
 	public void testNotImplemented() {
-		factory.factor("someNonExistingRecordStorageForOneType");
+		factory.factor("someNonExistingUpdaterType");
 	}
 }

@@ -3,7 +3,7 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
 
-public class DivaDbSpy implements DivaDb {
+public class DivaDbSpy implements DivaDbReader {
 
 	public String type;
 	public String id;

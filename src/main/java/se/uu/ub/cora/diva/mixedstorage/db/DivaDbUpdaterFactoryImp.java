@@ -20,17 +20,17 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 
 import se.uu.ub.cora.connection.SqlConnectionProvider;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.OrganisationDbRecordStorage;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbOrganisationUpdater;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
-public class RecordStorageForOneTypeFactoryImp implements RecordStorageForOneTypeFactory {
+public class DivaDbUpdaterFactoryImp implements DivaDbUpdaterFactory {
 
 	private DataToDbTranslaterFactory translaterFactory;
 	private RelatedTableFactory relatedTableFactory;
 	private RecordReaderFactory recordReaderFactory;
 	private SqlConnectionProvider sqlConnectionProvider;
 
-	public RecordStorageForOneTypeFactoryImp(DataToDbTranslaterFactory translaterFactory,
+	public DivaDbUpdaterFactoryImp(DataToDbTranslaterFactory translaterFactory,
 			RecordReaderFactory recordReaderFactory, RelatedTableFactory relatedTableFactory,
 			SqlConnectionProvider sqlConnectionProvider) {
 		this.translaterFactory = translaterFactory;
@@ -40,17 +40,17 @@ public class RecordStorageForOneTypeFactoryImp implements RecordStorageForOneTyp
 	}
 
 	@Override
-	public RecordStorageForOneType factor(String tableName) {
-		if ("organisation".equals(tableName)) {
+	public DivaDbUpdater factor(String type) {
+		if ("divaOrganisation".equals(type)) {
 			return factorForOrganisation();
 		}
-		throw NotImplementedException.withMessage("Main table not implemented for " + tableName);
+		throw NotImplementedException.withMessage("Updater not implemented for " + type);
 	}
 
-	private RecordStorageForOneType factorForOrganisation() {
+	private DivaDbUpdater factorForOrganisation() {
 		StatementExecutor preparedStatementCreator = new PreparedStatementExecutorImp();
 		DataToDbTranslater translater = translaterFactory.factorForTableName("organisation");
-		return new OrganisationDbRecordStorage(translater, recordReaderFactory, relatedTableFactory,
+		return new DivaDbOrganisationUpdater(translater, recordReaderFactory, relatedTableFactory,
 				sqlConnectionProvider, preparedStatementCreator);
 	}
 
