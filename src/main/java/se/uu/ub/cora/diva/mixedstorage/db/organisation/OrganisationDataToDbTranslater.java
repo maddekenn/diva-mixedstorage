@@ -57,6 +57,7 @@ public class OrganisationDataToDbTranslater implements DataToDbTranslater {
 	}
 
 	private Map<String, Object> createColumnsWithValuesForUpdateQuery() {
+		addOrganisationNameToColumns();
 		addAtomicValuesToColumns();
 		addEligible();
 		values.put("last_updated", getCurrentTimestamp());
@@ -65,15 +66,12 @@ public class OrganisationDataToDbTranslater implements DataToDbTranslater {
 		return values;
 	}
 
-	private Object getTypeCodeForOrganisationType() {
-		Map<String, Object> conditionsForReadType = new HashMap<>();
-		conditionsForReadType.put("organisation_type_code",
-				dataGroup.getFirstAtomicValueWithNameInData("organisationType"));
-
-		Map<String, Object> organisationTypeRow = recordReader
-				.readOneRowFromDbUsingTableAndConditions("organisation_type",
-						conditionsForReadType);
-		return organisationTypeRow.get("organisation_type_id");
+	private void addOrganisationNameToColumns() {
+		DataGroup nameGroup = dataGroup.getFirstGroupWithNameInData("name");
+		String name = nameGroup.getFirstAtomicValueWithNameInData("organisationName");
+		values.put("organisation_name", name);
+		String language = nameGroup.getFirstAtomicValueWithNameInData("language");
+		values.put("organisation_name_locale", language);
 	}
 
 	private void addAtomicValuesToColumns() {
@@ -97,19 +95,6 @@ public class OrganisationDataToDbTranslater implements DataToDbTranslater {
 		return dataGroup.containsChildWithNameInData(coraName);
 	}
 
-	private void addEligible() {
-		boolean notEligible = false;
-		if (eligibleIsNoOrMissing()) {
-			notEligible = true;
-		}
-		values.put("not_eligible", notEligible);
-	}
-
-	private boolean eligibleIsNoOrMissing() {
-		return !dataGroup.containsChildWithNameInData("eligible")
-				|| "no".equals(dataGroup.getFirstAtomicValueWithNameInData("eligible"));
-	}
-
 	private void handleAndAddValue(String coraName, String dbColumnName,
 			OrganisationAtomicColumns column) {
 		String type = column.type;
@@ -126,11 +111,35 @@ public class OrganisationDataToDbTranslater implements DataToDbTranslater {
 		values.put(dbColumnName, valueAsDate);
 	}
 
+	private void addEligible() {
+		boolean notEligible = false;
+		if (eligibleIsNoOrMissing()) {
+			notEligible = true;
+		}
+		values.put("not_eligible", notEligible);
+	}
+
+	private boolean eligibleIsNoOrMissing() {
+		return !dataGroup.containsChildWithNameInData("eligible")
+				|| "no".equals(dataGroup.getFirstAtomicValueWithNameInData("eligible"));
+	}
+
 	private Timestamp getCurrentTimestamp() {
 		java.util.Date today = new java.util.Date();
 		long time = today.getTime();
 		return new Timestamp(time);
 
+	}
+
+	private Object getTypeCodeForOrganisationType() {
+		Map<String, Object> conditionsForReadType = new HashMap<>();
+		conditionsForReadType.put("organisation_type_code",
+				dataGroup.getFirstAtomicValueWithNameInData("organisationType"));
+
+		Map<String, Object> organisationTypeRow = recordReader
+				.readOneRowFromDbUsingTableAndConditions("organisation_type",
+						conditionsForReadType);
+		return organisationTypeRow.get("organisation_type_id");
 	}
 
 	@Override
