@@ -23,6 +23,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 
+import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupProvider;
@@ -141,9 +142,21 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 	}
 
 	private void createAndAddName() {
-		String divaOrganisationName = (String) dbRow.get("defaultname");
-		organisation.addChild(DataAtomicProvider
-				.getDataAtomicUsingNameInDataAndValue("organisationName", divaOrganisationName));
+		DataGroup nameGroup = DataGroupProvider.getDataGroupUsingNameInData("name");
+		DataAtomic name = createAtomicDataUsingColumnNameAndNameInData("defaultname",
+				"organisationName");
+		nameGroup.addChild(name);
+		String nameLanguage = (String) dbRow.get("organisation_name_locale");
+		nameGroup.addChild(
+				DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("language", nameLanguage));
+		organisation.addChild(nameGroup);
+	}
+
+	private DataAtomic createAtomicDataUsingColumnNameAndNameInData(String columnName,
+			String nameInData) {
+		String divaOrganisationName = (String) dbRow.get(columnName);
+		return DataAtomicProvider
+				.getDataAtomicUsingNameInDataAndValue(nameInData, divaOrganisationName);
 	}
 
 	private void createAndAddAlternativeName() {

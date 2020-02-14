@@ -60,6 +60,12 @@ public class OrganisationDataToDbTranslaterTest {
 		recordInfo.addChild(new DataAtomicSpy("id", id));
 		dataGroup.addChild(recordInfo);
 		dataGroup.addChild(new DataAtomicSpy("organisationType", "unit"));
+
+		DataGroup organisationName = new DataGroupSpy("name");
+		organisationName.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
+		organisationName.addChild(new DataAtomicSpy("language", "sv"));
+		dataGroup.addChild(organisationName);
+
 		return dataGroup;
 	}
 
@@ -82,11 +88,11 @@ public class OrganisationDataToDbTranslaterTest {
 	@Test
 	public void testOrganisationNameInValues() {
 		DataGroup dataGroup = createDataGroupWithId("45");
-		dataGroup.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 
 		translater.translate(dataGroup);
 		assertEquals(translater.getConditions().get("organisation_id"), 45);
 		assertEquals(translater.getValues().get("organisation_name"), "someChangedName");
+		assertEquals(translater.getValues().get("organisation_name_locale"), "sv");
 	}
 
 	@Test
@@ -118,7 +124,6 @@ public class OrganisationDataToDbTranslaterTest {
 
 		assertEquals(translater.getConditions().get("organisation_id"), 45);
 
-		assertEquals(translater.getValues().get("organisation_name"), null);
 		assertEquals(translater.getValues().get("closed_date"), null);
 		assertEquals(translater.getValues().get("organisation_code"), null);
 		assertEquals(translater.getValues().get("orgnumber"), null);
@@ -128,20 +133,22 @@ public class OrganisationDataToDbTranslaterTest {
 	@Test
 	public void testValuesAndConditionsAreOverwrittenWhenNewTranslateIsCalled() {
 		DataGroup dataGroup = createDataGroupWithId("45");
-		dataGroup.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 
 		translater.translate(dataGroup);
 		assertEquals(translater.getConditions().size(), 1);
-		assertEquals(translater.getValues().size(), 8);
+		assertEquals(translater.getValues().size(), 9);
 		assertEquals(translater.getConditions().get("organisation_id"), 45);
 		assertEquals(translater.getValues().get("organisation_name"), "someChangedName");
 		Timestamp lastUpdated = (Timestamp) translater.getValues().get("last_updated");
 
 		DataGroup dataGroup2 = createDataGroupWithId("4500");
-		dataGroup2.addChild(new DataAtomicSpy("organisationName", "someOtherChangedName"));
+		DataGroup nameGroup = dataGroup2.getFirstGroupWithNameInData("name");
+		nameGroup.removeFirstChildWithNameInData("organisationName");
+		nameGroup.addChild(new DataAtomicSpy("organisationName", "someOtherChangedName"));
+
 		translater.translate(dataGroup2);
 		assertEquals(translater.getConditions().size(), 1);
-		assertEquals(translater.getValues().size(), 8);
+		assertEquals(translater.getValues().size(), 9);
 
 		assertEquals(translater.getConditions().get("organisation_id"), 4500);
 		assertEquals(translater.getValues().get("organisation_name"), "someOtherChangedName");

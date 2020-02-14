@@ -130,10 +130,25 @@ public class DivaDbToCoraOrganisationConverterTest {
 	@Test
 	public void testOrganisationName() {
 		rowFromDb.put("defaultname", "Java-fakulteten");
+		rowFromDb.put("organisation_name_locale", "sv");
 		DataGroup organisation = converter.fromMap(rowFromDb);
 		assertEquals(organisation.getNameInData(), "organisation");
-		assertEquals(organisation.getFirstAtomicValueWithNameInData("organisationName"),
+
+		assertCorrectValuesForNameWasFactored();
+
+		DataGroup nameGroup = organisation.getFirstGroupWithNameInData("name");
+		assertEquals(nameGroup.getFirstAtomicValueWithNameInData("organisationName"),
 				"Java-fakulteten");
+		assertEquals(nameGroup.getFirstAtomicValueWithNameInData("language"), "sv");
+	}
+
+	private void assertCorrectValuesForNameWasFactored() {
+		DataAtomicSpy factoredDataAtomicForName = getFactoredDataAtomicByNumber(12);
+		assertEquals(factoredDataAtomicForName.nameInData, "organisationName");
+		assertEquals(factoredDataAtomicForName.value, "Java-fakulteten");
+		DataAtomicSpy factoredDataAtomicForLanguage = getFactoredDataAtomicByNumber(13);
+		assertEquals(factoredDataAtomicForLanguage.nameInData, "language");
+		assertEquals(factoredDataAtomicForLanguage.value, "sv");
 	}
 
 	@Test
@@ -215,7 +230,7 @@ public class DivaDbToCoraOrganisationConverterTest {
 		assertFalse(organisation.containsChildWithNameInData("box"));
 		assertFalse(organisation.containsChildWithNameInData("postcode"));
 		assertFalse(organisation.containsChildWithNameInData("country"));
-		
+
 	}
 
 	@Test
@@ -227,23 +242,23 @@ public class DivaDbToCoraOrganisationConverterTest {
 		rowFromDb.put("country_code", "fi");
 
 		DataGroup organisation = converter.fromMap(rowFromDb);
-		DataAtomicSpy factoredDataAtomicForCity = getFactoredDataAtomicByNumber(16);
+		DataAtomicSpy factoredDataAtomicForCity = getFactoredDataAtomicByNumber(17);
 		assertEquals(factoredDataAtomicForCity.nameInData, "city");
 		assertEquals(factoredDataAtomicForCity.value, "uppsala");
 
-		DataAtomicSpy factoredDataAtomicForStreet = getFactoredDataAtomicByNumber(17);
+		DataAtomicSpy factoredDataAtomicForStreet = getFactoredDataAtomicByNumber(18);
 		assertEquals(factoredDataAtomicForStreet.nameInData, "street");
 		assertEquals(factoredDataAtomicForStreet.value, "Övre slottsgatan 1");
 
-		DataAtomicSpy factoredDataAtomicForBox = getFactoredDataAtomicByNumber(18);
+		DataAtomicSpy factoredDataAtomicForBox = getFactoredDataAtomicByNumber(19);
 		assertEquals(factoredDataAtomicForBox.nameInData, "box");
 		assertEquals(factoredDataAtomicForBox.value, "Box5435");
 
-		DataAtomicSpy factoredDataAtomicForPostcode = getFactoredDataAtomicByNumber(19);
+		DataAtomicSpy factoredDataAtomicForPostcode = getFactoredDataAtomicByNumber(20);
 		assertEquals(factoredDataAtomicForPostcode.nameInData, "postcode");
 		assertEquals(factoredDataAtomicForPostcode.value, "345 34");
 
-		DataAtomicSpy factoredDataAtomicForCountry = getFactoredDataAtomicByNumber(20);
+		DataAtomicSpy factoredDataAtomicForCountry = getFactoredDataAtomicByNumber(21);
 		assertEquals(factoredDataAtomicForCountry.nameInData, "country");
 		assertEquals(factoredDataAtomicForCountry.value, "FI");
 
@@ -351,7 +366,7 @@ public class DivaDbToCoraOrganisationConverterTest {
 		DataGroup organisation = converter.fromMap(rowFromDb);
 		assertFalse(organisation.containsChildWithNameInData("closedDate"));
 	}
- 
+
 	@Test
 	public void testOrganisationClosedDateIsEmpty() {
 		rowFromDb.put("closed_date", "");
