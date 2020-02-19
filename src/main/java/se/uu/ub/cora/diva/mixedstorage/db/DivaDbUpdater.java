@@ -22,7 +22,7 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 import se.uu.ub.cora.data.DataGroup;
 
 /**
- * RecordStorageForOneType interface is intended to handle database operations for a Datagroup.
+ * DivaDbUpdater interface is intended to handle database operations for a Datagroup.
  * 
  * The interface provides a common way to interact with specific table implementations which might
  * span multiple sepearate db tables.
