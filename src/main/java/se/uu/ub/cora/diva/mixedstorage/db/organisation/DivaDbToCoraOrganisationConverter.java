@@ -176,8 +176,22 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 
 	private void createAndAddOrganisationType() {
 		String typeCode = (String) dbRow.get("type_code");
+		String rootValue = typeIsRoot(typeCode) ? "true" : "false";
+
 		organisation.addChild(DataAtomicProvider
-				.getDataAtomicUsingNameInDataAndValue("organisationType", typeCode));
+				.getDataAtomicUsingNameInDataAndValue("rootOrganisation", rootValue));
+		addOrganisationTypeIfNotRoot(typeCode);
+	}
+
+	private boolean typeIsRoot(String typeCode) {
+		return "root".equals(typeCode);
+	}
+
+	private void addOrganisationTypeIfNotRoot(String typeCode) {
+		if (!typeIsRoot(typeCode)) {
+			organisation.addChild(DataAtomicProvider
+					.getDataAtomicUsingNameInDataAndValue("organisationType", typeCode));
+		}
 	}
 
 	private void possiblyCreateAndAddEligibility() {

@@ -242,23 +242,23 @@ public class DivaDbToCoraOrganisationConverterTest {
 		rowFromDb.put("country_code", "fi");
 
 		DataGroup organisation = converter.fromMap(rowFromDb);
-		DataAtomicSpy factoredDataAtomicForCity = getFactoredDataAtomicByNumber(17);
+		DataAtomicSpy factoredDataAtomicForCity = getFactoredDataAtomicByNumber(18);
 		assertEquals(factoredDataAtomicForCity.nameInData, "city");
 		assertEquals(factoredDataAtomicForCity.value, "uppsala");
 
-		DataAtomicSpy factoredDataAtomicForStreet = getFactoredDataAtomicByNumber(18);
+		DataAtomicSpy factoredDataAtomicForStreet = getFactoredDataAtomicByNumber(19);
 		assertEquals(factoredDataAtomicForStreet.nameInData, "street");
 		assertEquals(factoredDataAtomicForStreet.value, "Övre slottsgatan 1");
 
-		DataAtomicSpy factoredDataAtomicForBox = getFactoredDataAtomicByNumber(19);
+		DataAtomicSpy factoredDataAtomicForBox = getFactoredDataAtomicByNumber(20);
 		assertEquals(factoredDataAtomicForBox.nameInData, "box");
 		assertEquals(factoredDataAtomicForBox.value, "Box5435");
 
-		DataAtomicSpy factoredDataAtomicForPostcode = getFactoredDataAtomicByNumber(20);
+		DataAtomicSpy factoredDataAtomicForPostcode = getFactoredDataAtomicByNumber(21);
 		assertEquals(factoredDataAtomicForPostcode.nameInData, "postcode");
 		assertEquals(factoredDataAtomicForPostcode.value, "345 34");
 
-		DataAtomicSpy factoredDataAtomicForCountry = getFactoredDataAtomicByNumber(21);
+		DataAtomicSpy factoredDataAtomicForCountry = getFactoredDataAtomicByNumber(22);
 		assertEquals(factoredDataAtomicForCountry.nameInData, "country");
 		assertEquals(factoredDataAtomicForCountry.value, "FI");
 
@@ -449,5 +449,20 @@ public class DivaDbToCoraOrganisationConverterTest {
 		rowFromDb.put("show_in_portal", true);
 		DataGroup organisation = converter.fromMap(rowFromDb);
 		assertEquals(organisation.getFirstAtomicValueWithNameInData("showInPortal"), "true");
+	}
+
+	@Test
+	public void testOrganisationNotRoot() {
+		rowFromDb.put("type_code", "unit");
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("rootOrganisation"), "false");
+	}
+
+	@Test
+	public void testOrganisationRoot() {
+		rowFromDb.put("type_code", "root");
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertFalse(organisation.containsChildWithNameInData("organisationType"));
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("rootOrganisation"), "true");
 	}
 }
