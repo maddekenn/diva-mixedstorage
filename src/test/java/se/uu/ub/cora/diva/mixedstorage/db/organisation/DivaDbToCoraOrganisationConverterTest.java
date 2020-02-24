@@ -381,4 +381,73 @@ public class DivaDbToCoraOrganisationConverterTest {
 		DataGroup organisation = converter.fromMap(rowFromDb);
 		assertEquals(organisation.getFirstAtomicValueWithNameInData("closedDate"), "2018-12-31");
 	}
+
+	@Test
+	public void testOrganisationLibrisIdMissing() {
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertFalse(organisation.containsChildWithNameInData("librisId"));
+	}
+
+	@Test
+	public void testOrganisationLibrisIdIsNull() {
+		rowFromDb.put("libris_code", null);
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertFalse(organisation.containsChildWithNameInData("librisId"));
+	}
+
+	@Test
+	public void testOrganisationLibrisIdIsEmpty() {
+		rowFromDb.put("libris_code", "");
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertFalse(organisation.containsChildWithNameInData("librisId"));
+	}
+
+	@Test
+	public void testOrganisationLibrisId() {
+		rowFromDb.put("libris_code", "uuLibrisCode");
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("librisId"), "uuLibrisCode");
+	}
+
+	@Test
+	public void testOrganisationShowInDefenceFalse() {
+		rowFromDb.put("show_in_defence", false);
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("defence"), "false");
+	}
+
+	@Test
+	public void testOrganisationShowInDefenceTrue() {
+		rowFromDb.put("show_in_defence", true);
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("defence"), "true");
+	}
+
+	@Test
+	public void testOrganisationTopLevelFalse() {
+		rowFromDb.put("top_level", false);
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("topLevel"), "false");
+	}
+
+	@Test
+	public void testOrganisationTopLevelTrue() {
+		rowFromDb.put("top_level", true);
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("topLevel"), "true");
+	}
+
+	@Test
+	public void testOrganisationShowInPortalFalse() {
+		rowFromDb.put("show_in_portal", false);
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("showInPortal"), "false");
+	}
+
+	@Test
+	public void testOrganisationShowInPortalTrue() {
+		rowFromDb.put("show_in_portal", true);
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("showInPortal"), "true");
+	}
 }

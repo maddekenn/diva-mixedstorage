@@ -19,10 +19,10 @@
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
 public enum OrganisationAtomicColumns {
-	// NAME("organisation_name", "organisationName", "string"),
 	CLOSED_DATE("closed_date", "closedDate", "date"), ORGANISATION_CODE("organisation_code",
 			"organisationCode", "string"), ORGANISATION_NUMBER("orgnumber", "organisationNumber",
-					"string"), URL("organisation_homepage", "URL", "string");
+					"string"), URL("organisation_homepage", "URL",
+							"string"), LIBRIS_ID("libris_code", "librisId", "string");
 
 	public final String dbName;
 	public final String coraName;
