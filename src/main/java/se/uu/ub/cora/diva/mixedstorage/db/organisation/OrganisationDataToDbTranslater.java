@@ -60,9 +60,11 @@ public class OrganisationDataToDbTranslater implements DataToDbTranslater {
 		addOrganisationNameToColumns();
 		addAtomicValuesToColumns();
 		addEligible();
+		addShowInPortal();
+		addShowInDefence();
+		addTopLevel();
 		values.put("last_updated", getCurrentTimestamp());
-		Object typeId = getTypeCodeForOrganisationType();
-		values.put("organisation_type_id", typeId);
+		addOrgansiationType();
 		return values;
 	}
 
@@ -124,6 +126,28 @@ public class OrganisationDataToDbTranslater implements DataToDbTranslater {
 				|| "no".equals(dataGroup.getFirstAtomicValueWithNameInData("eligible"));
 	}
 
+	private void addShowInPortal() {
+		translateStringToBooleanAndAddToValues("showInPortal", "show_in_portal");
+	}
+
+	private boolean booleanValueExistsAndIsTrue(String nameInData) {
+		return dataGroup.containsChildWithNameInData(nameInData)
+				&& "true".equals(dataGroup.getFirstAtomicValueWithNameInData(nameInData));
+	}
+
+	private void addShowInDefence() {
+		translateStringToBooleanAndAddToValues("defence", "show_in_defence");
+	}
+
+	private void translateStringToBooleanAndAddToValues(String nameInData, String columnName) {
+		boolean booleanValue = booleanValueExistsAndIsTrue(nameInData);
+		values.put(columnName, booleanValue);
+	}
+
+	private void addTopLevel() {
+		translateStringToBooleanAndAddToValues("topLevel", "top_level");
+	}
+
 	private Timestamp getCurrentTimestamp() {
 		java.util.Date today = new java.util.Date();
 		long time = today.getTime();
@@ -131,15 +155,26 @@ public class OrganisationDataToDbTranslater implements DataToDbTranslater {
 
 	}
 
+	private void addOrgansiationType() {
+		boolean isRootOrganisation = booleanValueExistsAndIsTrue("rootOrganisation");
+		Object typeId = isRootOrganisation ? 49 : getTypeCodeForOrganisationType();
+		values.put("organisation_type_id", typeId);
+	}
+
 	private Object getTypeCodeForOrganisationType() {
-		Map<String, Object> conditionsForReadType = new HashMap<>();
-		conditionsForReadType.put("organisation_type_code",
-				dataGroup.getFirstAtomicValueWithNameInData("organisationType"));
+		Map<String, Object> conditionsForReadType = createConditionsForReadingType();
 
 		Map<String, Object> organisationTypeRow = recordReader
 				.readOneRowFromDbUsingTableAndConditions("organisation_type",
 						conditionsForReadType);
 		return organisationTypeRow.get("organisation_type_id");
+	}
+
+	private Map<String, Object> createConditionsForReadingType() {
+		Map<String, Object> conditionsForReadType = new HashMap<>();
+		conditionsForReadType.put("organisation_type_code",
+				dataGroup.getFirstAtomicValueWithNameInData("organisationType"));
+		return conditionsForReadType;
 	}
 
 	@Override

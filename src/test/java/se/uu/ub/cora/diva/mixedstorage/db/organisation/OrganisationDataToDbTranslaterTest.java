@@ -103,6 +103,7 @@ public class OrganisationDataToDbTranslaterTest {
 		dataGroup.addChild(new DataAtomicSpy("organisationCode", "1235"));
 		dataGroup.addChild(new DataAtomicSpy("organisationNumber", "78979-45654"));
 		dataGroup.addChild(new DataAtomicSpy("URL", "www.someaddress.se"));
+		dataGroup.addChild(new DataAtomicSpy("librisId", "someLibrisId"));
 
 		translater.translate(dataGroup);
 
@@ -114,6 +115,7 @@ public class OrganisationDataToDbTranslaterTest {
 		assertEquals(translater.getValues().get("organisation_code"), "1235");
 		assertEquals(translater.getValues().get("orgnumber"), "78979-45654");
 		assertEquals(translater.getValues().get("organisation_homepage"), "www.someaddress.se");
+		assertEquals(translater.getValues().get("libris_code"), "someLibrisId");
 	}
 
 	@Test
@@ -136,7 +138,7 @@ public class OrganisationDataToDbTranslaterTest {
 
 		translater.translate(dataGroup);
 		assertEquals(translater.getConditions().size(), 1);
-		assertEquals(translater.getValues().size(), 9);
+		assertEquals(translater.getValues().size(), 13);
 		assertEquals(translater.getConditions().get("organisation_id"), 45);
 		assertEquals(translater.getValues().get("organisation_name"), "someChangedName");
 		Timestamp lastUpdated = (Timestamp) translater.getValues().get("last_updated");
@@ -148,7 +150,7 @@ public class OrganisationDataToDbTranslaterTest {
 
 		translater.translate(dataGroup2);
 		assertEquals(translater.getConditions().size(), 1);
-		assertEquals(translater.getValues().size(), 9);
+		assertEquals(translater.getValues().size(), 13);
 
 		assertEquals(translater.getConditions().get("organisation_id"), 4500);
 		assertEquals(translater.getValues().get("organisation_name"), "someOtherChangedName");
@@ -189,12 +191,85 @@ public class OrganisationDataToDbTranslaterTest {
 	}
 
 	@Test
+	public void testOrganisationShowInPortalTrue() {
+		DataGroup dataGroup = createDataGroupAddChildWithNameInDataAndValue("showInPortal", "true");
+
+		translater.translate(dataGroup);
+		assertEquals(translater.getConditions().get("organisation_id"), 45);
+		assertEquals(translater.getValues().get("organisation_name"), "someChangedName");
+		assertEquals(translater.getValues().get("show_in_portal"), true);
+	}
+
+	private DataGroup createDataGroupAddChildWithNameInDataAndValue(String nameInData,
+			String value) {
+		DataGroup dataGroup = createDataGroupWithId("45");
+		dataGroup.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
+		dataGroup.addChild(new DataAtomicSpy(nameInData, value));
+		return dataGroup;
+	}
+
+	@Test
+	public void testOrganisationShowInPortalFalse() {
+		DataGroup dataGroup = createDataGroupAddChildWithNameInDataAndValue("showInPortal",
+				"false");
+
+		translater.translate(dataGroup);
+		assertEquals(translater.getConditions().get("organisation_id"), 45);
+		assertEquals(translater.getValues().get("organisation_name"), "someChangedName");
+		assertEquals(translater.getValues().get("show_in_portal"), false);
+	}
+
+	@Test
+	public void testOrganisationShowInDefenceTrue() {
+		DataGroup dataGroup = createDataGroupAddChildWithNameInDataAndValue("defence", "true");
+
+		translater.translate(dataGroup);
+		assertEquals(translater.getConditions().get("organisation_id"), 45);
+		assertEquals(translater.getValues().get("organisation_name"), "someChangedName");
+		assertEquals(translater.getValues().get("show_in_defence"), true);
+	}
+
+	@Test
+	public void testOrganisationShowInDefenceFalse() {
+		DataGroup dataGroup = createDataGroupAddChildWithNameInDataAndValue("defence", "false");
+
+		translater.translate(dataGroup);
+		assertEquals(translater.getConditions().get("organisation_id"), 45);
+		assertEquals(translater.getValues().get("organisation_name"), "someChangedName");
+		assertEquals(translater.getValues().get("show_in_defence"), false);
+	}
+
+	@Test
+	public void testOrganisationTopLevelTrue() {
+		DataGroup dataGroup = createDataGroupAddChildWithNameInDataAndValue("topLevel", "true");
+
+		translater.translate(dataGroup);
+		assertEquals(translater.getConditions().get("organisation_id"), 45);
+		assertEquals(translater.getValues().get("organisation_name"), "someChangedName");
+		assertEquals(translater.getValues().get("top_level"), true);
+	}
+
+	@Test
+	public void testOrganisationTopLevelFalse() {
+		DataGroup dataGroup = createDataGroupAddChildWithNameInDataAndValue("topLevel", "false");
+
+		translater.translate(dataGroup);
+		assertEquals(translater.getConditions().get("organisation_id"), 45);
+		assertEquals(translater.getValues().get("organisation_name"), "someChangedName");
+		assertEquals(translater.getValues().get("top_level"), false);
+	}
+
+	@Test
 	public void testOrganisationType() {
 		DataGroup dataGroup = createDataGroupWithId("45");
 		dataGroup.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
 
 		translater.translate(dataGroup);
 		assertEquals(translater.getConditions().get("organisation_id"), 45);
+		assertOrgTypeIsReadFromDbAndUsed();
+	}
+
+	private void assertOrgTypeIsReadFromDbAndUsed() {
 		assertEquals(recordReader.usedTableNames.size(), 1);
 		assertEquals(recordReader.usedTableNames.get(0), "organisation_type");
 		assertEquals(recordReader.usedConditions.get("organisation_type_code"), "unit");
@@ -202,4 +277,33 @@ public class OrganisationDataToDbTranslaterTest {
 		assertEquals(recordReader.oneRowRead.get("organisation_type_id"),
 				translater.getValues().get("organisation_type_id"));
 	}
+
+	@Test
+	public void testOrganisationRootOrganisationTrueOverridesOrganisationType() {
+		DataGroup dataGroup = createDataGroupAddChildWithNameInDataAndValue("rootOrganisation",
+				"true");
+
+		translater.translate(dataGroup);
+		assertEquals(translater.getConditions().get("organisation_id"), 45);
+		assertEquals(translater.getValues().get("organisation_name"), "someChangedName");
+		assertEquals(translater.getValues().get("organisation_type_id"), 49);
+
+		assertOrgTypeWasNotRead();
+	}
+
+	private void assertOrgTypeWasNotRead() {
+		assertTrue(recordReader.usedTableNames.isEmpty());
+	}
+
+	@Test
+	public void testOrganisationRootOrganisationFalseUsesOrganisationType() {
+		DataGroup dataGroup = createDataGroupAddChildWithNameInDataAndValue("rootOrganisation",
+				"false");
+
+		translater.translate(dataGroup);
+		assertEquals(translater.getConditions().get("organisation_id"), 45);
+		assertEquals(translater.getValues().get("organisation_name"), "someChangedName");
+		assertOrgTypeIsReadFromDbAndUsed();
+	}
+
 }
