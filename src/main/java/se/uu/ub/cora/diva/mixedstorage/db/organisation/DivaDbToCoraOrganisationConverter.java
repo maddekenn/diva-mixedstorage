@@ -66,6 +66,10 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 		possiblyCreateAndAddOrganisationCode();
 		possiblyCreateAndAddURL();
 		possiblyCreateAndAddClosedDate();
+		possiblyCreateAndAddLibrisId();
+		possiblyCreateAndAddShowInDefence();
+		possiblyCreateAndAddTopLevel();
+		possiblyCreateAndAddShowInPortal();
 		return organisation;
 	}
 
@@ -155,8 +159,8 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 	private DataAtomic createAtomicDataUsingColumnNameAndNameInData(String columnName,
 			String nameInData) {
 		String divaOrganisationName = (String) dbRow.get(columnName);
-		return DataAtomicProvider
-				.getDataAtomicUsingNameInDataAndValue(nameInData, divaOrganisationName);
+		return DataAtomicProvider.getDataAtomicUsingNameInDataAndValue(nameInData,
+				divaOrganisationName);
 	}
 
 	private void createAndAddAlternativeName() {
@@ -172,8 +176,22 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 
 	private void createAndAddOrganisationType() {
 		String typeCode = (String) dbRow.get("type_code");
+		String rootValue = typeIsRoot(typeCode) ? "yes" : "no";
+
 		organisation.addChild(DataAtomicProvider
-				.getDataAtomicUsingNameInDataAndValue("organisationType", typeCode));
+				.getDataAtomicUsingNameInDataAndValue("rootOrganisation", rootValue));
+		addOrganisationTypeIfNotRoot(typeCode);
+	}
+
+	private boolean typeIsRoot(String typeCode) {
+		return "root".equals(typeCode);
+	}
+
+	private void addOrganisationTypeIfNotRoot(String typeCode) {
+		if (!typeIsRoot(typeCode)) {
+			organisation.addChild(DataAtomicProvider
+					.getDataAtomicUsingNameInDataAndValue("organisationType", typeCode));
+		}
 	}
 
 	private void possiblyCreateAndAddEligibility() {
@@ -257,4 +275,33 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 		return dateFormat.format(dbClosedDate);
 	}
 
+	private void possiblyCreateAndAddLibrisId() {
+		possiblyAddAtomicValueUsingKeyAndNameInData("libris_code", "librisId");
+	}
+
+	private void possiblyCreateAndAddShowInDefence() {
+		possiblyAddBooleanValueUsingColumnNameAndNameInData("show_in_defence", "showInDefence");
+	}
+
+	private void possiblyAddBooleanValueUsingColumnNameAndNameInData(String dbColumnName,
+			String nameInData) {
+		Object showInDefence = dbRow.get(dbColumnName);
+		if (showInDefence != null) {
+			createAndAddShowInDefence((boolean) showInDefence, nameInData);
+		}
+	}
+
+	private void createAndAddShowInDefence(boolean showInDefence, String nameInData) {
+		String stringBooleanValue = showInDefence ? "yes" : "no";
+		organisation.addChild(DataAtomicProvider.getDataAtomicUsingNameInDataAndValue(nameInData,
+				stringBooleanValue));
+	}
+
+	private void possiblyCreateAndAddTopLevel() {
+		possiblyAddBooleanValueUsingColumnNameAndNameInData("top_level", "topLevel");
+	}
+
+	private void possiblyCreateAndAddShowInPortal() {
+		possiblyAddBooleanValueUsingColumnNameAndNameInData("show_in_portal", "showInPortal");
+	}
 }

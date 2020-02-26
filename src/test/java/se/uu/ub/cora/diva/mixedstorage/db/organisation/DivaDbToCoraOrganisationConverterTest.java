@@ -242,23 +242,23 @@ public class DivaDbToCoraOrganisationConverterTest {
 		rowFromDb.put("country_code", "fi");
 
 		DataGroup organisation = converter.fromMap(rowFromDb);
-		DataAtomicSpy factoredDataAtomicForCity = getFactoredDataAtomicByNumber(17);
+		DataAtomicSpy factoredDataAtomicForCity = getFactoredDataAtomicByNumber(18);
 		assertEquals(factoredDataAtomicForCity.nameInData, "city");
 		assertEquals(factoredDataAtomicForCity.value, "uppsala");
 
-		DataAtomicSpy factoredDataAtomicForStreet = getFactoredDataAtomicByNumber(18);
+		DataAtomicSpy factoredDataAtomicForStreet = getFactoredDataAtomicByNumber(19);
 		assertEquals(factoredDataAtomicForStreet.nameInData, "street");
 		assertEquals(factoredDataAtomicForStreet.value, "Övre slottsgatan 1");
 
-		DataAtomicSpy factoredDataAtomicForBox = getFactoredDataAtomicByNumber(19);
+		DataAtomicSpy factoredDataAtomicForBox = getFactoredDataAtomicByNumber(20);
 		assertEquals(factoredDataAtomicForBox.nameInData, "box");
 		assertEquals(factoredDataAtomicForBox.value, "Box5435");
 
-		DataAtomicSpy factoredDataAtomicForPostcode = getFactoredDataAtomicByNumber(20);
+		DataAtomicSpy factoredDataAtomicForPostcode = getFactoredDataAtomicByNumber(21);
 		assertEquals(factoredDataAtomicForPostcode.nameInData, "postcode");
 		assertEquals(factoredDataAtomicForPostcode.value, "345 34");
 
-		DataAtomicSpy factoredDataAtomicForCountry = getFactoredDataAtomicByNumber(21);
+		DataAtomicSpy factoredDataAtomicForCountry = getFactoredDataAtomicByNumber(22);
 		assertEquals(factoredDataAtomicForCountry.nameInData, "country");
 		assertEquals(factoredDataAtomicForCountry.value, "FI");
 
@@ -380,5 +380,89 @@ public class DivaDbToCoraOrganisationConverterTest {
 		rowFromDb.put("closed_date", date);
 		DataGroup organisation = converter.fromMap(rowFromDb);
 		assertEquals(organisation.getFirstAtomicValueWithNameInData("closedDate"), "2018-12-31");
+	}
+
+	@Test
+	public void testOrganisationLibrisIdMissing() {
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertFalse(organisation.containsChildWithNameInData("librisId"));
+	}
+
+	@Test
+	public void testOrganisationLibrisIdIsNull() {
+		rowFromDb.put("libris_code", null);
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertFalse(organisation.containsChildWithNameInData("librisId"));
+	}
+
+	@Test
+	public void testOrganisationLibrisIdIsEmpty() {
+		rowFromDb.put("libris_code", "");
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertFalse(organisation.containsChildWithNameInData("librisId"));
+	}
+
+	@Test
+	public void testOrganisationLibrisId() {
+		rowFromDb.put("libris_code", "uuLibrisCode");
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("librisId"), "uuLibrisCode");
+	}
+
+	@Test
+	public void testOrganisationShowInDefenceFalse() {
+		rowFromDb.put("show_in_defence", false);
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("showInDefence"), "no");
+	}
+
+	@Test
+	public void testOrganisationShowInDefenceTrue() {
+		rowFromDb.put("show_in_defence", true);
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("showInDefence"), "yes");
+	}
+
+	@Test
+	public void testOrganisationTopLevelFalse() {
+		rowFromDb.put("top_level", false);
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("topLevel"), "no");
+	}
+
+	@Test
+	public void testOrganisationTopLevelTrue() {
+		rowFromDb.put("top_level", true);
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("topLevel"), "yes");
+	}
+
+	@Test
+	public void testOrganisationShowInPortalFalse() {
+		rowFromDb.put("show_in_portal", false);
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("showInPortal"), "no");
+	}
+
+	@Test
+	public void testOrganisationShowInPortalTrue() {
+		rowFromDb.put("show_in_portal", true);
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("showInPortal"), "yes");
+	}
+
+	@Test
+	public void testOrganisationNotRoot() {
+		rowFromDb.put("type_code", "unit");
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("rootOrganisation"), "no");
+	}
+
+	@Test
+	public void testOrganisationRoot() {
+		rowFromDb.put("type_code", "root");
+		DataGroup organisation = converter.fromMap(rowFromDb);
+		assertFalse(organisation.containsChildWithNameInData("organisationType"));
+		assertEquals(organisation.getFirstAtomicValueWithNameInData("rootOrganisation"), "yes");
 	}
 }
