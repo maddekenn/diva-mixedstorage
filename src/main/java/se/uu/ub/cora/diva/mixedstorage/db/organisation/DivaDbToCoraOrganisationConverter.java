@@ -176,7 +176,7 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 
 	private void createAndAddOrganisationType() {
 		String typeCode = (String) dbRow.get("type_code");
-		String rootValue = typeIsRoot(typeCode) ? "true" : "false";
+		String rootValue = typeIsRoot(typeCode) ? "yes" : "no";
 
 		organisation.addChild(DataAtomicProvider
 				.getDataAtomicUsingNameInDataAndValue("rootOrganisation", rootValue));
@@ -280,7 +280,7 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 	}
 
 	private void possiblyCreateAndAddShowInDefence() {
-		possiblyAddBooleanValueUsingColumnNameAndNameInData("show_in_defence", "defence");
+		possiblyAddBooleanValueUsingColumnNameAndNameInData("show_in_defence", "showInDefence");
 	}
 
 	private void possiblyAddBooleanValueUsingColumnNameAndNameInData(String dbColumnName,
@@ -292,7 +292,7 @@ public class DivaDbToCoraOrganisationConverter implements DivaDbToCoraConverter 
 	}
 
 	private void createAndAddShowInDefence(boolean showInDefence, String nameInData) {
-		String stringBooleanValue = showInDefence ? "true" : "false";
+		String stringBooleanValue = showInDefence ? "yes" : "no";
 		organisation.addChild(DataAtomicProvider.getDataAtomicUsingNameInDataAndValue(nameInData,
 				stringBooleanValue));
 	}

@@ -30,6 +30,7 @@ import se.uu.ub.cora.sqldatabase.RecordReader;
 
 public class OrganisationDataToDbTranslater implements DataToDbTranslater {
 
+	private static final int ROOT_ORGANISATION_TYPE_ID = 49;
 	private Map<String, Object> values = new HashMap<>();
 	private Map<String, Object> conditions = new HashMap<>(1);
 	private DataGroup dataGroup;
@@ -132,11 +133,11 @@ public class OrganisationDataToDbTranslater implements DataToDbTranslater {
 
 	private boolean booleanValueExistsAndIsTrue(String nameInData) {
 		return dataGroup.containsChildWithNameInData(nameInData)
-				&& "true".equals(dataGroup.getFirstAtomicValueWithNameInData(nameInData));
+				&& "yes".equals(dataGroup.getFirstAtomicValueWithNameInData(nameInData));
 	}
 
 	private void addShowInDefence() {
-		translateStringToBooleanAndAddToValues("defence", "show_in_defence");
+		translateStringToBooleanAndAddToValues("showInDefence", "show_in_defence");
 	}
 
 	private void translateStringToBooleanAndAddToValues(String nameInData, String columnName) {
@@ -157,7 +158,8 @@ public class OrganisationDataToDbTranslater implements DataToDbTranslater {
 
 	private void addOrgansiationType() {
 		boolean isRootOrganisation = booleanValueExistsAndIsTrue("rootOrganisation");
-		Object typeId = isRootOrganisation ? 49 : getTypeCodeForOrganisationType();
+		Object typeId = isRootOrganisation ? ROOT_ORGANISATION_TYPE_ID
+				: getTypeCodeForOrganisationType();
 		values.put("organisation_type_id", typeId);
 	}
 
