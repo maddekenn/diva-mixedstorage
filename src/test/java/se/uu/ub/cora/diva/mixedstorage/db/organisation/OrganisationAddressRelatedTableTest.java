@@ -148,19 +148,21 @@ public class OrganisationAddressRelatedTableTest {
 			DbStatement dbStatement) {
 		assertEquals(dbStatement.getTableName(), "organisation_address");
 		Map<String, Object> values = dbStatement.getValues();
-		assertEquals(values.get("city"), getAtomicValueOrEmptyString(organisation, "city"));
-		assertEquals(values.get("street"), getAtomicValueOrEmptyString(organisation, "street"));
-		assertEquals(values.get("postbox"), getAtomicValueOrEmptyString(organisation, "box"));
-		assertEquals(values.get("postnumber"),
-				getAtomicValueOrEmptyString(organisation, "postcode"));
-		String countryCode = getAtomicValueOrEmptyString(organisation, "country");
-		assertEquals(values.get("country_code"), countryCode.toLowerCase());
+		assertEquals(values.get("city"), getAtomicValueOrNull(organisation, "city"));
+		assertEquals(values.get("street"), getAtomicValueOrNull(organisation, "street"));
+		assertEquals(values.get("postbox"), getAtomicValueOrNull(organisation, "box"));
+		assertEquals(values.get("postnumber"), getAtomicValueOrNull(organisation, "postcode"));
+		String countryCode = getAtomicValueOrNull(organisation, "country");
+		if (null != countryCode) {
+			countryCode = countryCode.toLowerCase();
+		}
+		assertEquals(values.get("country_code"), countryCode);
 	}
 
-	private String getAtomicValueOrEmptyString(DataGroup organisation, String nameInData) {
+	private String getAtomicValueOrNull(DataGroup organisation, String nameInData) {
 		return organisation.containsChildWithNameInData(nameInData)
 				? organisation.getFirstAtomicValueWithNameInData(nameInData)
-				: "";
+				: null;
 	}
 
 	@Test

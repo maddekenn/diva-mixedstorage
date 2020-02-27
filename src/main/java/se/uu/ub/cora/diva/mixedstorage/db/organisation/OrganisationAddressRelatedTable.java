@@ -141,19 +141,26 @@ public class OrganisationAddressRelatedTable implements RelatedTable {
 	private Map<String, Object> createValuesForAddressInsertOrUpdate(DataGroup organisation) {
 		Map<String, Object> values = new HashMap<>();
 		values.put("last_updated", getCurrentTimestamp());
-		values.put(CITY, getAtomicValueOrEmptyString(organisation, CITY));
-		values.put(STREET, getAtomicValueOrEmptyString(organisation, STREET));
-		values.put("postbox", getAtomicValueOrEmptyString(organisation, "box"));
-		values.put("postnumber", getAtomicValueOrEmptyString(organisation, "postcode"));
-		values.put("country_code",
-				getAtomicValueOrEmptyString(organisation, "country").toLowerCase());
+		values.put(CITY, getAtomicValueOrNull(organisation, CITY));
+		values.put(STREET, getAtomicValueOrNull(organisation, STREET));
+		values.put("postbox", getAtomicValueOrNull(organisation, "box"));
+		values.put("postnumber", getAtomicValueOrNull(organisation, "postcode"));
+		values.put("country_code", getCountryCode(organisation));
 		return values;
 	}
 
-	private String getAtomicValueOrEmptyString(DataGroup organisation, String nameInData) {
+	private String getAtomicValueOrNull(DataGroup organisation, String nameInData) {
 		return organisation.containsChildWithNameInData(nameInData)
 				? organisation.getFirstAtomicValueWithNameInData(nameInData)
-				: "";
+				: null;
+	}
+
+	private String getCountryCode(DataGroup organisation) {
+		String countryCode = getAtomicValueOrNull(organisation, "country");
+		if (null != countryCode) {
+			countryCode = countryCode.toLowerCase();
+		}
+		return countryCode;
 	}
 
 	private Timestamp getCurrentTimestamp() {
