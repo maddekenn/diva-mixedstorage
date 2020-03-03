@@ -45,7 +45,6 @@ import se.uu.ub.cora.connection.ContextConnectionProviderImp;
 import se.uu.ub.cora.data.DataGroupFactory;
 import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDataToDbTranslaterFactoryImp;
-import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbRecordStorage;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbUpdaterFactoryImp;
@@ -193,13 +192,11 @@ public class DivaMixedRecordStorageProviderTest {
 
 		RecordReaderFactoryImp recordReaderFactory = assertCorrectRecordReaderFactory(dbStorage);
 
-		assertTrue(dbStorage.getConverterFactory() instanceof DivaDbToCoraConverterFactoryImp);
 		assertCorrectRecordStorageForOneTypeFactory(dbStorage);
 
 		DivaDbFactoryImp divaDbToCoraFactory = (DivaDbFactoryImp) dbStorage
 				.getDivaDbToCoraFactory();
 		assertSame(divaDbToCoraFactory.getReaderFactory(), recordReaderFactory);
-		assertSame(divaDbToCoraFactory.getConverterFactory(), dbStorage.getConverterFactory());
 
 	}
 
@@ -234,8 +231,7 @@ public class DivaMixedRecordStorageProviderTest {
 				relatedTableFactory.getRecordCreatorFactory() instanceof RecordCreatorFactoryImp);
 	}
 
-	private RecordReaderFactoryImp assertCorrectRecordReaderFactory(
-			DivaDbRecordStorage dbStorage) {
+	private RecordReaderFactoryImp assertCorrectRecordReaderFactory(DivaDbRecordStorage dbStorage) {
 		RecordReaderFactoryImp recordReaderFactory = (RecordReaderFactoryImp) dbStorage
 				.getRecordReaderFactory();
 

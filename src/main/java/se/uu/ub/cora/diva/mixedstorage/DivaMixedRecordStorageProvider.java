@@ -130,9 +130,8 @@ public class DivaMixedRecordStorageProvider
 		DivaDbUpdaterFactoryImp recordStorageForOneTypeFactory = createRecordStorageForOneTypeFactory(
 				recordReaderFactory);
 		return DivaDbRecordStorage
-				.usingRecordReaderFactoryConverterFactoryDivaFactoryAndDivaDbUpdaterFactory(
-						recordReaderFactory, divaDbToCoraConverterFactory, divaDbToCoraFactory,
-						recordStorageForOneTypeFactory);
+				.usingRecordReaderFactoryDivaFactoryAndDivaDbUpdaterFactory(
+						recordReaderFactory, divaDbToCoraFactory, recordStorageForOneTypeFactory);
 	}
 
 	private RecordReaderFactoryImp createRecordReaderFactory() {

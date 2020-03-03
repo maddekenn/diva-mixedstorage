@@ -21,9 +21,9 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
-import java.util.List;
 import java.util.Map;
 
 import org.testng.annotations.BeforeMethod;
@@ -41,19 +41,18 @@ public class DivaDbRecordStorageTest {
 	private DivaDbRecordStorage divaRecordStorage;
 	private DivaDbToCoraConverterFactorySpy converterFactorySpy;
 	private RecordReaderFactorySpy recordReaderFactorySpy;
-	private DivaDbFactorySpy divaDbCreatorFactorySpy;
+	private DivaDbFactorySpy divaDbFactorySpy;
 	private DivaDbUpdaterFactorySpy divaDbUpdaterFactorySpy;
 
 	@BeforeMethod
 	public void BeforeMethod() {
 		converterFactorySpy = new DivaDbToCoraConverterFactorySpy();
 		recordReaderFactorySpy = new RecordReaderFactorySpy();
-		divaDbCreatorFactorySpy = new DivaDbFactorySpy();
+		divaDbFactorySpy = new DivaDbFactorySpy();
 		divaDbUpdaterFactorySpy = new DivaDbUpdaterFactorySpy();
 		divaRecordStorage = DivaDbRecordStorage
-				.usingRecordReaderFactoryConverterFactoryDivaFactoryAndDivaDbUpdaterFactory(
-						recordReaderFactorySpy, converterFactorySpy, divaDbCreatorFactorySpy,
-						divaDbUpdaterFactorySpy);
+				.usingRecordReaderFactoryDivaFactoryAndDivaDbUpdaterFactory(
+						recordReaderFactorySpy, divaDbFactorySpy, divaDbUpdaterFactorySpy);
 	}
 
 	@Test
@@ -69,14 +68,14 @@ public class DivaDbRecordStorageTest {
 	@Test
 	public void testCallToDivaDbToCoraFactory() throws Exception {
 		divaRecordStorage.read(ORGANISATION_TYPE, "someId");
-		assertTrue(divaDbCreatorFactorySpy.factorWasCalled);
-		assertEquals(divaDbCreatorFactorySpy.type, "divaOrganisation");
+		assertTrue(divaDbFactorySpy.factorWasCalled);
+		assertEquals(divaDbFactorySpy.type, "divaOrganisation");
 	}
 
 	@Test
 	public void testReadOrganisationMakeCorrectCalls() throws Exception {
 		divaRecordStorage.read(ORGANISATION_TYPE, "someId");
-		DivaDbSpy factored = divaDbCreatorFactorySpy.factored;
+		DivaDbSpy factored = divaDbFactorySpy.factored;
 		assertEquals(factored.type, ORGANISATION_TYPE);
 		assertEquals(factored.id, "someId");
 	}
@@ -84,7 +83,7 @@ public class DivaDbRecordStorageTest {
 	@Test
 	public void testOrganisationFromDivaDbToCoraIsReturnedFromRead() throws Exception {
 		DataGroup readOrganisation = divaRecordStorage.read(ORGANISATION_TYPE, "someId");
-		DivaDbSpy factored = divaDbCreatorFactorySpy.factored;
+		DivaDbSpy factored = divaDbFactorySpy.factored;
 		assertEquals(readOrganisation, factored.dataGroup);
 	}
 
@@ -107,7 +106,7 @@ public class DivaDbRecordStorageTest {
 	}
 
 	@Test
-	public void testUpndateOrganisationFactorOrganisationDbRecordStorageForOneType()
+	public void testUpdateOrganisationFactorOrganisationDbRecordStorageForOneType()
 			throws Exception {
 		DataGroup record = new DataGroupSpy("organisation");
 		record.addChild(new DataAtomicSpy("organisationName", "someChangedName"));
@@ -151,60 +150,37 @@ public class DivaDbRecordStorageTest {
 	}
 
 	@Test
-	public void testReadOrganisationListConverterIsFactored() throws Exception {
-		divaRecordStorage.readList(ORGANISATION_TYPE, new DataGroupSpy("filter"));
-		DivaDbToCoraConverter divaDbToCoraConverter = converterFactorySpy.factoredConverters.get(0);
-		assertNotNull(divaDbToCoraConverter);
-	}
+	public void testReadOrganisationListAllIdsAreReadFromDb() throws Exception {
+		RecordReaderFactoryForListSpy recordReaderFactoryForList = new RecordReaderFactoryForListSpy();
+		divaRecordStorage = DivaDbRecordStorage
+				.usingRecordReaderFactoryDivaFactoryAndDivaDbUpdaterFactory(
+						recordReaderFactoryForList, divaDbFactorySpy, divaDbUpdaterFactorySpy);
 
-	@Test
-	public void testReadOrganisationListConverterIsCalledWithDataFromDbStorage() throws Exception {
-		divaRecordStorage.readList(ORGANISATION_TYPE, new DataGroupSpy("filter"));
-		RecordReaderSpy recordReader = recordReaderFactorySpy.factored;
-		DivaDbToCoraConverterSpy divaDbToCoraConverter = (DivaDbToCoraConverterSpy) converterFactorySpy.factoredConverters
-				.get(0);
-		assertNotNull(divaDbToCoraConverter.mapToConvert);
-		assertEquals(recordReader.returnedList.get(0), divaDbToCoraConverter.mapToConvert);
-	}
-
-	@Test
-	public void testReadOrganisationListConverteredIsAddedToList() throws Exception {
-		StorageReadResult spiderReadresult = divaRecordStorage.readList(ORGANISATION_TYPE,
+		StorageReadResult readList = divaRecordStorage.readList(ORGANISATION_TYPE,
 				new DataGroupSpy("filter"));
-		List<DataGroup> readCountryList = spiderReadresult.listOfDataGroups;
-		RecordReaderSpy recordReader = recordReaderFactorySpy.factored;
-		DivaDbToCoraConverterSpy divaDbToCoraConverter = (DivaDbToCoraConverterSpy) converterFactorySpy.factoredConverters
-				.get(0);
-		assertEquals(recordReader.returnedList.size(), 1);
-		assertEquals(recordReader.returnedList.get(0), divaDbToCoraConverter.mapToConvert);
-		assertEquals(readCountryList.get(0), divaDbToCoraConverter.convertedDbDataGroup);
+
+		RecordReaderForListSpy recordReader = recordReaderFactoryForList.factored;
+
+		assertIdFromListIsSentToReaderUsingIndex(recordReader, 0);
+		assertIdFromListIsSentToReaderUsingIndex(recordReader, 1);
+		assertIdFromListIsSentToReaderUsingIndex(recordReader, 2);
+
+		assertReadRecordIsAddedToResultUsingIndex(readList, 0);
+		assertReadRecordIsAddedToResultUsingIndex(readList, 1);
+		assertReadRecordIsAddedToResultUsingIndex(readList, 2);
 	}
 
-	@Test
-	public void testReadOrganisationListConverteredMoreThanOneIsAddedToList() throws Exception {
-		recordReaderFactorySpy.noOfRecordsToReturn = 3;
-		StorageReadResult storageReadResult = divaRecordStorage.readList(ORGANISATION_TYPE,
-				new DataGroupSpy("filter"));
-		List<DataGroup> readOrganisationList = storageReadResult.listOfDataGroups;
-		RecordReaderSpy recordReader = recordReaderFactorySpy.factored;
+	private void assertIdFromListIsSentToReaderUsingIndex(RecordReaderForListSpy recordReader,
+			int index) {
+		DivaDbSpy factoredDbSpy = divaDbFactorySpy.factoredList.get(index);
+		String idFromReadRecord = (String) recordReader.returnedList.get(index).get("id");
+		assertEquals(idFromReadRecord, factoredDbSpy.id);
+		assertEquals(divaDbFactorySpy.factoredList.size(), 3);
+	}
 
-		assertEquals(recordReader.returnedList.size(), 3);
-
-		DivaDbToCoraConverterSpy divaDbToCoraConverter = (DivaDbToCoraConverterSpy) converterFactorySpy.factoredConverters
-				.get(0);
-		assertEquals(recordReader.returnedList.get(0), divaDbToCoraConverter.mapToConvert);
-		assertEquals(readOrganisationList.get(0), divaDbToCoraConverter.convertedDbDataGroup);
-
-		DivaDbToCoraConverterSpy divaDbToCoraConverter2 = (DivaDbToCoraConverterSpy) converterFactorySpy.factoredConverters
-				.get(1);
-		assertEquals(recordReader.returnedList.get(1), divaDbToCoraConverter2.mapToConvert);
-		assertEquals(readOrganisationList.get(1), divaDbToCoraConverter2.convertedDbDataGroup);
-
-		DivaDbToCoraConverterSpy divaDbToCoraConverter3 = (DivaDbToCoraConverterSpy) converterFactorySpy.factoredConverters
-				.get(2);
-		assertEquals(recordReader.returnedList.get(2), divaDbToCoraConverter3.mapToConvert);
-		assertEquals(readOrganisationList.get(2), divaDbToCoraConverter3.convertedDbDataGroup);
-
+	private void assertReadRecordIsAddedToResultUsingIndex(StorageReadResult readList, int index) {
+		DivaDbSpy factoredDbSpy = divaDbFactorySpy.factoredList.get(index);
+		assertSame(factoredDbSpy.dataGroup, readList.listOfDataGroups.get(index));
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""

@@ -37,25 +37,21 @@ public class DivaDbRecordStorage implements RecordStorage {
 
 	private static final String DIVA_ORGANISATION = "divaOrganisation";
 	private RecordReaderFactory recordReaderFactory;
-	private DivaDbToCoraConverterFactory converterFactory;
 	private DivaDbFactory divaDbFactory;
 	private DivaDbUpdaterFactory divaDbUpdaterFactory;
 
 	private DivaDbRecordStorage(RecordReaderFactory recordReaderFactory,
-			DivaDbToCoraConverterFactory converterFactory, DivaDbFactory divaDbReaderFactory,
-			DivaDbUpdaterFactory divaDbUpdaterFactory) {
+			DivaDbFactory divaDbReaderFactory, DivaDbUpdaterFactory divaDbUpdaterFactory) {
 		this.recordReaderFactory = recordReaderFactory;
-		this.converterFactory = converterFactory;
 		this.divaDbFactory = divaDbReaderFactory;
 		this.divaDbUpdaterFactory = divaDbUpdaterFactory;
 
 	}
 
-	public static DivaDbRecordStorage usingRecordReaderFactoryConverterFactoryDivaFactoryAndDivaDbUpdaterFactory(
-			RecordReaderFactory recordReaderFactory, DivaDbToCoraConverterFactory converterFactory,
-			DivaDbFactory divaDbFactory, DivaDbUpdaterFactory divaDbUpdaterFactory) {
-		return new DivaDbRecordStorage(recordReaderFactory, converterFactory, divaDbFactory,
-				divaDbUpdaterFactory);
+	public static DivaDbRecordStorage usingRecordReaderFactoryDivaFactoryAndDivaDbUpdaterFactory(
+			RecordReaderFactory recordReaderFactory, DivaDbFactory divaDbFactory,
+			DivaDbUpdaterFactory divaDbUpdaterFactory) {
+		return new DivaDbRecordStorage(recordReaderFactory, divaDbFactory, divaDbUpdaterFactory);
 	}
 
 	@Override
@@ -106,7 +102,8 @@ public class DivaDbRecordStorage implements RecordStorage {
 	public StorageReadResult readList(String type, DataGroup filter) {
 		if (DIVA_ORGANISATION.equals(type)) {
 			List<Map<String, Object>> rowsFromDb = readAllFromDb(type);
-			return createStorageReadResultFromDbData(type, rowsFromDb);
+			List<DataGroup> listToReturn = readCompleteOrganisations(rowsFromDb);
+			return createStorageReadResult(listToReturn);
 		}
 		throw NotImplementedException.withMessage("readList is not implemented for type: " + type);
 	}
@@ -116,26 +113,25 @@ public class DivaDbRecordStorage implements RecordStorage {
 		return recordReader.readAllFromTable(type);
 	}
 
-	private StorageReadResult createStorageReadResultFromDbData(String type,
-			List<Map<String, Object>> rowsFromDb) {
-		StorageReadResult storageReadResult = new StorageReadResult();
-		storageReadResult.listOfDataGroups = convertListOfMapsFromDbToDataGroups(type, rowsFromDb);
-		return storageReadResult;
-	}
-
-	private List<DataGroup> convertListOfMapsFromDbToDataGroups(String type,
-			List<Map<String, Object>> readAllFromTable) {
-		List<DataGroup> convertedList = new ArrayList<>(readAllFromTable.size());
-		for (Map<String, Object> map : readAllFromTable) {
-			DataGroup convertedGroup = convertOneMapFromDbToDataGroup(type, map);
-			convertedList.add(convertedGroup);
+	private List<DataGroup> readCompleteOrganisations(List<Map<String, Object>> rowsFromDb) {
+		List<DataGroup> listToReturn = new ArrayList<>(rowsFromDb.size());
+		for (Map<String, Object> map : rowsFromDb) {
+			readCompleteOrganisationAndAddToList(listToReturn, map);
 		}
-		return convertedList;
+		return listToReturn;
 	}
 
-	private DataGroup convertOneMapFromDbToDataGroup(String type, Map<String, Object> readRow) {
-		DivaDbToCoraConverter dbToCoraConverter = converterFactory.factor(type);
-		return dbToCoraConverter.fromMap(readRow);
+	private void readCompleteOrganisationAndAddToList(List<DataGroup> listToReturn,
+			Map<String, Object> map) {
+		String id = (String) map.get("id");
+		DataGroup readOrganisation = read(DIVA_ORGANISATION, id);
+		listToReturn.add(readOrganisation);
+	}
+
+	private StorageReadResult createStorageReadResult(List<DataGroup> listToReturn) {
+		StorageReadResult storageReadResult = new StorageReadResult();
+		storageReadResult.listOfDataGroups = listToReturn;
+		return storageReadResult;
 	}
 
 	@Override
@@ -186,11 +182,6 @@ public class DivaDbRecordStorage implements RecordStorage {
 		} catch (SqlStorageException | DbException e) {
 			throw new RecordNotFoundException("Organisation not found: " + id);
 		}
-	}
-
-	public DivaDbToCoraConverterFactory getConverterFactory() {
-		// needed for test
-		return converterFactory;
 	}
 
 	public RecordReaderFactory getRecordReaderFactory() {
