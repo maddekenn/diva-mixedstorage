@@ -18,6 +18,8 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,16 +53,17 @@ public class DivaDbOrganisationReader implements DivaDbReader {
 	@Override
 	public DataGroup read(String type, String id) {
 		recordReader = getRecordReaderFactory().factor();
-		DataGroup organisation = readAndConvertOrganisationFromDb(type, id);
+		Map<String, Object> readRow = readOneRowFromDbUsingTypeAndId(type, id);
+		DataGroup organisation = convertOneMapFromDbToDataGroup(type, readRow);
 		tryToReadAndConvertParents(id, organisation);
 		tryToReadAndConvertPredecessors(id, organisation);
 		return organisation;
 	}
 
-	private DataGroup readAndConvertOrganisationFromDb(String type, String id) {
-		Map<String, Object> readRow = readOneRowFromDbUsingTypeAndId(type, id);
-		return convertOneMapFromDbToDataGroup(type, readRow);
-	}
+	// private DataGroup readAndConvertOrganisationFromDb(String type, String id) {
+	// Map<String, Object> readRow = readOneRowFromDbUsingTypeAndId(type, id);
+	// return convertOneMapFromDbToDataGroup(type, readRow);
+	// }
 
 	private Map<String, Object> readOneRowFromDbUsingTypeAndId(String type, String id) {
 		Map<String, Object> conditions = new HashMap<>();
@@ -74,35 +77,45 @@ public class DivaDbOrganisationReader implements DivaDbReader {
 	}
 
 	private void tryToReadAndConvertParents(String id, DataGroup organisation) {
-		Map<String, Object> conditions = new HashMap<>();
-		conditions.put("organisation_id", id);
-		List<Map<String, Object>> parents = recordReader
-				.readFromTableUsingConditions("divaOrganisationParent", conditions);
-
-		possiblyConvertParents(organisation, parents);
-	}
-
-	private void possiblyConvertParents(DataGroup organisation, List<Map<String, Object>> parents) {
-		if (collectionContainsData(parents)) {
-			convertAndAddParents(organisation, parents);
+		// TODO: använd DivaDbOrganisationParentReader
+		DivaDbOrganisationParentReader parentReader = new DivaDbOrganisationParentReader(
+				recordReaderFactory, converterFactory);
+		List<DataGroup> convertedParents = parentReader.read("divaOrganisationParent", id);
+		// Map<String, Object> conditions = new HashMap<>();
+		// conditions.put("organisation_id", id);
+		// List<Map<String, Object>> parents = recordReader
+		// .readFromTableUsingConditions("divaOrganisationParent", conditions);
+		//
+		// List<DataGroup> convertedParents = possiblyConvertParents(parents);
+		for (DataGroup convertedParent : convertedParents) {
+			organisation.addChild(convertedParent);
 		}
 	}
 
-	private void convertAndAddParents(DataGroup organisation, List<Map<String, Object>> parents) {
+	private List<DataGroup> possiblyConvertParents(List<Map<String, Object>> parents) {
+		if (collectionContainsData(parents)) {
+			return convertAndAddParents(parents);
+		}
+		return Collections.emptyList();
+	}
+
+	private List<DataGroup> convertAndAddParents(List<Map<String, Object>> parents) {
 		int repeatId = 0;
+		List<DataGroup> convertedParents = new ArrayList<>();
 		for (Map<String, Object> parentValues : parents) {
-			convertAndAddParent(organisation, repeatId, parentValues);
+			DataGroup convertedParent = convertAndAddParent(repeatId, parentValues);
+			convertedParents.add(convertedParent);
 			repeatId++;
 		}
+		return convertedParents;
 	}
 
-	private void convertAndAddParent(DataGroup organisation, int repeatId,
-			Map<String, Object> parentValues) {
+	private DataGroup convertAndAddParent(int repeatId, Map<String, Object> parentValues) {
 		DivaDbToCoraConverter predecessorConverter = getConverterFactory()
 				.factor("divaOrganisationParent");
 		DataGroup parent = predecessorConverter.fromMap(parentValues);
 		parent.setRepeatId(String.valueOf(repeatId));
-		organisation.addChild(parent);
+		return parent;
 	}
 
 	private void tryToReadAndConvertPredecessors(String stringId, DataGroup organisation) {
