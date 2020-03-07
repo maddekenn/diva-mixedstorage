@@ -25,10 +25,12 @@ import java.util.Map;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverter;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactory;
+import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
 public abstract class DivaMultipleRowDbReaderImp {
 
 	protected DivaDbToCoraConverterFactory converterFactory;
+	protected RecordReaderFactory recordReaderFactory;
 
 	protected List<DataGroup> convertToDataGroups(List<Map<String, Object>> readRows) {
 		int repeatId = 0;
@@ -49,5 +51,15 @@ public abstract class DivaMultipleRowDbReaderImp {
 	}
 
 	protected abstract String getTypeToFactorConverter();
+
+	public RecordReaderFactory getRecordReaderFactory() {
+		// needed for test
+		return recordReaderFactory;
+	}
+
+	public DivaDbToCoraConverterFactory getConverterFactory() {
+		// needed for test
+		return converterFactory;
+	}
 
 }

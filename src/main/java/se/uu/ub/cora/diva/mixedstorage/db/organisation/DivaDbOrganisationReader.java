@@ -78,14 +78,15 @@ public class DivaDbOrganisationReader implements DivaDbReader {
 
 	private void tryToReadAndConvertParents(String id, DataGroup organisation) {
 		// TODO: använd DivaDbOrganisationParentReader
-		DivaDbOrganisationParentReader parentReader = new DivaDbOrganisationParentReader(
-				recordReaderFactory, converterFactory);
+		//
+		MultipleRowDbReader parentReader = new MultipleRowDbParentReader(recordReaderFactory,
+				converterFactory);
 		List<DataGroup> convertedParents = parentReader.read("divaOrganisationParent", id);
 		// Map<String, Object> conditions = new HashMap<>();
 		// conditions.put("organisation_id", id);
 		// List<Map<String, Object>> parents = recordReader
 		// .readFromTableUsingConditions("divaOrganisationParent", conditions);
-		//
+
 		// List<DataGroup> convertedParents = possiblyConvertParents(parents);
 		for (DataGroup convertedParent : convertedParents) {
 			organisation.addChild(convertedParent);

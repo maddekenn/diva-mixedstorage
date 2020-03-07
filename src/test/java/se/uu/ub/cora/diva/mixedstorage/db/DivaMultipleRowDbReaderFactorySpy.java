@@ -16,14 +16,16 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.diva.mixedstorage.db.organisation;
+package se.uu.ub.cora.diva.mixedstorage.db;
 
-import java.util.List;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.MultipleRowDbReader;
 
-import se.uu.ub.cora.data.DataGroup;
+public class DivaMultipleRowDbReaderFactorySpy implements MultipleRowDbReaderFactory {
 
-public interface DivaMultipleRowDbReader {
-
-	List<DataGroup> read(String type, String id);
+	@Override
+	public MultipleRowDbReader factor(String type) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }
