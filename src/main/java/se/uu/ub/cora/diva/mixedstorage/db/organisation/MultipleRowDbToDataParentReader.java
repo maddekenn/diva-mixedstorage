@@ -27,10 +27,10 @@ import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactory;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
-public class MultipleRowDbParentReader extends DivaMultipleRowDbReaderImp
-		implements MultipleRowDbReader {
+public class MultipleRowDbToDataParentReader extends DivaMultipleRowDbToDataReaderImp
+		implements MultipleRowDbToDataReader {
 
-	public MultipleRowDbParentReader(RecordReaderFactory recordReaderFactory,
+	public MultipleRowDbToDataParentReader(RecordReaderFactory recordReaderFactory,
 			DivaDbToCoraConverterFactory converterFactory) {
 		this.recordReaderFactory = recordReaderFactory;
 		this.converterFactory = converterFactory;

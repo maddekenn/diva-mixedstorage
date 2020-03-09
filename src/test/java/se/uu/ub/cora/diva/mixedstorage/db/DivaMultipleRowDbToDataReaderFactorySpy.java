@@ -18,14 +18,18 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.MultipleRowDbReader;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.MultipleRowDbToDataReader;
 
-public class DivaMultipleRowDbReaderFactorySpy implements MultipleRowDbReaderFactory {
+public class DivaMultipleRowDbToDataReaderFactorySpy implements MultipleRowDbToDataReaderFactory {
+
+	public MultipleRowDbToDataReaderSpy factored;
+	public String usedType = "";
 
 	@Override
-	public MultipleRowDbReader factor(String type) {
-		// TODO Auto-generated method stub
-		return null;
+	public MultipleRowDbToDataReader factor(String type) {
+		this.usedType = type;
+		factored = new MultipleRowDbToDataReaderSpy();
+		return factored;
 	}
 
 }

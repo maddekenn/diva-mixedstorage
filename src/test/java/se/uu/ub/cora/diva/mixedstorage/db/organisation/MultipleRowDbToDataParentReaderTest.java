@@ -32,12 +32,12 @@ import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterSpy;
 
-public class MultipleRowDbParentReaderTest {
+public class MultipleRowDbToDataParentReaderTest {
 
 	private static final String TABLE_NAME = "divaOrganisationParent";
 	private DivaDbToCoraConverterFactorySpy converterFactory;
 	private RecordOrgansationParentReaderFactorySpy recordReaderFactory;
-	private MultipleRowDbReader parentReader;
+	private MultipleRowDbToDataReader parentReader;
 
 	@BeforeMethod
 	public void BeforeMethod() {
@@ -45,7 +45,7 @@ public class MultipleRowDbParentReaderTest {
 		// DataGroupProvider.setDataGroupFactory(dataGroupFactory);
 		converterFactory = new DivaDbToCoraConverterFactorySpy();
 		recordReaderFactory = new RecordOrgansationParentReaderFactorySpy();
-		parentReader = new MultipleRowDbParentReader(recordReaderFactory, converterFactory);
+		parentReader = new MultipleRowDbToDataParentReader(recordReaderFactory, converterFactory);
 	}
 
 	@Test

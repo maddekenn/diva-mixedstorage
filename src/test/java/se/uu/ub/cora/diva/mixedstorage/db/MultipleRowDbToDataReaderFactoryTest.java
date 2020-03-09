@@ -26,22 +26,22 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaMultipleRowDbReaderImp;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.MultipleRowDbParentReader;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaMultipleRowDbToDataReaderImp;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.MultipleRowDbToDataParentReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
-public class MultipleRowDbReaderFactoryTest {
+public class MultipleRowDbToDataReaderFactoryTest {
 
 	private RecordReaderFactory readerFactory;
 	private DivaDbToCoraConverterFactory converterFactory;
-	private MultipleRowDbReaderFactoryImp multipleRowDbReaderFactory;
+	private MultipleRowDbToDataReaderFactoryImp multipleRowDbReaderFactory;
 
 	@BeforeMethod
 	public void beforeMethod() {
 		readerFactory = new RecordReaderFactorySpy();
 		converterFactory = new DivaDbToCoraConverterFactorySpy();
 
-		multipleRowDbReaderFactory = MultipleRowDbReaderFactoryImp
+		multipleRowDbReaderFactory = MultipleRowDbToDataReaderFactoryImp
 				.usingReaderFactoryAndConverterFactory(readerFactory, converterFactory);
 	}
 
@@ -53,9 +53,9 @@ public class MultipleRowDbReaderFactoryTest {
 
 	@Test
 	public void testFactoryParentMultipleRow() {
-		DivaMultipleRowDbReaderImp multipleRowDbReader = (DivaMultipleRowDbReaderImp) multipleRowDbReaderFactory
+		DivaMultipleRowDbToDataReaderImp multipleRowDbReader = (DivaMultipleRowDbToDataReaderImp) multipleRowDbReaderFactory
 				.factor("divaOrganisationParent");
-		assertTrue(multipleRowDbReader instanceof MultipleRowDbParentReader);
+		assertTrue(multipleRowDbReader instanceof MultipleRowDbToDataParentReader);
 		assertEquals(multipleRowDbReader.getRecordReaderFactory(), readerFactory);
 		assertEquals(multipleRowDbReader.getConverterFactory(), converterFactory);
 	}

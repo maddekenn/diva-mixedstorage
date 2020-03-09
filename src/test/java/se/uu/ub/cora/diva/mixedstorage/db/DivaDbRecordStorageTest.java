@@ -50,7 +50,6 @@ public class DivaDbRecordStorageTest {
 		recordReaderFactorySpy = new RecordReaderFactorySpy();
 		divaDbFactorySpy = new DivaDbFactorySpy();
 		divaDbUpdaterFactorySpy = new DivaDbUpdaterFactorySpy();
-		MultipleRowDbReaderFactory multipleDbReaderFactory = new DivaMultipleRowDbReaderFactorySpy();
 		divaRecordStorage = DivaDbRecordStorage
 				.usingRecordReaderFactoryDivaFactoryAndDivaDbUpdaterFactory(recordReaderFactorySpy,
 						divaDbFactorySpy, divaDbUpdaterFactorySpy);

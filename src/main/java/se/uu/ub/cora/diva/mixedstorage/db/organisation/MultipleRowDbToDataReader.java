@@ -22,7 +22,7 @@ import java.util.List;
 
 import se.uu.ub.cora.data.DataGroup;
 
-public interface MultipleRowDbReader {
+public interface MultipleRowDbToDataReader {
 
 	List<DataGroup> read(String type, String id);
 

@@ -27,7 +27,7 @@ import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverter;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactory;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
-public abstract class DivaMultipleRowDbReaderImp {
+public abstract class DivaMultipleRowDbToDataReaderImp {
 
 	protected DivaDbToCoraConverterFactory converterFactory;
 	protected RecordReaderFactory recordReaderFactory;

@@ -18,10 +18,27 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.MultipleRowDbReader;
+import java.util.ArrayList;
+import java.util.List;
 
-public interface MultipleRowDbReaderFactory {
+import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.MultipleRowDbToDataReader;
 
-	MultipleRowDbReader factor(String type);
+public class MultipleRowDbToDataReaderSpy implements MultipleRowDbToDataReader {
+
+	public String usedType;
+	public String usedId;
+	public List<DataGroup> returnedList = new ArrayList<>();
+
+	@Override
+	public List<DataGroup> read(String type, String id) {
+		usedType = type;
+		usedId = id;
+
+		returnedList.add(new DataGroupSpy("firstParentFromSpy"));
+		returnedList.add(new DataGroupSpy("secondParentFromSpy"));
+		return returnedList;
+	}
 
 }

@@ -19,31 +19,31 @@
 package se.uu.ub.cora.diva.mixedstorage.db;
 
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.MultipleRowDbParentReader;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.MultipleRowDbReader;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.MultipleRowDbToDataParentReader;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.MultipleRowDbToDataReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
-public class MultipleRowDbReaderFactoryImp implements MultipleRowDbReaderFactory {
+public class MultipleRowDbToDataReaderFactoryImp implements MultipleRowDbToDataReaderFactory {
 
 	private RecordReaderFactory recordReaderFactory;
 	private DivaDbToCoraConverterFactory converterFactory;
 
-	public static MultipleRowDbReaderFactoryImp usingReaderFactoryAndConverterFactory(
+	public static MultipleRowDbToDataReaderFactoryImp usingReaderFactoryAndConverterFactory(
 			RecordReaderFactory recordReaderFactory,
 			DivaDbToCoraConverterFactory converterFactory) {
-		return new MultipleRowDbReaderFactoryImp(recordReaderFactory, converterFactory);
+		return new MultipleRowDbToDataReaderFactoryImp(recordReaderFactory, converterFactory);
 	}
 
-	private MultipleRowDbReaderFactoryImp(RecordReaderFactory recordReaderFactory,
+	private MultipleRowDbToDataReaderFactoryImp(RecordReaderFactory recordReaderFactory,
 			DivaDbToCoraConverterFactory converterFactory) {
 		this.recordReaderFactory = recordReaderFactory;
 		this.converterFactory = converterFactory;
 	}
 
 	@Override
-	public MultipleRowDbReader factor(String type) {
+	public MultipleRowDbToDataReader factor(String type) {
 		if ("divaOrganisationParent".equals(type)) {
-			return new MultipleRowDbParentReader(recordReaderFactory, converterFactory);
+			return new MultipleRowDbToDataParentReader(recordReaderFactory, converterFactory);
 
 		}
 		throw NotImplementedException.withMessage("No implementation found for: " + type);

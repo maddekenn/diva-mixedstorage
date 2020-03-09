@@ -21,6 +21,7 @@ package se.uu.ub.cora.diva.mixedstorage.db.organisation;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
 import java.util.List;
@@ -35,6 +36,8 @@ import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverter;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterSpy;
+import se.uu.ub.cora.diva.mixedstorage.db.DivaMultipleRowDbToDataReaderFactorySpy;
+import se.uu.ub.cora.diva.mixedstorage.db.MultipleRowDbToDataReaderSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordReaderFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordReaderSpy;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DataGroupFactorySpy;
@@ -47,6 +50,7 @@ public class DivaDbOrganisationReaderTest {
 	private DivaDbOrganisationReader divaDbOrganisationReader;
 
 	private DataGroupFactory dataGroupFactory;
+	private DivaMultipleRowDbToDataReaderFactorySpy multipleDbReaderFactory;
 
 	@BeforeMethod
 	public void BeforeMethod() {
@@ -54,8 +58,10 @@ public class DivaDbOrganisationReaderTest {
 		DataGroupProvider.setDataGroupFactory(dataGroupFactory);
 		converterFactory = new DivaDbToCoraConverterFactorySpy();
 		recordReaderFactory = new RecordReaderFactorySpy();
+		multipleDbReaderFactory = new DivaMultipleRowDbToDataReaderFactorySpy();
 		divaDbOrganisationReader = DivaDbOrganisationReader
-				.usingRecordReaderFactoryAndConverterFactory(recordReaderFactory, converterFactory);
+				.usingRecordReaderFactoryAndConverterFactory(recordReaderFactory, converterFactory,
+						multipleDbReaderFactory);
 	}
 
 	@Test
@@ -69,9 +75,8 @@ public class DivaDbOrganisationReaderTest {
 		divaDbOrganisationReader.read(TABLE_NAME, "567");
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
 		assertEquals(recordReader.usedTableNames.get(0), TABLE_NAME);
-		assertEquals(recordReader.usedTableNames.get(1), "divaOrganisationParent");
-		assertEquals(recordReader.usedTableNames.get(2), "divaOrganisationPredecessor");
-		assertEquals(recordReader.usedTableNames.size(), 3);
+		assertEquals(recordReader.usedTableNames.get(1), "divaOrganisationPredecessor");
+		assertEquals(recordReader.usedTableNames.size(), 2);
 	}
 
 	@Test
@@ -93,10 +98,38 @@ public class DivaDbOrganisationReaderTest {
 	public void testReadOrganisationConverterIsCalledWithDataFromDbStorage() throws Exception {
 		divaDbOrganisationReader.read(TABLE_NAME, "567");
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
-		DivaDbToCoraConverterSpy divaDbToCoraConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
-				.get(0);
+		DivaDbToCoraConverterSpy divaDbToCoraConverter = converterFactory.factoredConverters.get(0);
 		assertNotNull(divaDbToCoraConverter.mapToConvert);
 		assertEquals(recordReader.returnedList.get(0), divaDbToCoraConverter.mapToConvert);
+	}
+
+	@Test
+	public void testMultipleRowDbReaderIsFactoredCorrectly() throws Exception {
+		divaDbOrganisationReader.read(TABLE_NAME, "567");
+		MultipleRowDbToDataReader multipleDbToDataReader = multipleDbReaderFactory.factored;
+		assertNotNull(multipleDbToDataReader);
+		String usedType = multipleDbReaderFactory.usedType;
+		assertEquals(usedType, "divaOrganisationParent");
+	}
+
+	@Test
+	public void testParentMultipleRowDbReaderIsCalledCorrectly() throws Exception {
+		divaDbOrganisationReader.read(TABLE_NAME, "567");
+		MultipleRowDbToDataReaderSpy multipleDbToDataReader = multipleDbReaderFactory.factored;
+		assertEquals(multipleDbToDataReader.usedType, "divaOrganisationParent");
+		assertEquals(multipleDbToDataReader.usedId, "567");
+	}
+
+	@Test
+	public void testConvertedParentAreAddedToOrganisation() throws Exception {
+		DataGroup organisation = divaDbOrganisationReader.read(TABLE_NAME, "567");
+
+		MultipleRowDbToDataReaderSpy multipleDbToDataReader = multipleDbReaderFactory.factored;
+		List<DataGroup> returnedListFromSpy = multipleDbToDataReader.returnedList;
+		assertSame(organisation.getFirstGroupWithNameInData("firstParentFromSpy"),
+				returnedListFromSpy.get(0));
+		assertSame(organisation.getFirstGroupWithNameInData("secondParentFromSpy"),
+				returnedListFromSpy.get(1));
 	}
 
 	@Test
@@ -113,8 +146,7 @@ public class DivaDbOrganisationReaderTest {
 		assertReadDataIsSentToConverterUsingReadListReadIndexAndConverterIndex(
 				recordReader.returnedList, 0, 0);
 
-		DivaDbToCoraConverterSpy organisationConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
-				.get(0);
+		DivaDbToCoraConverterSpy organisationConverter = converterFactory.factoredConverters.get(0);
 		assertEquals(convertedOrganisation, organisationConverter.convertedDbDataGroup);
 	}
 
@@ -125,17 +157,17 @@ public class DivaDbOrganisationReaderTest {
 		assertEquals(recordReader.usedTableNames.get(0), "divaOrganisation");
 		assertEquals(usedConditionsList.get(0).get("id"), "567");
 
-		assertEquals(recordReader.usedTableNames.get(1), "divaOrganisationParent");
-		assertEquals(usedConditionsList.get(1).get("organisation_id"), "567");
+		// assertEquals(recordReader.usedTableNames.get(1), "divaOrganisationParent");
+		// assertEquals(usedConditionsList.get(1).get("organisation_id"), "567");
 
-		assertEquals(recordReader.usedTableNames.get(2), "divaOrganisationPredecessor");
-		assertEquals(usedConditionsList.get(2).get("organisation_id"), 567);
+		assertEquals(recordReader.usedTableNames.get(1), "divaOrganisationPredecessor");
+		assertEquals(usedConditionsList.get(1).get("organisation_id"), 567);
 
 	}
 
 	private void assertReadDataIsSentToConverterUsingReadListReadIndexAndConverterIndex(
 			List<Map<String, Object>> listToReadFrom, int readerIndex, int converterIndex) {
-		DivaDbToCoraConverterSpy predecessorConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
+		DivaDbToCoraConverterSpy predecessorConverter = converterFactory.factoredConverters
 				.get(converterIndex);
 
 		Map<String, Object> firstPredecessorRead = listToReadFrom.get(readerIndex);
@@ -152,8 +184,7 @@ public class DivaDbOrganisationReaderTest {
 
 		assertCorrectTableNamesAndConditionsAreUsedWhenReading(recordReader);
 
-		DivaDbToCoraConverterSpy organisationConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
-				.get(0);
+		DivaDbToCoraConverterSpy organisationConverter = converterFactory.factoredConverters.get(0);
 		Map<String, Object> readOrganisation = recordReader.oneRowRead;
 		Map<String, Object> mapSentToFirstConverter = organisationConverter.mapToConvert;
 		assertEquals(readOrganisation, mapSentToFirstConverter);
@@ -175,8 +206,7 @@ public class DivaDbOrganisationReaderTest {
 		assertEquals(converterFactory.factoredTypes.get(1), "divaOrganisationPredecessor");
 		assertEquals(converterFactory.factoredTypes.size(), 2);
 
-		DivaDbToCoraConverterSpy organisationConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
-				.get(0);
+		DivaDbToCoraConverterSpy organisationConverter = converterFactory.factoredConverters.get(0);
 		Map<String, Object> readOrganisation = recordReader.oneRowRead;
 		Map<String, Object> mapSentToFirstConverter = organisationConverter.mapToConvert;
 		assertEquals(readOrganisation, mapSentToFirstConverter);
@@ -204,8 +234,7 @@ public class DivaDbOrganisationReaderTest {
 		assertEquals(recordReader.predecessorsToReturn.size(), 3);
 		assertCorrectTableNamesAndConditionsAreUsedWhenReading(recordReader);
 
-		DivaDbToCoraConverterSpy organisationConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
-				.get(0);
+		DivaDbToCoraConverterSpy organisationConverter = converterFactory.factoredConverters.get(0);
 		Map<String, Object> firstReadResult = recordReader.returnedList.get(0);
 		Map<String, Object> mapSentToFirstConverter = organisationConverter.mapToConvert;
 		assertEquals(firstReadResult, mapSentToFirstConverter);
@@ -240,69 +269,20 @@ public class DivaDbOrganisationReaderTest {
 	@Test
 	public void testReadOrganisationCallsDatabaseAndReturnsConvertedResultWithOneParent()
 			throws Exception {
-		recordReaderFactory.numOfParentsToReturn = 1;
 		DataGroup convertedOrganisation = divaDbOrganisationReader.read(TABLE_NAME, "567");
 		RecordReaderSpy recordReader = recordReaderFactory.factored;
 
 		assertCorrectTableNamesAndConditionsAreUsedWhenReading(recordReader);
-		assertEquals(recordReader.parentsToReturn.size(), 1);
 
 		assertEquals(converterFactory.factoredTypes.get(0), "divaOrganisation");
-		assertEquals(converterFactory.factoredTypes.get(1), "divaOrganisationParent");
-		assertEquals(converterFactory.factoredTypes.size(), 2);
+		assertEquals(converterFactory.factoredTypes.size(), 1);
 
-		DivaDbToCoraConverterSpy organisationConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
-				.get(0);
+		DivaDbToCoraConverterSpy organisationConverter = converterFactory.factoredConverters.get(0);
 		Map<String, Object> readOrganisation = recordReader.oneRowRead;
 		Map<String, Object> mapSentToFirstConverter = organisationConverter.mapToConvert;
 		assertEquals(readOrganisation, mapSentToFirstConverter);
 
-		List<Map<String, Object>> parentsToReturn = recordReader.parentsToReturn;
-		assertReadDataIsSentToConverterUsingReadListReadIndexAndConverterIndex(parentsToReturn, 0,
-				1);
-
-		assertTrue(convertedOrganisation.containsChildWithNameInData("from Db converter"));
-
-		List<DataGroup> parents = convertedOrganisation
-				.getAllGroupsWithNameInData("from Db converter");
-		assertEquals(parents.get(0).getRepeatId(), "0");
 		assertEquals(convertedOrganisation, organisationConverter.convertedDbDataGroup);
 	}
 
-	@Test
-	public void testReadOrganisationCallsDatabaseAndReturnsConvertedResultWithManyParents()
-			throws Exception {
-		recordReaderFactory.numOfParentsToReturn = 3;
-		recordReaderFactory.noOfRecordsToReturn = 3;
-		DataGroup convertedOrganisation = divaDbOrganisationReader.read(TABLE_NAME, "567");
-		RecordReaderSpy recordReader = recordReaderFactory.factored;
-
-		assertEquals(recordReader.parentsToReturn.size(), 3);
-		assertCorrectTableNamesAndConditionsAreUsedWhenReading(recordReader);
-
-		DivaDbToCoraConverterSpy organisationConverter = (DivaDbToCoraConverterSpy) converterFactory.factoredConverters
-				.get(0);
-		Map<String, Object> firstReadResult = recordReader.returnedList.get(0);
-		Map<String, Object> mapSentToFirstConverter = organisationConverter.mapToConvert;
-		assertEquals(firstReadResult, mapSentToFirstConverter);
-
-		assertEquals(converterFactory.factoredTypes.get(0), "divaOrganisation");
-		assertEquals(converterFactory.factoredTypes.get(1), "divaOrganisationParent");
-		assertEquals(converterFactory.factoredTypes.get(2), "divaOrganisationParent");
-		assertEquals(converterFactory.factoredTypes.get(3), "divaOrganisationParent");
-		assertEquals(converterFactory.factoredTypes.size(), 4);
-
-		assertReadDataIsSentToConverterUsingReadListReadIndexAndConverterIndex(
-				recordReader.parentsToReturn, 0, 1);
-		assertReadDataIsSentToConverterUsingReadListReadIndexAndConverterIndex(
-				recordReader.parentsToReturn, 1, 2);
-		assertReadDataIsSentToConverterUsingReadListReadIndexAndConverterIndex(
-				recordReader.parentsToReturn, 2, 3);
-
-		assertCorrectRepeatIdInAddedChildrenUsingIndex(convertedOrganisation, 0);
-		assertCorrectRepeatIdInAddedChildrenUsingIndex(convertedOrganisation, 1);
-		assertCorrectRepeatIdInAddedChildrenUsingIndex(convertedOrganisation, 2);
-
-		assertEquals(convertedOrganisation, organisationConverter.convertedDbDataGroup);
-	}
 }
