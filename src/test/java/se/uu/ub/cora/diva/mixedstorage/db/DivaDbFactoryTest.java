@@ -18,6 +18,7 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
@@ -26,6 +27,9 @@ import org.testng.annotations.Test;
 
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbOrganisationReader;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaMultipleRowDbToDataReaderImp;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.MultipleRowDbToDataParentReader;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.MultipleRowDbToDataPredecessorReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
 public class DivaDbFactoryTest {
@@ -59,6 +63,30 @@ public class DivaDbFactoryTest {
 				.factor("divaOrganisation");
 		assertSame(divaDbToCoraOrganisation.getRecordReaderFactory(), readerFactory);
 		assertSame(divaDbToCoraOrganisation.getConverterFactory(), converterFactory);
+	}
+
+	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
+			+ "No implementation found for: someType")
+	public void factorUnknownMultipleReaderTypeThrowsException() {
+		divaDbToCoraFactoryImp.factorMultipleReader("someType");
+	}
+
+	@Test
+	public void testFactoryParentMultipleRow() {
+		DivaMultipleRowDbToDataReaderImp multipleRowDbReader = (DivaMultipleRowDbToDataReaderImp) divaDbToCoraFactoryImp
+				.factorMultipleReader("divaOrganisationParent");
+		assertTrue(multipleRowDbReader instanceof MultipleRowDbToDataParentReader);
+		assertEquals(multipleRowDbReader.getRecordReaderFactory(), readerFactory);
+		assertEquals(multipleRowDbReader.getConverterFactory(), converterFactory);
+	}
+
+	@Test
+	public void testFactoryPredecessorMultipleRow() {
+		DivaMultipleRowDbToDataReaderImp multipleRowDbReader = (DivaMultipleRowDbToDataReaderImp) divaDbToCoraFactoryImp
+				.factorMultipleReader("divaOrganisationPredecessor");
+		assertTrue(multipleRowDbReader instanceof MultipleRowDbToDataPredecessorReader);
+		assertEquals(multipleRowDbReader.getRecordReaderFactory(), readerFactory);
+		assertEquals(multipleRowDbReader.getConverterFactory(), converterFactory);
 	}
 
 	@Test

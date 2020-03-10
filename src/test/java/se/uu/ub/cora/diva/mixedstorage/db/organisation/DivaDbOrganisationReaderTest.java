@@ -33,10 +33,10 @@ import org.testng.annotations.Test;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupFactory;
 import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.diva.mixedstorage.db.DivaDbFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverter;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterSpy;
-import se.uu.ub.cora.diva.mixedstorage.db.DivaMultipleRowDbToDataReaderFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.MultipleRowDbToDataReaderSpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordReaderFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.RecordReaderSpy;
@@ -48,9 +48,8 @@ public class DivaDbOrganisationReaderTest {
 	private DivaDbToCoraConverterFactorySpy converterFactory;
 	private RecordReaderFactorySpy recordReaderFactory;
 	private DivaDbOrganisationReader divaDbOrganisationReader;
-
 	private DataGroupFactory dataGroupFactory;
-	private DivaMultipleRowDbToDataReaderFactorySpy multipleDbReaderFactory;
+	private DivaDbFactorySpy divaDbFactorySpy;
 
 	@BeforeMethod
 	public void BeforeMethod() {
@@ -58,10 +57,10 @@ public class DivaDbOrganisationReaderTest {
 		DataGroupProvider.setDataGroupFactory(dataGroupFactory);
 		converterFactory = new DivaDbToCoraConverterFactorySpy();
 		recordReaderFactory = new RecordReaderFactorySpy();
-		multipleDbReaderFactory = new DivaMultipleRowDbToDataReaderFactorySpy();
+		divaDbFactorySpy = new DivaDbFactorySpy();
 		divaDbOrganisationReader = DivaDbOrganisationReader
 				.usingRecordReaderFactoryAndConverterFactory(recordReaderFactory, converterFactory,
-						multipleDbReaderFactory);
+						divaDbFactorySpy);
 	}
 
 	@Test
@@ -111,17 +110,17 @@ public class DivaDbOrganisationReaderTest {
 	@Test
 	public void testMultipleRowDbReaderIsFactoredCorrectlyForParent() throws Exception {
 		divaDbOrganisationReader.read(TABLE_NAME, "567");
-		MultipleRowDbToDataReader multipleDbToDataReader = multipleDbReaderFactory.listOfFactored
+		MultipleRowDbToDataReader multipleDbToDataReader = divaDbFactorySpy.listOfFactoredMultiples
 				.get(0);
 		assertNotNull(multipleDbToDataReader);
-		String usedType = multipleDbReaderFactory.usedTypes.get(0);
+		String usedType = divaDbFactorySpy.usedTypes.get(0);
 		assertEquals(usedType, "divaOrganisationParent");
 	}
 
 	@Test
 	public void testParentMultipleRowDbReaderIsCalledCorrectly() throws Exception {
 		divaDbOrganisationReader.read(TABLE_NAME, "567");
-		MultipleRowDbToDataReaderSpy multipleDbToDataReader = multipleDbReaderFactory.listOfFactored
+		MultipleRowDbToDataReaderSpy multipleDbToDataReader = divaDbFactorySpy.listOfFactoredMultiples
 				.get(0);
 		assertEquals(multipleDbToDataReader.usedType, "divaOrganisationParent");
 		assertEquals(multipleDbToDataReader.usedId, "567");
@@ -129,7 +128,7 @@ public class DivaDbOrganisationReaderTest {
 
 	@Test
 	public void testNoParentAreAddedToOrganisation() {
-		multipleDbReaderFactory.returnEmptyResult = true;
+		divaDbFactorySpy.returnEmptyResult = true;
 		DataGroup organisation = divaDbOrganisationReader.read(TABLE_NAME, "567");
 
 		assertFalse(organisation.containsChildWithNameInData("divaOrganisationParentChildFromSpy"));
@@ -139,7 +138,7 @@ public class DivaDbOrganisationReaderTest {
 	public void testConvertedParentAreAddedToOrganisation() throws Exception {
 		DataGroup organisation = divaDbOrganisationReader.read(TABLE_NAME, "567");
 
-		MultipleRowDbToDataReaderSpy multipleDbToDataReader = multipleDbReaderFactory.listOfFactored
+		MultipleRowDbToDataReaderSpy multipleDbToDataReader = divaDbFactorySpy.listOfFactoredMultiples
 				.get(0);
 		List<DataGroup> returnedListFromSpy = multipleDbToDataReader.returnedList;
 		List<DataGroup> parentChildren = organisation
@@ -151,17 +150,17 @@ public class DivaDbOrganisationReaderTest {
 	@Test
 	public void testMultipleRowDbReaderIsFactoredCorrectlyForPredecessor() throws Exception {
 		divaDbOrganisationReader.read(TABLE_NAME, "567");
-		MultipleRowDbToDataReader multipleDbToDataReader = multipleDbReaderFactory.listOfFactored
+		MultipleRowDbToDataReader multipleDbToDataReader = divaDbFactorySpy.listOfFactoredMultiples
 				.get(1);
 		assertNotNull(multipleDbToDataReader);
-		String usedType = multipleDbReaderFactory.usedTypes.get(1);
+		String usedType = divaDbFactorySpy.usedTypes.get(1);
 		assertEquals(usedType, "divaOrganisationPredecessor");
 	}
 
 	@Test
 	public void testPredecessorMultipleRowDbReaderIsCalledCorrectly() throws Exception {
 		divaDbOrganisationReader.read(TABLE_NAME, "567");
-		MultipleRowDbToDataReaderSpy multipleDbToDataReader = multipleDbReaderFactory.listOfFactored
+		MultipleRowDbToDataReaderSpy multipleDbToDataReader = divaDbFactorySpy.listOfFactoredMultiples
 				.get(1);
 		assertEquals(multipleDbToDataReader.usedType, "divaOrganisationPredecessor");
 		assertEquals(multipleDbToDataReader.usedId, "567");
@@ -169,7 +168,7 @@ public class DivaDbOrganisationReaderTest {
 
 	@Test
 	public void testNoPredecessorAreAddedToOrganisation() {
-		multipleDbReaderFactory.returnEmptyResult = true;
+		divaDbFactorySpy.returnEmptyResult = true;
 		DataGroup organisation = divaDbOrganisationReader.read(TABLE_NAME, "567");
 
 		assertFalse(organisation
@@ -180,7 +179,7 @@ public class DivaDbOrganisationReaderTest {
 	public void testConvertedPredecessorAreAddedToOrganisation() throws Exception {
 		DataGroup organisation = divaDbOrganisationReader.read(TABLE_NAME, "567");
 
-		MultipleRowDbToDataReaderSpy multipleDbToDataReader = multipleDbReaderFactory.listOfFactored
+		MultipleRowDbToDataReaderSpy multipleDbToDataReader = divaDbFactorySpy.listOfFactoredMultiples
 				.get(1);
 		List<DataGroup> returnedListFromSpy = multipleDbToDataReader.returnedList;
 		List<DataGroup> predecessorChildren = organisation

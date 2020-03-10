@@ -31,7 +31,7 @@ public class MultipleRowDbToDataReaderSpy implements MultipleRowDbToDataReader {
 	public String usedType;
 	public String usedId;
 	public List<DataGroup> returnedList = new ArrayList<>();
-	public boolean returnEmptyResult = false;;
+	public boolean returnEmptyResult = false;
 
 	@Override
 	public List<DataGroup> read(String type, String id) {

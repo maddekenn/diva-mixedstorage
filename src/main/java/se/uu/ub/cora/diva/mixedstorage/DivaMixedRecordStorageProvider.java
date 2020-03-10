@@ -29,9 +29,9 @@ import se.uu.ub.cora.basicstorage.RecordStorageOnDisk;
 import se.uu.ub.cora.connection.ContextConnectionProviderImp;
 import se.uu.ub.cora.connection.SqlConnectionProvider;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDataToDbTranslaterFactoryImp;
-import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbRecordStorage;
+import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbUpdaterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.RelatedTableFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraConverterFactory;
@@ -129,9 +129,8 @@ public class DivaMixedRecordStorageProvider
 				divaDbToCoraConverterFactory);
 		DivaDbUpdaterFactoryImp recordStorageForOneTypeFactory = createRecordStorageForOneTypeFactory(
 				recordReaderFactory);
-		return DivaDbRecordStorage
-				.usingRecordReaderFactoryDivaFactoryAndDivaDbUpdaterFactory(
-						recordReaderFactory, divaDbToCoraFactory, recordStorageForOneTypeFactory);
+		return DivaDbRecordStorage.usingRecordReaderFactoryDivaFactoryAndDivaDbUpdaterFactory(
+				recordReaderFactory, divaDbToCoraFactory, recordStorageForOneTypeFactory, null);
 	}
 
 	private RecordReaderFactoryImp createRecordReaderFactory() {
@@ -150,8 +149,8 @@ public class DivaMixedRecordStorageProvider
 		RelatedTableFactoryImp relatedFactory = RelatedTableFactoryImp.usingReaderDeleterAndCreator(
 				recordReaderFactory, recordDeleterFactory, recordCreatorFactory);
 
-		return new DivaDbUpdaterFactoryImp(translaterFactory, recordReaderFactory,
-				relatedFactory, tryToCreateConnectionProvider());
+		return new DivaDbUpdaterFactoryImp(translaterFactory, recordReaderFactory, relatedFactory,
+				tryToCreateConnectionProvider());
 	}
 
 	private RecordCreatorFactoryImp createRecordCreatorFactory() {

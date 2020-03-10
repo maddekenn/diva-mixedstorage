@@ -23,10 +23,10 @@ import java.util.List;
 import java.util.Map;
 
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.diva.mixedstorage.db.DivaDbFactory;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbReader;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverter;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactory;
-import se.uu.ub.cora.diva.mixedstorage.db.MultipleRowDbToDataReaderFactory;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
@@ -35,21 +35,19 @@ public class DivaDbOrganisationReader implements DivaDbReader {
 	private RecordReaderFactory recordReaderFactory;
 	private DivaDbToCoraConverterFactory converterFactory;
 	private RecordReader recordReader;
-	private MultipleRowDbToDataReaderFactory multipleRowDbReaderFactory;
+	private DivaDbFactory divaDbFactory;
 
 	public DivaDbOrganisationReader(RecordReaderFactory recordReaderFactory,
-			DivaDbToCoraConverterFactory converterFactory,
-			MultipleRowDbToDataReaderFactory multipleRowDbReaderFactory) {
+			DivaDbToCoraConverterFactory converterFactory, DivaDbFactory divaDbFactory) {
 		this.recordReaderFactory = recordReaderFactory;
 		this.converterFactory = converterFactory;
-		this.multipleRowDbReaderFactory = multipleRowDbReaderFactory;
+		this.divaDbFactory = divaDbFactory;
 	}
 
 	public static DivaDbOrganisationReader usingRecordReaderFactoryAndConverterFactory(
 			RecordReaderFactory recordReaderFactory, DivaDbToCoraConverterFactory converterFactory,
-			MultipleRowDbToDataReaderFactory multipleRowDbReaderFactory) {
-		return new DivaDbOrganisationReader(recordReaderFactory, converterFactory,
-				multipleRowDbReaderFactory);
+			DivaDbFactory divaDbFactory) {
+		return new DivaDbOrganisationReader(recordReaderFactory, converterFactory, divaDbFactory);
 	}
 
 	@Override
@@ -75,7 +73,7 @@ public class DivaDbOrganisationReader implements DivaDbReader {
 
 	private void tryToReadAndConvertParents(String id, DataGroup organisation) {
 		String type = "divaOrganisationParent";
-		MultipleRowDbToDataReader parentReader = multipleRowDbReaderFactory.factor(type);
+		MultipleRowDbToDataReader parentReader = divaDbFactory.factorMultipleReader(type);
 		List<DataGroup> convertedParents = parentReader.read(type, id);
 		for (DataGroup convertedParent : convertedParents) {
 			organisation.addChild(convertedParent);
@@ -84,7 +82,7 @@ public class DivaDbOrganisationReader implements DivaDbReader {
 
 	private void tryToReadAndConvertPredecessors(String stringId, DataGroup organisation) {
 		String type = "divaOrganisationPredecessor";
-		MultipleRowDbToDataReader prededcessorReader = multipleRowDbReaderFactory.factor(type);
+		MultipleRowDbToDataReader prededcessorReader = divaDbFactory.factorMultipleReader(type);
 		List<DataGroup> convertedPredecessors = prededcessorReader.read(type, stringId);
 
 		for (DataGroup convertedPredecessor : convertedPredecessors) {

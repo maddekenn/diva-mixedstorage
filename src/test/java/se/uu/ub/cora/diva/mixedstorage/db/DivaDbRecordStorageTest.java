@@ -52,7 +52,7 @@ public class DivaDbRecordStorageTest {
 		divaDbUpdaterFactorySpy = new DivaDbUpdaterFactorySpy();
 		divaRecordStorage = DivaDbRecordStorage
 				.usingRecordReaderFactoryDivaFactoryAndDivaDbUpdaterFactory(recordReaderFactorySpy,
-						divaDbFactorySpy, divaDbUpdaterFactorySpy);
+						divaDbFactorySpy, divaDbUpdaterFactorySpy, converterFactorySpy);
 	}
 
 	@Test
@@ -142,6 +142,12 @@ public class DivaDbRecordStorageTest {
 		assertTrue(recordReaderFactorySpy.factorWasCalled);
 	}
 
+	// @Test
+	// public void testReadOrganisationListConverterForOrganisationIsFactored() throws Exception {
+	// divaRecordStorage.readList(ORGANISATION_TYPE, new DataGroupSpy("filter"));
+	// assertEquals(converterFactorySpy.factoredTypes.get(0), "divaOrganisation");
+	// }
+
 	@Test
 	public void testReadOrganisationListCountryTableRequestedFromReader() throws Exception {
 		divaRecordStorage.readList(ORGANISATION_TYPE, new DataGroupSpy("filter"));
@@ -150,11 +156,96 @@ public class DivaDbRecordStorageTest {
 	}
 
 	@Test
+	public void testReadOrganisationListFactorMultipleParentReader() throws Exception {
+		divaRecordStorage.readList(ORGANISATION_TYPE, new DataGroupSpy("filter"));
+		assertEquals(divaDbFactorySpy.usedTypes.get(0), "divaOrganisationParent");
+	}
+
+	@Test
+	public void testReadOrganisationListAllReadFromDbAreSentToConverterAndAddedToResult() {
+		RecordReaderFactoryForListSpy recordReaderFactoryForList = new RecordReaderFactoryForListSpy();
+		divaRecordStorage = DivaDbRecordStorage
+				.usingRecordReaderFactoryDivaFactoryAndDivaDbUpdaterFactory(
+						recordReaderFactoryForList, divaDbFactorySpy, divaDbUpdaterFactorySpy,
+						converterFactorySpy);
+
+		StorageReadResult readList = divaRecordStorage.readList(ORGANISATION_TYPE,
+				new DataGroupSpy("filter"));
+
+		RecordReaderForListSpy recordReader = recordReaderFactoryForList.factored;
+
+		assertReadRecordIsSentToConverterUsingIndex(recordReader, 0);
+		assertReadRecordIsSentToConverterUsingIndex(recordReader, 1);
+		assertReadRecordIsSentToConverterUsingIndex(recordReader, 2);
+
+		assertConvertedRowIsAddedToResultUsingIndex(readList, 0);
+		assertConvertedRowIsAddedToResultUsingIndex(readList, 1);
+		assertConvertedRowIsAddedToResultUsingIndex(readList, 2);
+
+		assertParentsAreReadCorrectlyAndAddedToOrganisation(readList, recordReader, 0);
+		// assertParentsAreReadCorrectlyAndAddedToOrganisation(readList, recordReader, 2);
+		// assertParentsAreReadCorrectlyAndAddedToOrganisation(readList, recordReader, 4);
+
+		MultipleRowDbToDataReaderSpy predecessorMultipleReader = divaDbFactorySpy.listOfFactoredMultiples
+				.get(1);
+		assertEquals(divaDbFactorySpy.usedTypes.get(1), "divaOrganisationPredecessor");
+		assertIdFromOrgansationIsSentToReadMultipleReader(recordReader, predecessorMultipleReader,
+				0);
+		DataGroup organisation = readList.listOfDataGroups.get(0);
+		DataGroup readMultipleRow = predecessorMultipleReader.returnedList.get(0);
+		assertSame(organisation
+				.getAllGroupsWithNameInData("divaOrganisationPredecessorChildFromSpy").get(0),
+				readMultipleRow);
+	}
+
+	private void assertParentsAreReadCorrectlyAndAddedToOrganisation(StorageReadResult readList,
+			RecordReaderForListSpy recordReader, int index) {
+		MultipleRowDbToDataReaderSpy parentMultipleReader = divaDbFactorySpy.listOfFactoredMultiples
+				.get(index);
+		assertEquals(divaDbFactorySpy.usedTypes.get(index), "divaOrganisationParent");
+		assertIdFromOrgansationIsSentToReadMultipleReader(recordReader, parentMultipleReader,
+				index);
+		DataGroup organisation = readList.listOfDataGroups.get(index);
+		assertCorrectParentWasAddedToOrganisation(parentMultipleReader, organisation, 0);
+		assertCorrectParentWasAddedToOrganisation(parentMultipleReader, organisation, 1);
+	}
+
+	private void assertCorrectParentWasAddedToOrganisation(
+			MultipleRowDbToDataReaderSpy parentMultipleReader, DataGroup organisation, int index) {
+		DataGroup readMultipleRow = parentMultipleReader.returnedList.get(index);
+		assertSame(organisation.getAllGroupsWithNameInData("divaOrganisationParentChildFromSpy")
+				.get(index), readMultipleRow);
+	}
+
+	private void assertIdFromOrgansationIsSentToReadMultipleReader(
+			RecordReaderForListSpy recordReader, MultipleRowDbToDataReaderSpy multipleReader,
+			int index) {
+		Map<String, Object> readRow = recordReader.returnedList.get(index);
+		String organisationId = (String) readRow.get("id");
+		assertEquals(multipleReader.usedId, organisationId);
+	}
+
+	private void assertReadRecordIsSentToConverterUsingIndex(RecordReaderForListSpy recordReader,
+			int index) {
+		Map<String, Object> readRow = recordReader.returnedList.get(index);
+		DivaDbToCoraConverterSpy factoredConverter = converterFactorySpy.factoredConverters
+				.get(index);
+		assertSame(readRow, factoredConverter.mapToConvert);
+	}
+
+	private void assertConvertedRowIsAddedToResultUsingIndex(StorageReadResult readList,
+			int index) {
+		DivaDbToCoraConverterSpy converterSpy = converterFactorySpy.factoredConverters.get(index);
+		assertSame(converterSpy.convertedDbDataGroup, readList.listOfDataGroups.get(index));
+	}
+
+	@Test
 	public void testReadOrganisationListAllIdsAreReadFromDb() throws Exception {
 		RecordReaderFactoryForListSpy recordReaderFactoryForList = new RecordReaderFactoryForListSpy();
 		divaRecordStorage = DivaDbRecordStorage
 				.usingRecordReaderFactoryDivaFactoryAndDivaDbUpdaterFactory(
-						recordReaderFactoryForList, divaDbFactorySpy, divaDbUpdaterFactorySpy);
+						recordReaderFactoryForList, divaDbFactorySpy, divaDbUpdaterFactorySpy,
+						converterFactorySpy);
 
 		StorageReadResult readList = divaRecordStorage.readList(ORGANISATION_TYPE,
 				new DataGroupSpy("filter"));

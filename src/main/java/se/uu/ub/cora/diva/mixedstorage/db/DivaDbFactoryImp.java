@@ -20,6 +20,9 @@ package se.uu.ub.cora.diva.mixedstorage.db;
 
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbOrganisationReader;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.MultipleRowDbToDataParentReader;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.MultipleRowDbToDataPredecessorReader;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.MultipleRowDbToDataReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
 public class DivaDbFactoryImp implements DivaDbFactory {
@@ -50,6 +53,19 @@ public class DivaDbFactoryImp implements DivaDbFactory {
 	public DivaDbToCoraConverterFactory getConverterFactory() {
 		// for testing
 		return converterFactory;
+	}
+
+	@Override
+	public MultipleRowDbToDataReader factorMultipleReader(String type) {
+		if ("divaOrganisationParent".equals(type)) {
+			return new MultipleRowDbToDataParentReader(readerFactory, converterFactory);
+
+		}
+		if ("divaOrganisationPredecessor".equals(type)) {
+			return new MultipleRowDbToDataPredecessorReader(readerFactory, converterFactory);
+
+		}
+		throw NotImplementedException.withMessage("No implementation found for: " + type);
 	}
 
 }
