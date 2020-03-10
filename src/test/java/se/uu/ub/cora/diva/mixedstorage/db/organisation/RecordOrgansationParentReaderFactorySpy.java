@@ -24,14 +24,14 @@ import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 public class RecordOrgansationParentReaderFactorySpy implements RecordReaderFactory {
 
 	public boolean factorWasCalled = false;
-	public OrganisationParentRecordReaderSpy factored;
+	public OrganisationMultipleRowsRecordReaderSpy factored;
 	public int numToReturn = 1;
 
 	@Override
 	public RecordReader factor() {
 		factorWasCalled = true;
 		// TODO Auto-generated method stub
-		factored = new OrganisationParentRecordReaderSpy();
+		factored = new OrganisationMultipleRowsRecordReaderSpy();
 		factored.numToReturn = numToReturn;
 		return factored;
 	}

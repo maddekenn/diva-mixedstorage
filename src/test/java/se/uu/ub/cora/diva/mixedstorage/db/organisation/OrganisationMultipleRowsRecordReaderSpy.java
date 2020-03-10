@@ -25,7 +25,7 @@ import java.util.Map;
 
 import se.uu.ub.cora.sqldatabase.RecordReader;
 
-public class OrganisationParentRecordReaderSpy implements RecordReader {
+public class OrganisationMultipleRowsRecordReaderSpy implements RecordReader {
 
 	public String usedTableName;
 	public Map<String, Object> usedConditions;

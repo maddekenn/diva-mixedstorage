@@ -19,6 +19,7 @@
 package se.uu.ub.cora.diva.mixedstorage.db;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import se.uu.ub.cora.data.DataGroup;
@@ -30,14 +31,17 @@ public class MultipleRowDbToDataReaderSpy implements MultipleRowDbToDataReader {
 	public String usedType;
 	public String usedId;
 	public List<DataGroup> returnedList = new ArrayList<>();
+	public boolean returnEmptyResult = false;;
 
 	@Override
 	public List<DataGroup> read(String type, String id) {
 		usedType = type;
 		usedId = id;
-
-		returnedList.add(new DataGroupSpy("firstParentFromSpy"));
-		returnedList.add(new DataGroupSpy("secondParentFromSpy"));
+		if (returnEmptyResult) {
+			return Collections.emptyList();
+		}
+		returnedList.add(new DataGroupSpy(type + "ChildFromSpy"));
+		returnedList.add(new DataGroupSpy(type + "ChildFromSpy"));
 		return returnedList;
 	}
 

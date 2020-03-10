@@ -44,13 +44,13 @@ public abstract class DivaMultipleRowDbToDataReaderImp {
 	}
 
 	private DataGroup convertToDataGroup(int repeatId, Map<String, Object> parentValues) {
-		DivaDbToCoraConverter converter = converterFactory.factor(getTypeToFactorConverter());
+		DivaDbToCoraConverter converter = converterFactory.factor(getTableName());
 		DataGroup parent = converter.fromMap(parentValues);
 		parent.setRepeatId(String.valueOf(repeatId));
 		return parent;
 	}
 
-	protected abstract String getTypeToFactorConverter();
+	protected abstract String getTableName();
 
 	public RecordReaderFactory getRecordReaderFactory() {
 		// needed for test

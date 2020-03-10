@@ -27,10 +27,10 @@ import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactory;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
-public class MultipleRowDbToDataParentReader extends DivaMultipleRowDbToDataReaderImp
+public class MultipleRowDbToDataPredecessorReader extends DivaMultipleRowDbToDataReaderImp
 		implements MultipleRowDbToDataReader {
 
-	public MultipleRowDbToDataParentReader(RecordReaderFactory recordReaderFactory,
+	public MultipleRowDbToDataPredecessorReader(RecordReaderFactory recordReaderFactory,
 			DivaDbToCoraConverterFactory converterFactory) {
 		this.recordReaderFactory = recordReaderFactory;
 		this.converterFactory = converterFactory;
@@ -39,19 +39,19 @@ public class MultipleRowDbToDataParentReader extends DivaMultipleRowDbToDataRead
 	@Override
 	public List<DataGroup> read(String type, String id) {
 		RecordReader recordReader = recordReaderFactory.factor();
-		List<Map<String, Object>> parents = readParents(id, recordReader);
-		return convertToDataGroups(parents);
+		List<Map<String, Object>> predecessors = readPredecessors(id, recordReader);
+		return convertToDataGroups(predecessors);
 	}
 
-	private List<Map<String, Object>> readParents(String id, RecordReader recordReader) {
+	private List<Map<String, Object>> readPredecessors(String id, RecordReader recordReader) {
 		Map<String, Object> conditions = new HashMap<>();
-		conditions.put("organisation_id", id);
+		conditions.put("organisation_id", Integer.parseInt(id));
 		return recordReader.readFromTableUsingConditions(getTableName(), conditions);
 	}
 
 	@Override
 	protected String getTableName() {
-		return "divaOrganisationParent";
+		return "divaOrganisationPredecessor";
 	}
 
 }

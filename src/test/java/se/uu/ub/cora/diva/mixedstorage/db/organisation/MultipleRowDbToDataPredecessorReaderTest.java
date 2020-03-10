@@ -32,60 +32,62 @@ import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterSpy;
 
-public class MultipleRowDbToDataParentReaderTest {
+public class MultipleRowDbToDataPredecessorReaderTest {
 
-	private static final String TABLE_NAME = "divaOrganisationParent";
+	private static final String TABLE_NAME = "divaOrganisationPredecessor";
 	private DivaDbToCoraConverterFactorySpy converterFactory;
 	private RecordOrgansationParentReaderFactorySpy recordReaderFactory;
-	private MultipleRowDbToDataReader parentReader;
+	private MultipleRowDbToDataReader predecessorReader;
 
 	@BeforeMethod
 	public void BeforeMethod() {
 		converterFactory = new DivaDbToCoraConverterFactorySpy();
 		recordReaderFactory = new RecordOrgansationParentReaderFactorySpy();
-		parentReader = new MultipleRowDbToDataParentReader(recordReaderFactory, converterFactory);
+		predecessorReader = new MultipleRowDbToDataPredecessorReader(recordReaderFactory,
+				converterFactory);
 	}
 
 	@Test
-	public void testReadParentFactorDbReader() {
-		parentReader.read(TABLE_NAME, "567");
+	public void testReadPredecessorFactorDbReader() {
+		predecessorReader.read(TABLE_NAME, "567");
 		assertTrue(recordReaderFactory.factorWasCalled);
 	}
 
 	@Test
-	public void testReadParentTableRequestedFromReader() {
-		parentReader.read(TABLE_NAME, "567");
+	public void testReadPredecessorTableRequestedFromReader() {
+		predecessorReader.read(TABLE_NAME, "567");
 		OrganisationMultipleRowsRecordReaderSpy recordReader = recordReaderFactory.factored;
 		assertEquals(recordReader.usedTableName, TABLE_NAME);
 	}
 
 	@Test
-	public void testReadParentConditionsForParentTable() throws Exception {
-		parentReader.read(TABLE_NAME, "567");
+	public void testReadPredecessorConditionsForPredecessorTable() throws Exception {
+		predecessorReader.read(TABLE_NAME, "567");
 		OrganisationMultipleRowsRecordReaderSpy recordReader = recordReaderFactory.factored;
 		Map<String, Object> conditions = recordReader.usedConditions;
-		assertEquals(conditions.get("organisation_id"), "567");
+		assertEquals(conditions.get("organisation_id"), 567);
 	}
 
 	@Test
-	public void testReadParentConverterIsFactored() throws Exception {
-		parentReader.read(TABLE_NAME, "567");
+	public void testReadPredecessorConverterIsFactored() throws Exception {
+		predecessorReader.read(TABLE_NAME, "567");
 		DivaDbToCoraConverterSpy divaDbToCoraConverter = converterFactory.factoredConverters.get(0);
 		assertNotNull(divaDbToCoraConverter);
-		assertEquals(converterFactory.factoredTypes.get(0), "divaOrganisationParent");
+		assertEquals(converterFactory.factoredTypes.get(0), "divaOrganisationPredecessor");
 	}
 
 	@Test
-	public void testReadParentNoParentsFound() throws Exception {
+	public void testReadPredecessorNoPredecessorsFound() throws Exception {
 		recordReaderFactory.numToReturn = 0;
-		List<DataGroup> readParents = parentReader.read(TABLE_NAME, "567");
-		assertTrue(readParents.isEmpty());
+		List<DataGroup> readPredecessors = predecessorReader.read(TABLE_NAME, "567");
+		assertTrue(readPredecessors.isEmpty());
 		assertTrue(converterFactory.factoredConverters.isEmpty());
 	}
 
 	@Test
-	public void testParentConverterIsCalledWithReadParentFromDbStorage() throws Exception {
-		parentReader.read(TABLE_NAME, "567");
+	public void testPredecessorConverterIsCalledWithReadPredecessorFromDbStorage()
+			throws Exception {
+		predecessorReader.read(TABLE_NAME, "567");
 		OrganisationMultipleRowsRecordReaderSpy recordReader = recordReaderFactory.factored;
 		DivaDbToCoraConverterSpy divaDbToCoraConverter = converterFactory.factoredConverters.get(0);
 		assertNotNull(divaDbToCoraConverter.mapToConvert);
@@ -93,9 +95,10 @@ public class MultipleRowDbToDataParentReaderTest {
 	}
 
 	@Test
-	public void testParentConverterIsCalledWithMultipleReadParentFromDbStorage() throws Exception {
+	public void testPredecessorConverterIsCalledWithMultipleReadPredecessorFromDbStorage()
+			throws Exception {
 		recordReaderFactory.numToReturn = 3;
-		parentReader.read(TABLE_NAME, "567");
+		predecessorReader.read(TABLE_NAME, "567");
 
 		OrganisationMultipleRowsRecordReaderSpy recordReader = recordReaderFactory.factored;
 		List<DivaDbToCoraConverterSpy> factoredConverters = converterFactory.factoredConverters;
@@ -107,13 +110,13 @@ public class MultipleRowDbToDataParentReaderTest {
 	}
 
 	@Test
-	public void testReadParentMultipleParentsFound() throws Exception {
+	public void testReadPredecessorMultiplePredecessorsFound() throws Exception {
 		recordReaderFactory.numToReturn = 3;
-		List<DataGroup> readParents = parentReader.read(TABLE_NAME, "567");
-		assertEquals(readParents.size(), 3);
+		List<DataGroup> readPredecessors = predecessorReader.read(TABLE_NAME, "567");
+		assertEquals(readPredecessors.size(), 3);
 
-		assertEquals(readParents.get(0).getRepeatId(), "0");
-		assertEquals(readParents.get(1).getRepeatId(), "1");
-		assertEquals(readParents.get(2).getRepeatId(), "2");
+		assertEquals(readPredecessors.get(0).getRepeatId(), "0");
+		assertEquals(readPredecessors.get(1).getRepeatId(), "1");
+		assertEquals(readPredecessors.get(2).getRepeatId(), "2");
 	}
 }

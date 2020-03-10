@@ -18,17 +18,23 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.MultipleRowDbToDataReader;
 
 public class DivaMultipleRowDbToDataReaderFactorySpy implements MultipleRowDbToDataReaderFactory {
 
-	public MultipleRowDbToDataReaderSpy factored;
-	public String usedType = "";
+	public List<MultipleRowDbToDataReaderSpy> listOfFactored = new ArrayList<>();
+	public List<String> usedTypes = new ArrayList<>();
+	public boolean returnEmptyResult = false;
 
 	@Override
 	public MultipleRowDbToDataReader factor(String type) {
-		this.usedType = type;
-		factored = new MultipleRowDbToDataReaderSpy();
+		usedTypes.add(type);
+		MultipleRowDbToDataReaderSpy factored = new MultipleRowDbToDataReaderSpy();
+		factored.returnEmptyResult = returnEmptyResult;
+		listOfFactored.add(factored);
 		return factored;
 	}
 

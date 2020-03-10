@@ -32,7 +32,6 @@ import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
 public class DivaDbOrganisationReader implements DivaDbReader {
 
-	private static final String DIVA_ORGANISATION_PREDECESSOR = "divaOrganisationPredecessor";
 	private RecordReaderFactory recordReaderFactory;
 	private DivaDbToCoraConverterFactory converterFactory;
 	private RecordReader recordReader;
@@ -75,51 +74,22 @@ public class DivaDbOrganisationReader implements DivaDbReader {
 	}
 
 	private void tryToReadAndConvertParents(String id, DataGroup organisation) {
-		MultipleRowDbToDataReader parentReader = multipleRowDbReaderFactory
-				.factor("divaOrganisationParent");
-		List<DataGroup> convertedParents = parentReader.read("divaOrganisationParent", id);
+		String type = "divaOrganisationParent";
+		MultipleRowDbToDataReader parentReader = multipleRowDbReaderFactory.factor(type);
+		List<DataGroup> convertedParents = parentReader.read(type, id);
 		for (DataGroup convertedParent : convertedParents) {
 			organisation.addChild(convertedParent);
 		}
 	}
 
 	private void tryToReadAndConvertPredecessors(String stringId, DataGroup organisation) {
-		Map<String, Object> conditions = new HashMap<>();
-		int id = Integer.parseInt(stringId);
-		conditions.put("organisation_id", id);
-		List<Map<String, Object>> predecessors = recordReader
-				.readFromTableUsingConditions(DIVA_ORGANISATION_PREDECESSOR, conditions);
+		String type = "divaOrganisationPredecessor";
+		MultipleRowDbToDataReader prededcessorReader = multipleRowDbReaderFactory.factor(type);
+		List<DataGroup> convertedPredecessors = prededcessorReader.read(type, stringId);
 
-		possiblyConvertPredecessors(organisation, predecessors);
-	}
-
-	private void possiblyConvertPredecessors(DataGroup organisation,
-			List<Map<String, Object>> predecessors) {
-		if (collectionContainsData(predecessors)) {
-			convertAndAddPredecessors(organisation, predecessors);
+		for (DataGroup convertedPredecessor : convertedPredecessors) {
+			organisation.addChild(convertedPredecessor);
 		}
-	}
-
-	private boolean collectionContainsData(List<Map<String, Object>> successors) {
-		return successors != null && !successors.isEmpty();
-	}
-
-	private void convertAndAddPredecessors(DataGroup organisation,
-			List<Map<String, Object>> predecessors) {
-		int repeatId = 0;
-		for (Map<String, Object> predecessorValues : predecessors) {
-			convertAndAddPredecessor(organisation, repeatId, predecessorValues);
-			repeatId++;
-		}
-	}
-
-	private void convertAndAddPredecessor(DataGroup organisation, int repeatId,
-			Map<String, Object> predecessorValues) {
-		DivaDbToCoraConverter predecessorConverter = getConverterFactory()
-				.factor(DIVA_ORGANISATION_PREDECESSOR);
-		DataGroup predecessor = predecessorConverter.fromMap(predecessorValues);
-		predecessor.setRepeatId(String.valueOf(repeatId));
-		organisation.addChild(predecessor);
 	}
 
 	public RecordReaderFactory getRecordReaderFactory() {
