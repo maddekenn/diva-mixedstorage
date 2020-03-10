@@ -115,20 +115,32 @@ public class DivaDbRecordStorage implements RecordStorage {
 			List<Map<String, Object>> rowsFromDb = readAllFromDb(type);
 			List<DataGroup> convertedGroups = new ArrayList<>();
 			for (Map<String, Object> map : rowsFromDb) {
-				DataGroup convertedOrganisation = convertOneMapFromDbToDataGroup(type, map);
-				String id = (String) map.get("id");
-				addParentsToOrganisation(convertedOrganisation, id);
-				MultipleRowDbToDataReader predecessorMultipleReader = divaDbFactory
-						.factorMultipleReader("divaOrganisationPredecessor");
-				List<DataGroup> readPredecessor = predecessorMultipleReader
-						.read("divaOrganisationPredecessor", id);
-				convertedOrganisation.addChild(readPredecessor.get(0));
-				convertedGroups.add(convertedOrganisation);
+				convertOrganisation(type, convertedGroups, map);
 			}
 
 			return createStorageReadResult(convertedGroups);
 		}
 		throw NotImplementedException.withMessage("readList is not implemented for type: " + type);
+	}
+
+	private void convertOrganisation(String type, List<DataGroup> convertedGroups,
+			Map<String, Object> map) {
+		DataGroup convertedOrganisation = convertOneMapFromDbToDataGroup(type, map);
+		String id = (String) map.get("id");
+		addParentsToOrganisation(convertedOrganisation, id);
+		addPredecessorsToOrganisation(convertedOrganisation, id);
+		convertedGroups.add(convertedOrganisation);
+	}
+
+	private void addPredecessorsToOrganisation(DataGroup convertedOrganisation, String id) {
+		MultipleRowDbToDataReader predecessorReader = divaDbFactory
+				.factorMultipleReader("divaOrganisationPredecessor");
+		List<DataGroup> readPredecessors = predecessorReader.read("divaOrganisationPredecessor",
+				id);
+		for (DataGroup predecessor : readPredecessors) {
+			convertedOrganisation.addChild(predecessor);
+
+		}
 	}
 
 	private void addParentsToOrganisation(DataGroup convertedOrganisation, String id) {
@@ -143,21 +155,6 @@ public class DivaDbRecordStorage implements RecordStorage {
 	private List<Map<String, Object>> readAllFromDb(String type) {
 		RecordReader recordReader = recordReaderFactory.factor();
 		return recordReader.readAllFromTable(type);
-	}
-
-	private List<DataGroup> readCompleteOrganisations(List<Map<String, Object>> rowsFromDb) {
-		List<DataGroup> listToReturn = new ArrayList<>(rowsFromDb.size());
-		for (Map<String, Object> map : rowsFromDb) {
-			readCompleteOrganisationAndAddToList(listToReturn, map);
-		}
-		return listToReturn;
-	}
-
-	private void readCompleteOrganisationAndAddToList(List<DataGroup> listToReturn,
-			Map<String, Object> map) {
-		String id = (String) map.get("id");
-		DataGroup readOrganisation = read(DIVA_ORGANISATION, id);
-		listToReturn.add(readOrganisation);
 	}
 
 	private StorageReadResult createStorageReadResult(List<DataGroup> listToReturn) {
