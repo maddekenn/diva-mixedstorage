@@ -18,6 +18,7 @@
  */
 package se.uu.ub.cora.diva.mixedstorage.db;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
@@ -26,6 +27,9 @@ import org.testng.annotations.Test;
 
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbOrganisationReader;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaMultipleRowDbToDataReaderImp;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.MultipleRowDbToDataParentReader;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.MultipleRowDbToDataPredecessorReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
 public class DivaDbFactoryTest {
@@ -37,7 +41,6 @@ public class DivaDbFactoryTest {
 	public void beforeMethod() {
 		readerFactory = new RecordReaderFactorySpy();
 		converterFactory = new DivaDbToCoraConverterFactorySpy();
-
 		divaDbToCoraFactoryImp = new DivaDbFactoryImp(readerFactory, converterFactory);
 	}
 
@@ -48,9 +51,18 @@ public class DivaDbFactoryTest {
 	}
 
 	@Test
-	public void testFactoryOrganisation() {
+	public void testFactorOrganisation() {
 		DivaDbReader divaDbToCoraOrganisation = divaDbToCoraFactoryImp.factor("divaOrganisation");
 		assertTrue(divaDbToCoraOrganisation instanceof DivaDbOrganisationReader);
+	}
+
+	@Test
+	public void testFactorOrganisationGetDbFactory() {
+		DivaDbOrganisationReader factored = (DivaDbOrganisationReader) divaDbToCoraFactoryImp
+				.factor("divaOrganisation");
+		DivaDbFactoryImp dbFactory = (DivaDbFactoryImp) factored.getDbFactory();
+		assertSame(dbFactory.getConverterFactory(), converterFactory);
+		assertSame(dbFactory.getReaderFactory(), readerFactory);
 	}
 
 	@Test
@@ -59,6 +71,30 @@ public class DivaDbFactoryTest {
 				.factor("divaOrganisation");
 		assertSame(divaDbToCoraOrganisation.getRecordReaderFactory(), readerFactory);
 		assertSame(divaDbToCoraOrganisation.getConverterFactory(), converterFactory);
+	}
+
+	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
+			+ "No implementation found for: someType")
+	public void factorUnknownMultipleReaderTypeThrowsException() {
+		divaDbToCoraFactoryImp.factorMultipleReader("someType");
+	}
+
+	@Test
+	public void testFactoryParentMultipleRow() {
+		DivaMultipleRowDbToDataReaderImp multipleRowDbReader = (DivaMultipleRowDbToDataReaderImp) divaDbToCoraFactoryImp
+				.factorMultipleReader("divaOrganisationParent");
+		assertTrue(multipleRowDbReader instanceof MultipleRowDbToDataParentReader);
+		assertEquals(multipleRowDbReader.getRecordReaderFactory(), readerFactory);
+		assertEquals(multipleRowDbReader.getConverterFactory(), converterFactory);
+	}
+
+	@Test
+	public void testFactoryPredecessorMultipleRow() {
+		DivaMultipleRowDbToDataReaderImp multipleRowDbReader = (DivaMultipleRowDbToDataReaderImp) divaDbToCoraFactoryImp
+				.factorMultipleReader("divaOrganisationPredecessor");
+		assertTrue(multipleRowDbReader instanceof MultipleRowDbToDataPredecessorReader);
+		assertEquals(multipleRowDbReader.getRecordReaderFactory(), readerFactory);
+		assertEquals(multipleRowDbReader.getConverterFactory(), converterFactory);
 	}
 
 	@Test
@@ -70,4 +106,5 @@ public class DivaDbFactoryTest {
 	public void testGetConverterFactory() {
 		assertSame(divaDbToCoraFactoryImp.getConverterFactory(), converterFactory);
 	}
+
 }

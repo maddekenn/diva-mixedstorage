@@ -5,13 +5,13 @@ import java.util.List;
 
 public class DivaDbToCoraConverterFactorySpy implements DivaDbToCoraConverterFactory {
 
-	public List<DivaDbToCoraConverter> factoredConverters = new ArrayList<>();
+	public List<DivaDbToCoraConverterSpy> factoredConverters = new ArrayList<>();
 	public List<String> factoredTypes = new ArrayList<>();
 
 	@Override
 	public DivaDbToCoraConverter factor(String type) {
 		factoredTypes.add(type);
-		DivaDbToCoraConverter converter = new DivaDbToCoraConverterSpy();
+		DivaDbToCoraConverterSpy converter = new DivaDbToCoraConverterSpy();
 		factoredConverters.add(converter);
 		return converter;
 	}

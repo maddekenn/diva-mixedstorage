@@ -24,6 +24,7 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
+import java.util.List;
 import java.util.Map;
 
 import org.testng.annotations.BeforeMethod;
@@ -51,8 +52,8 @@ public class DivaDbRecordStorageTest {
 		divaDbFactorySpy = new DivaDbFactorySpy();
 		divaDbUpdaterFactorySpy = new DivaDbUpdaterFactorySpy();
 		divaRecordStorage = DivaDbRecordStorage
-				.usingRecordReaderFactoryDivaFactoryAndDivaDbUpdaterFactory(
-						recordReaderFactorySpy, divaDbFactorySpy, divaDbUpdaterFactorySpy);
+				.usingRecordReaderFactoryDivaFactoryAndDivaDbUpdaterFactory(recordReaderFactorySpy,
+						divaDbFactorySpy, divaDbUpdaterFactorySpy, converterFactorySpy);
 	}
 
 	@Test
@@ -150,37 +151,118 @@ public class DivaDbRecordStorageTest {
 	}
 
 	@Test
-	public void testReadOrganisationListAllIdsAreReadFromDb() throws Exception {
-		RecordReaderFactoryForListSpy recordReaderFactoryForList = new RecordReaderFactoryForListSpy();
-		divaRecordStorage = DivaDbRecordStorage
-				.usingRecordReaderFactoryDivaFactoryAndDivaDbUpdaterFactory(
-						recordReaderFactoryForList, divaDbFactorySpy, divaDbUpdaterFactorySpy);
+	public void testReadOrganisationListFactorMultipleParentReader() throws Exception {
+		divaRecordStorage.readList(ORGANISATION_TYPE, new DataGroupSpy("filter"));
+		assertEquals(divaDbFactorySpy.usedTypes.get(0), "divaOrganisationParent");
+	}
 
-		StorageReadResult readList = divaRecordStorage.readList(ORGANISATION_TYPE,
-				new DataGroupSpy("filter"));
+	@Test
+	public void testReadOrganisationListMultipleFactoryIsCalledCorrectly() {
+		RecordReaderFactoryForListSpy recordReaderFactoryForList = new RecordReaderFactoryForListSpy();
+		setUpRecordStorageAndReadList(recordReaderFactoryForList);
+
+		assertEquals(divaDbFactorySpy.listOfFactoredMultiples.size(), 6);
+		assertEquals(divaDbFactorySpy.usedTypes.size(), 6);
+		assertEquals(divaDbFactorySpy.usedTypes.get(0), "divaOrganisationParent");
+		assertEquals(divaDbFactorySpy.usedTypes.get(2), "divaOrganisationParent");
+		assertEquals(divaDbFactorySpy.usedTypes.get(4), "divaOrganisationParent");
+		assertEquals(divaDbFactorySpy.usedTypes.get(1), "divaOrganisationPredecessor");
+		assertEquals(divaDbFactorySpy.usedTypes.get(3), "divaOrganisationPredecessor");
+		assertEquals(divaDbFactorySpy.usedTypes.get(5), "divaOrganisationPredecessor");
+	}
+
+	@Test
+	public void testReadOrganisationListMultipleReadersAreCalledCorrectly() {
+		RecordReaderFactoryForListSpy recordReaderFactoryForList = new RecordReaderFactoryForListSpy();
+		setUpRecordStorageAndReadList(recordReaderFactoryForList);
 
 		RecordReaderForListSpy recordReader = recordReaderFactoryForList.factored;
 
-		assertIdFromListIsSentToReaderUsingIndex(recordReader, 0);
-		assertIdFromListIsSentToReaderUsingIndex(recordReader, 1);
-		assertIdFromListIsSentToReaderUsingIndex(recordReader, 2);
+		List<Map<String, Object>> readRows = recordReader.returnedList;
 
-		assertReadRecordIsAddedToResultUsingIndex(readList, 0);
-		assertReadRecordIsAddedToResultUsingIndex(readList, 1);
-		assertReadRecordIsAddedToResultUsingIndex(readList, 2);
+		List<MultipleRowDbToDataReaderSpy> multipleReaders = divaDbFactorySpy.listOfFactoredMultiples;
+		assertEquals(multipleReaders.get(0).usedType, "divaOrganisationParent");
+		assertSame(multipleReaders.get(0).usedId, readRows.get(0).get("id"));
+		assertEquals(multipleReaders.get(1).usedType, "divaOrganisationPredecessor");
+		assertSame(multipleReaders.get(1).usedId, readRows.get(0).get("id"));
+
+		assertEquals(multipleReaders.get(2).usedType, "divaOrganisationParent");
+		assertSame(multipleReaders.get(2).usedId, readRows.get(1).get("id"));
+		assertEquals(multipleReaders.get(3).usedType, "divaOrganisationPredecessor");
+		assertSame(multipleReaders.get(3).usedId, readRows.get(1).get("id"));
+
+		assertEquals(multipleReaders.get(4).usedType, "divaOrganisationParent");
+		assertSame(multipleReaders.get(4).usedId, readRows.get(2).get("id"));
+		assertEquals(multipleReaders.get(5).usedType, "divaOrganisationPredecessor");
+		assertSame(multipleReaders.get(5).usedId, readRows.get(2).get("id"));
+
 	}
 
-	private void assertIdFromListIsSentToReaderUsingIndex(RecordReaderForListSpy recordReader,
+	@Test
+	public void testReadOrganisationListAllReadFromDbAreSentToConverterAndAddedToResult() {
+		RecordReaderFactoryForListSpy recordReaderFactoryForList = new RecordReaderFactoryForListSpy();
+		StorageReadResult readList = setUpRecordStorageAndReadList(recordReaderFactoryForList);
+
+		RecordReaderForListSpy recordReader = recordReaderFactoryForList.factored;
+		List<DataGroup> organisations = readList.listOfDataGroups;
+
+		assertReadRecordIsSentToConverterUsingIndex(recordReader, 0);
+		assertConvertedRowIsAddedToResultUsingIndex(readList, 0);
+		assertCorrectParentsAndPredecessorsWereAddedToOrganisation(organisations.get(0), 0, 1);
+
+		assertReadRecordIsSentToConverterUsingIndex(recordReader, 1);
+		assertConvertedRowIsAddedToResultUsingIndex(readList, 1);
+		assertCorrectParentsAndPredecessorsWereAddedToOrganisation(organisations.get(1), 2, 3);
+
+		assertReadRecordIsSentToConverterUsingIndex(recordReader, 2);
+		assertConvertedRowIsAddedToResultUsingIndex(readList, 2);
+		assertCorrectParentsAndPredecessorsWereAddedToOrganisation(organisations.get(2), 4, 5);
+
+	}
+
+	private StorageReadResult setUpRecordStorageAndReadList(
+			RecordReaderFactoryForListSpy recordReaderFactoryForList) {
+		divaRecordStorage = DivaDbRecordStorage
+				.usingRecordReaderFactoryDivaFactoryAndDivaDbUpdaterFactory(
+						recordReaderFactoryForList, divaDbFactorySpy, divaDbUpdaterFactorySpy,
+						converterFactorySpy);
+
+		StorageReadResult readList = divaRecordStorage.readList(ORGANISATION_TYPE,
+				new DataGroupSpy("filter"));
+		return readList;
+	}
+
+	private void assertCorrectParentsAndPredecessorsWereAddedToOrganisation(DataGroup organisation,
+			int parentReaderIndex, int predecessorReaderIndex) {
+		List<DataGroup> parentsInOrganisation = organisation
+				.getAllGroupsWithNameInData("divaOrganisationParentChildFromSpy");
+		MultipleRowDbToDataReaderSpy parentMultipleReader = divaDbFactorySpy.listOfFactoredMultiples
+				.get(parentReaderIndex);
+		List<DataGroup> returnedList = parentMultipleReader.returnedList;
+		assertSame(parentsInOrganisation.get(0), returnedList.get(0));
+		assertSame(parentsInOrganisation.get(1), returnedList.get(1));
+
+		List<DataGroup> predececssorsInOrganisation = organisation
+				.getAllGroupsWithNameInData("divaOrganisationPredecessorChildFromSpy");
+		MultipleRowDbToDataReaderSpy predecessorMultipleReader = divaDbFactorySpy.listOfFactoredMultiples
+				.get(predecessorReaderIndex);
+		List<DataGroup> returnedListPredecessors = predecessorMultipleReader.returnedList;
+		assertSame(predececssorsInOrganisation.get(0), returnedListPredecessors.get(0));
+		assertSame(predececssorsInOrganisation.get(1), returnedListPredecessors.get(1));
+	}
+
+	private void assertReadRecordIsSentToConverterUsingIndex(RecordReaderForListSpy recordReader,
 			int index) {
-		DivaDbSpy factoredDbSpy = divaDbFactorySpy.factoredList.get(index);
-		String idFromReadRecord = (String) recordReader.returnedList.get(index).get("id");
-		assertEquals(idFromReadRecord, factoredDbSpy.id);
-		assertEquals(divaDbFactorySpy.factoredList.size(), 3);
+		Map<String, Object> readRow = recordReader.returnedList.get(index);
+		DivaDbToCoraConverterSpy factoredConverter = converterFactorySpy.factoredConverters
+				.get(index);
+		assertSame(readRow, factoredConverter.mapToConvert);
 	}
 
-	private void assertReadRecordIsAddedToResultUsingIndex(StorageReadResult readList, int index) {
-		DivaDbSpy factoredDbSpy = divaDbFactorySpy.factoredList.get(index);
-		assertSame(factoredDbSpy.dataGroup, readList.listOfDataGroups.get(index));
+	private void assertConvertedRowIsAddedToResultUsingIndex(StorageReadResult readList,
+			int index) {
+		DivaDbToCoraConverterSpy converterSpy = converterFactorySpy.factoredConverters.get(index);
+		assertSame(converterSpy.convertedDbDataGroup, readList.listOfDataGroups.get(index));
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""

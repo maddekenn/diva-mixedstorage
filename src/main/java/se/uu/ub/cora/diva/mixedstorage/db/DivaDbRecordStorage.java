@@ -26,6 +26,7 @@ import java.util.Map;
 
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
+import se.uu.ub.cora.diva.mixedstorage.db.organisation.MultipleRowDbToDataReader;
 import se.uu.ub.cora.sqldatabase.RecordReader;
 import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
@@ -39,19 +40,24 @@ public class DivaDbRecordStorage implements RecordStorage {
 	private RecordReaderFactory recordReaderFactory;
 	private DivaDbFactory divaDbFactory;
 	private DivaDbUpdaterFactory divaDbUpdaterFactory;
+	private DivaDbToCoraConverterFactory converterFactory;
 
 	private DivaDbRecordStorage(RecordReaderFactory recordReaderFactory,
-			DivaDbFactory divaDbReaderFactory, DivaDbUpdaterFactory divaDbUpdaterFactory) {
+			DivaDbFactory divaDbReaderFactory, DivaDbUpdaterFactory divaDbUpdaterFactory,
+			DivaDbToCoraConverterFactory converterFactory) {
 		this.recordReaderFactory = recordReaderFactory;
 		this.divaDbFactory = divaDbReaderFactory;
 		this.divaDbUpdaterFactory = divaDbUpdaterFactory;
+		this.converterFactory = converterFactory;
 
 	}
 
 	public static DivaDbRecordStorage usingRecordReaderFactoryDivaFactoryAndDivaDbUpdaterFactory(
 			RecordReaderFactory recordReaderFactory, DivaDbFactory divaDbFactory,
-			DivaDbUpdaterFactory divaDbUpdaterFactory) {
-		return new DivaDbRecordStorage(recordReaderFactory, divaDbFactory, divaDbUpdaterFactory);
+			DivaDbUpdaterFactory divaDbUpdaterFactory,
+			DivaDbToCoraConverterFactory converterFactory) {
+		return new DivaDbRecordStorage(recordReaderFactory, divaDbFactory, divaDbUpdaterFactory,
+				converterFactory);
 	}
 
 	@Override
@@ -98,34 +104,57 @@ public class DivaDbRecordStorage implements RecordStorage {
 		}
 	}
 
+	private DataGroup convertOneMapFromDbToDataGroup(String type, Map<String, Object> readRow) {
+		DivaDbToCoraConverter dbToCoraConverter = converterFactory.factor(type);
+		return dbToCoraConverter.fromMap(readRow);
+	}
+
 	@Override
 	public StorageReadResult readList(String type, DataGroup filter) {
 		if (DIVA_ORGANISATION.equals(type)) {
 			List<Map<String, Object>> rowsFromDb = readAllFromDb(type);
-			List<DataGroup> listToReturn = readCompleteOrganisations(rowsFromDb);
-			return createStorageReadResult(listToReturn);
+			List<DataGroup> convertedGroups = new ArrayList<>();
+			for (Map<String, Object> map : rowsFromDb) {
+				convertOrganisation(type, convertedGroups, map);
+			}
+
+			return createStorageReadResult(convertedGroups);
 		}
 		throw NotImplementedException.withMessage("readList is not implemented for type: " + type);
+	}
+
+	private void convertOrganisation(String type, List<DataGroup> convertedGroups,
+			Map<String, Object> map) {
+		DataGroup convertedOrganisation = convertOneMapFromDbToDataGroup(type, map);
+		String id = (String) map.get("id");
+		addParentsToOrganisation(convertedOrganisation, id);
+		addPredecessorsToOrganisation(convertedOrganisation, id);
+		convertedGroups.add(convertedOrganisation);
+	}
+
+	private void addPredecessorsToOrganisation(DataGroup convertedOrganisation, String id) {
+		MultipleRowDbToDataReader predecessorReader = divaDbFactory
+				.factorMultipleReader("divaOrganisationPredecessor");
+		List<DataGroup> readPredecessors = predecessorReader.read("divaOrganisationPredecessor",
+				id);
+		for (DataGroup predecessor : readPredecessors) {
+			convertedOrganisation.addChild(predecessor);
+
+		}
+	}
+
+	private void addParentsToOrganisation(DataGroup convertedOrganisation, String id) {
+		MultipleRowDbToDataReader parentMultipleReader = divaDbFactory
+				.factorMultipleReader("divaOrganisationParent");
+		List<DataGroup> readParents = parentMultipleReader.read("divaOrganisationParent", id);
+		for (DataGroup parent : readParents) {
+			convertedOrganisation.addChild(parent);
+		}
 	}
 
 	private List<Map<String, Object>> readAllFromDb(String type) {
 		RecordReader recordReader = recordReaderFactory.factor();
 		return recordReader.readAllFromTable(type);
-	}
-
-	private List<DataGroup> readCompleteOrganisations(List<Map<String, Object>> rowsFromDb) {
-		List<DataGroup> listToReturn = new ArrayList<>(rowsFromDb.size());
-		for (Map<String, Object> map : rowsFromDb) {
-			readCompleteOrganisationAndAddToList(listToReturn, map);
-		}
-		return listToReturn;
-	}
-
-	private void readCompleteOrganisationAndAddToList(List<DataGroup> listToReturn,
-			Map<String, Object> map) {
-		String id = (String) map.get("id");
-		DataGroup readOrganisation = read(DIVA_ORGANISATION, id);
-		listToReturn.add(readOrganisation);
 	}
 
 	private StorageReadResult createStorageReadResult(List<DataGroup> listToReturn) {
@@ -197,6 +226,11 @@ public class DivaDbRecordStorage implements RecordStorage {
 	public DivaDbUpdaterFactory getRecordStorageForOneTypeFactory() {
 		// needed for test
 		return divaDbUpdaterFactory;
+	}
+
+	public DivaDbToCoraConverterFactory getConverterFactory() {
+		// needed for test
+		return converterFactory;
 	}
 
 }

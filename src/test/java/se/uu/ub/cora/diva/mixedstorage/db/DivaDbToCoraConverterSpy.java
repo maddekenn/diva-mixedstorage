@@ -7,7 +7,6 @@ import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
 
 public class DivaDbToCoraConverterSpy implements DivaDbToCoraConverter {
 	public Map<String, Object> mapToConvert;
-	public DataGroup convertedDataGroup;
 	public DataGroup convertedDbDataGroup;
 
 	@Override

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.diva.mixedstorage.db.DivaDbFactory;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbReader;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverter;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactory;
@@ -31,35 +32,32 @@ import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 
 public class DivaDbOrganisationReader implements DivaDbReader {
 
-	private static final String DIVA_ORGANISATION_PREDECESSOR = "divaOrganisationPredecessor";
 	private RecordReaderFactory recordReaderFactory;
 	private DivaDbToCoraConverterFactory converterFactory;
 	private RecordReader recordReader;
+	private DivaDbFactory divaDbFactory;
 
 	public DivaDbOrganisationReader(RecordReaderFactory recordReaderFactory,
-			DivaDbToCoraConverterFactory converterFactory) {
+			DivaDbToCoraConverterFactory converterFactory, DivaDbFactory divaDbFactory) {
 		this.recordReaderFactory = recordReaderFactory;
 		this.converterFactory = converterFactory;
+		this.divaDbFactory = divaDbFactory;
 	}
 
 	public static DivaDbOrganisationReader usingRecordReaderFactoryAndConverterFactory(
-			RecordReaderFactory recordReaderFactory,
-			DivaDbToCoraConverterFactory converterFactory) {
-		return new DivaDbOrganisationReader(recordReaderFactory, converterFactory);
+			RecordReaderFactory recordReaderFactory, DivaDbToCoraConverterFactory converterFactory,
+			DivaDbFactory divaDbFactory) {
+		return new DivaDbOrganisationReader(recordReaderFactory, converterFactory, divaDbFactory);
 	}
 
 	@Override
 	public DataGroup read(String type, String id) {
 		recordReader = getRecordReaderFactory().factor();
-		DataGroup organisation = readAndConvertOrganisationFromDb(type, id);
+		Map<String, Object> readRow = readOneRowFromDbUsingTypeAndId(type, id);
+		DataGroup organisation = convertOneMapFromDbToDataGroup(type, readRow);
 		tryToReadAndConvertParents(id, organisation);
 		tryToReadAndConvertPredecessors(id, organisation);
 		return organisation;
-	}
-
-	private DataGroup readAndConvertOrganisationFromDb(String type, String id) {
-		Map<String, Object> readRow = readOneRowFromDbUsingTypeAndId(type, id);
-		return convertOneMapFromDbToDataGroup(type, readRow);
 	}
 
 	private Map<String, Object> readOneRowFromDbUsingTypeAndId(String type, String id) {
@@ -74,74 +72,22 @@ public class DivaDbOrganisationReader implements DivaDbReader {
 	}
 
 	private void tryToReadAndConvertParents(String id, DataGroup organisation) {
-		Map<String, Object> conditions = new HashMap<>();
-		conditions.put("organisation_id", id);
-		List<Map<String, Object>> parents = recordReader
-				.readFromTableUsingConditions("divaOrganisationParent", conditions);
-
-		possiblyConvertParents(organisation, parents);
-	}
-
-	private void possiblyConvertParents(DataGroup organisation, List<Map<String, Object>> parents) {
-		if (collectionContainsData(parents)) {
-			convertAndAddParents(organisation, parents);
+		String type = "divaOrganisationParent";
+		MultipleRowDbToDataReader parentReader = divaDbFactory.factorMultipleReader(type);
+		List<DataGroup> convertedParents = parentReader.read(type, id);
+		for (DataGroup convertedParent : convertedParents) {
+			organisation.addChild(convertedParent);
 		}
-	}
-
-	private void convertAndAddParents(DataGroup organisation, List<Map<String, Object>> parents) {
-		int repeatId = 0;
-		for (Map<String, Object> parentValues : parents) {
-			convertAndAddParent(organisation, repeatId, parentValues);
-			repeatId++;
-		}
-	}
-
-	private void convertAndAddParent(DataGroup organisation, int repeatId,
-			Map<String, Object> parentValues) {
-		DivaDbToCoraConverter predecessorConverter = getConverterFactory()
-				.factor("divaOrganisationParent");
-		DataGroup parent = predecessorConverter.fromMap(parentValues);
-		parent.setRepeatId(String.valueOf(repeatId));
-		organisation.addChild(parent);
 	}
 
 	private void tryToReadAndConvertPredecessors(String stringId, DataGroup organisation) {
-		Map<String, Object> conditions = new HashMap<>();
-		int id = Integer.parseInt(stringId);
-		conditions.put("organisation_id", id);
-		List<Map<String, Object>> predecessors = recordReader
-				.readFromTableUsingConditions(DIVA_ORGANISATION_PREDECESSOR, conditions);
+		String type = "divaOrganisationPredecessor";
+		MultipleRowDbToDataReader prededcessorReader = divaDbFactory.factorMultipleReader(type);
+		List<DataGroup> convertedPredecessors = prededcessorReader.read(type, stringId);
 
-		possiblyConvertPredecessors(organisation, predecessors);
-	}
-
-	private void possiblyConvertPredecessors(DataGroup organisation,
-			List<Map<String, Object>> predecessors) {
-		if (collectionContainsData(predecessors)) {
-			convertAndAddPredecessors(organisation, predecessors);
+		for (DataGroup convertedPredecessor : convertedPredecessors) {
+			organisation.addChild(convertedPredecessor);
 		}
-	}
-
-	private boolean collectionContainsData(List<Map<String, Object>> successors) {
-		return successors != null && !successors.isEmpty();
-	}
-
-	private void convertAndAddPredecessors(DataGroup organisation,
-			List<Map<String, Object>> predecessors) {
-		int repeatId = 0;
-		for (Map<String, Object> predecessorValues : predecessors) {
-			convertAndAddPredecessor(organisation, repeatId, predecessorValues);
-			repeatId++;
-		}
-	}
-
-	private void convertAndAddPredecessor(DataGroup organisation, int repeatId,
-			Map<String, Object> predecessorValues) {
-		DivaDbToCoraConverter predecessorConverter = getConverterFactory()
-				.factor(DIVA_ORGANISATION_PREDECESSOR);
-		DataGroup predecessor = predecessorConverter.fromMap(predecessorValues);
-		predecessor.setRepeatId(String.valueOf(repeatId));
-		organisation.addChild(predecessor);
 	}
 
 	public RecordReaderFactory getRecordReaderFactory() {
@@ -152,5 +98,10 @@ public class DivaDbOrganisationReader implements DivaDbReader {
 	public DivaDbToCoraConverterFactory getConverterFactory() {
 		// for testing
 		return converterFactory;
+	}
+
+	public DivaDbFactory getDbFactory() {
+		// for testing
+		return divaDbFactory;
 	}
 }
