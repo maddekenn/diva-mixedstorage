@@ -39,8 +39,9 @@ public class DivaDbFactoryImp implements DivaDbFactory {
 	@Override
 	public DivaDbReader factor(String type) {
 		if ("divaOrganisation".equals(type)) {
+			DivaDbFactory divaDbFactory = new DivaDbFactoryImp(readerFactory, converterFactory);
 			return DivaDbOrganisationReader.usingRecordReaderFactoryAndConverterFactory(
-					readerFactory, converterFactory, null);
+					readerFactory, converterFactory, divaDbFactory);
 		}
 		throw NotImplementedException.withMessage("No implementation found for: " + type);
 	}

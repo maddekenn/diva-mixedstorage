@@ -41,7 +41,6 @@ public class DivaDbFactoryTest {
 	public void beforeMethod() {
 		readerFactory = new RecordReaderFactorySpy();
 		converterFactory = new DivaDbToCoraConverterFactorySpy();
-
 		divaDbToCoraFactoryImp = new DivaDbFactoryImp(readerFactory, converterFactory);
 	}
 
@@ -52,9 +51,18 @@ public class DivaDbFactoryTest {
 	}
 
 	@Test
-	public void testFactoryOrganisation() {
+	public void testFactorOrganisation() {
 		DivaDbReader divaDbToCoraOrganisation = divaDbToCoraFactoryImp.factor("divaOrganisation");
 		assertTrue(divaDbToCoraOrganisation instanceof DivaDbOrganisationReader);
+	}
+
+	@Test
+	public void testFactorOrganisationGetDbFactory() {
+		DivaDbOrganisationReader factored = (DivaDbOrganisationReader) divaDbToCoraFactoryImp
+				.factor("divaOrganisation");
+		DivaDbFactoryImp dbFactory = (DivaDbFactoryImp) factored.getDbFactory();
+		assertSame(dbFactory.getConverterFactory(), converterFactory);
+		assertSame(dbFactory.getReaderFactory(), readerFactory);
 	}
 
 	@Test
@@ -98,4 +106,5 @@ public class DivaDbFactoryTest {
 	public void testGetConverterFactory() {
 		assertSame(divaDbToCoraFactoryImp.getConverterFactory(), converterFactory);
 	}
+
 }

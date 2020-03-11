@@ -99,4 +99,9 @@ public class DivaDbOrganisationReader implements DivaDbReader {
 		// for testing
 		return converterFactory;
 	}
+
+	public DivaDbFactory getDbFactory() {
+		// for testing
+		return divaDbFactory;
+	}
 }
