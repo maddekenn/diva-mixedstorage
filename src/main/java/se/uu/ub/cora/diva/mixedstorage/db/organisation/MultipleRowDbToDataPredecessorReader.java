@@ -45,7 +45,7 @@ public class MultipleRowDbToDataPredecessorReader extends DivaMultipleRowDbToDat
 
 	private List<Map<String, Object>> readPredecessors(String id, RecordReader recordReader) {
 		Map<String, Object> conditions = new HashMap<>();
-		conditions.put("organisation_id", Integer.parseInt(id));
+		conditions.put("organisation_id", Integer.valueOf(id));
 		return recordReader.readFromTableUsingConditions(getTableName(), conditions);
 	}
 

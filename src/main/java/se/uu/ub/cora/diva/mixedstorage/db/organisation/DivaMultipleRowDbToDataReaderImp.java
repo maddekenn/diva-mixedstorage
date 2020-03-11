@@ -34,7 +34,7 @@ public abstract class DivaMultipleRowDbToDataReaderImp {
 
 	protected List<DataGroup> convertToDataGroups(List<Map<String, Object>> readRows) {
 		int repeatId = 0;
-		List<DataGroup> convertedDataGroups = new ArrayList<>();
+		List<DataGroup> convertedDataGroups = new ArrayList<>(readRows.size());
 		for (Map<String, Object> readRow : readRows) {
 			DataGroup convertedParent = convertToDataGroup(repeatId, readRow);
 			convertedDataGroups.add(convertedParent);
