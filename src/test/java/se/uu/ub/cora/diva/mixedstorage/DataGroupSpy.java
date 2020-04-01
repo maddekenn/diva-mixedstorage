@@ -20,9 +20,9 @@ package se.uu.ub.cora.diva.mixedstorage;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAttribute;
@@ -34,7 +34,7 @@ public class DataGroupSpy implements DataGroup {
 	public String nameInData;
 	public List<DataElement> children = new ArrayList<>();
 	public String repeatId;
-	public Map<String, String> addedAttributes = new HashMap<>();
+	public Set<DataAttribute> addedAttributes = new HashSet<>();
 	public String recordType;
 	public String recordId;
 
@@ -111,7 +111,7 @@ public class DataGroupSpy implements DataGroup {
 
 	@Override
 	public void addAttributeByIdWithValue(String id, String value) {
-		addedAttributes.put(id, value);
+		addedAttributes.add(new DataAttributeSpy(id, value));
 
 	}
 
@@ -138,12 +138,17 @@ public class DataGroupSpy implements DataGroup {
 	}
 
 	@Override
-	public String getAttribute(String attributeId) {
-		return addedAttributes.get(attributeId);
+	public DataAttribute getAttribute(String attributeId) {
+		for (DataAttribute dataAttribute : addedAttributes) {
+			if (dataAttribute.getNameInData().equals(attributeId)) {
+				return dataAttribute;
+			}
+		}
+		return null;
 	}
 
 	@Override
-	public Map<String, String> getAttributes() {
+	public Collection<DataAttribute> getAttributes() {
 		return addedAttributes;
 	}
 
@@ -160,12 +165,14 @@ public class DataGroupSpy implements DataGroup {
 	}
 
 	@Override
-	public void removeFirstChildWithNameInData(String childNameInData) {
+	public boolean removeFirstChildWithNameInData(String childNameInData) {
 		for (DataElement dataElement : getChildren()) {
 			if (dataElementsNameInDataIs(dataElement, childNameInData)) {
 				getChildren().remove(dataElement);
+				return true;
 			}
 		}
+		return false;
 	}
 
 	private boolean dataElementsNameInDataIs(DataElement dataElement, String childNameInData) {
@@ -182,7 +189,7 @@ public class DataGroupSpy implements DataGroup {
 			boolean addGroup = false;
 			for (DataAttribute requestedAttribute : childAttributes) {
 				String childAttribute = childDataGroup
-						.getAttribute(requestedAttribute.getNameInData());
+						.getAttribute(requestedAttribute.getNameInData()).getValue();
 				if (childAttribute != null
 						&& childAttribute.equals(requestedAttribute.getValue())) {
 					addGroup = true;
@@ -195,6 +202,36 @@ public class DataGroupSpy implements DataGroup {
 		}
 		return foundDataGroups;
 		// return null;
+	}
+
+	@Override
+	public boolean hasChildren() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void addChildren(Collection<DataElement> dataElements) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public List<DataElement> getAllChildrenWithNameInData(String nameInData) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean removeAllChildrenWithNameInData(String childNameInData) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public DataAtomic getFirstDataAtomicWithNameInData(String childNameInData) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
