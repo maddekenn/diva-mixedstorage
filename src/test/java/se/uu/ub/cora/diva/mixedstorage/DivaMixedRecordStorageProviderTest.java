@@ -50,7 +50,6 @@ import se.uu.ub.cora.diva.mixedstorage.db.DivaDbRecordStorage;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraConverterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.DivaDbUpdaterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.RelatedTableFactoryImp;
-import se.uu.ub.cora.diva.mixedstorage.fedora.DataGroupFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraConverterFactory;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraConverterFactoryImp;
 import se.uu.ub.cora.diva.mixedstorage.fedora.DivaFedoraRecordStorage;

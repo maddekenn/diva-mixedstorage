@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Uppsala University Library
+ * Copyright 2018, 2020 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -24,7 +24,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.diva.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbToCoraOrganisationConverter;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbToCoraOrganisationConverter;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbToCoraOrganisationParentConverter;
 import se.uu.ub.cora.diva.mixedstorage.db.organisation.DivaDbToCoraOrganisationPredecessorConverter;
@@ -70,5 +69,11 @@ public class DivaDbToCoraConverterFactoryTest {
 		DivaDbToCoraConverter converter = divaDbToCoraConverterFactoryImp
 				.factor("divaOrganisationSuccessor");
 		assertTrue(converter instanceof DivaDbToCoraOrganisationSuccessorConverter);
+	}
+
+	@Test
+	public void testFactoryUser() throws Exception {
+		DivaDbToCoraConverter converter = divaDbToCoraConverterFactoryImp.factor("user");
+		assertTrue(converter instanceof DivaDbToCoraUserConverter);
 	}
 }

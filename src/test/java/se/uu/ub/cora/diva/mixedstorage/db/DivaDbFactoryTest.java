@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2019, 2020 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -71,6 +71,28 @@ public class DivaDbFactoryTest {
 				.factor("divaOrganisation");
 		assertSame(divaDbToCoraOrganisation.getRecordReaderFactory(), readerFactory);
 		assertSame(divaDbToCoraOrganisation.getConverterFactory(), converterFactory);
+	}
+
+	@Test
+	public void testFactorUser() {
+		DivaDbReader divaDbToCoraUser = divaDbToCoraFactoryImp.factor("user");
+		assertTrue(divaDbToCoraUser instanceof DivaDbUserReader);
+	}
+	//
+	// @Test
+	// public void testFactorUserGetDbFactory() {
+	// DivaDbUserReader factored = (DivaDbUserReader) divaDbToCoraFactoryImp.factor("user");
+	// DivaDbFactoryImp dbFactory = (DivaDbFactoryImp) factored.getDbFactory();
+	// assertSame(dbFactory.getConverterFactory(), converterFactory);
+	// assertSame(dbFactory.getReaderFactory(), readerFactory);
+	// }
+
+	@Test
+	public void testFactoryUserSentInFactoriesAreSentToImplementation() {
+		DivaDbUserReader divaDbToCoraUser = (DivaDbUserReader) divaDbToCoraFactoryImp
+				.factor("user");
+		assertSame(divaDbToCoraUser.getRecordReaderFactory(), readerFactory);
+		assertSame(divaDbToCoraUser.getConverterFactory(), converterFactory);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""

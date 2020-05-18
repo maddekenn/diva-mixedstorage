@@ -40,6 +40,9 @@ public class DivaDbToCoraConverterFactoryImp implements DivaDbToCoraConverterFac
 		if ("divaOrganisationSuccessor".equals(type)) {
 			return new DivaDbToCoraOrganisationSuccessorConverter();
 		}
+		if ("user".equals(type)) {
+			return new DivaDbToCoraUserConverter();
+		}
 		throw NotImplementedException.withMessage("No converter implemented for: " + type);
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2019, 2020 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -42,6 +42,9 @@ public class DivaDbFactoryImp implements DivaDbFactory {
 			DivaDbFactory divaDbFactory = new DivaDbFactoryImp(readerFactory, converterFactory);
 			return DivaDbOrganisationReader.usingRecordReaderFactoryAndConverterFactory(
 					readerFactory, converterFactory, divaDbFactory);
+		}
+		if ("user".equals(type)) {
+			return new DivaDbUserReader(readerFactory, converterFactory);
 		}
 		throw NotImplementedException.withMessage("No implementation found for: " + type);
 	}

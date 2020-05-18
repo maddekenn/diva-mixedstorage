@@ -16,22 +16,23 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.diva.mixedstorage.fedora;
+package se.uu.ub.cora.diva.mixedstorage;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupFactory;
-import se.uu.ub.cora.diva.mixedstorage.DataGroupSpy;
 
 public class DataGroupFactorySpy implements DataGroupFactory {
 
 	public DataGroupSpy factoredDataGroup;
 	public List<DataGroupSpy> factoredDataGroups = new ArrayList<>();
+	public List<String> usedNameInDatas = new ArrayList<>();
 
 	@Override
 	public DataGroup factorUsingNameInData(String nameInData) {
+		usedNameInDatas.add(nameInData);
 		factoredDataGroup = new DataGroupSpy(nameInData);
 		factoredDataGroups.add(factoredDataGroup);
 		return factoredDataGroup;
@@ -40,6 +41,7 @@ public class DataGroupFactorySpy implements DataGroupFactory {
 	@Override
 	public DataGroup factorAsLinkWithNameInDataTypeAndId(String nameInData, String recordType,
 			String recordId) {
+		usedNameInDatas.add(nameInData);
 		factoredDataGroup = new DataGroupSpy(nameInData, recordType, recordId);
 		factoredDataGroups.add(factoredDataGroup);
 		return factoredDataGroup;
