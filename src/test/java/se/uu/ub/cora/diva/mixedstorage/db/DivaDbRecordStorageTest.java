@@ -67,6 +67,12 @@ public class DivaDbRecordStorageTest {
 	}
 
 	@Test
+	public void divaDefaultFilterToDbConditionsConverter() throws Exception {
+		assertTrue(
+				divaRecordStorage.getFilterConverter() instanceof FilterToDbConditionsConverterImp);
+	}
+
+	@Test
 	public void testCallToDivaDbToCoraFactory() throws Exception {
 		divaRecordStorage.read(ORGANISATION_TYPE, "someId");
 		assertTrue(divaDbFactorySpy.factorWasCalled);
@@ -144,7 +150,7 @@ public class DivaDbRecordStorageTest {
 	}
 
 	@Test
-	public void testReadOrganisationListCountryTableRequestedFromReader() throws Exception {
+	public void testReadOrganisationListOrganisationTableRequestedFromReader() throws Exception {
 		divaRecordStorage.readList(ORGANISATION_TYPE, new DataGroupSpy("filter"));
 		RecordReaderSpy recordReader = recordReaderFactorySpy.factored;
 		assertEquals(recordReader.usedTableName, ORGANISATION_TYPE);
@@ -263,6 +269,42 @@ public class DivaDbRecordStorageTest {
 			int index) {
 		DivaDbToCoraConverterSpy converterSpy = converterFactorySpy.factoredConverters.get(index);
 		assertSame(converterSpy.convertedDbDataGroup, readList.listOfDataGroups.get(index));
+	}
+
+	// {"name":"filter","children":[{"name":"part","children":[{"name":"key","value":"domain"},
+	// {"name":"value","value":"Test"}],"repeatId":"0"}]}
+
+	@Test
+	public void testReadOrganisationListWithNonEmptyFilter() throws Exception {
+		RecordReaderFactoryForListSpy recordReaderFactoryForList = new RecordReaderFactoryForListSpy();
+		FilterToDbConditionsConverterSpy filterConverter = new FilterToDbConditionsConverterSpy();
+		divaRecordStorage = DivaDbRecordStorage
+				.usingRecordReaderFactoryDivaFactoryAndDivaDbUpdaterFactory(
+						recordReaderFactoryForList, divaDbFactorySpy, divaDbUpdaterFactorySpy,
+						converterFactorySpy);
+		divaRecordStorage.setFilterConverter(filterConverter);
+
+		DataGroupSpy filter = createFilter();
+		divaRecordStorage.readList(ORGANISATION_TYPE, filter);
+		RecordReaderForListSpy recordReader = recordReaderFactoryForList.factored;
+		assertTrue(recordReader.readFromTableUsingConditionsCalled);
+		assertSame(recordReader.usedConditions.get(0), filterConverter.conditionsToReturn);
+	}
+
+	private DataGroupSpy createFilter() {
+		DataGroupSpy filter = new DataGroupSpy("filter");
+		DataGroupSpy part = createPartUsingKeyValueAndRepeatId("domain", "test", "0");
+		filter.addChild(part);
+		return filter;
+	}
+
+	private DataGroupSpy createPartUsingKeyValueAndRepeatId(String key, String value,
+			String repeatId) {
+		DataGroupSpy part = new DataGroupSpy("part");
+		part.addChild(new DataAtomicSpy("key", key));
+		part.addChild(new DataAtomicSpy("value", value));
+		part.setRepeatId(repeatId);
+		return part;
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""

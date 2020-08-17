@@ -41,6 +41,7 @@ public class DivaDbRecordStorage implements RecordStorage {
 	private DivaDbFactory divaDbFactory;
 	private DivaDbUpdaterFactory divaDbUpdaterFactory;
 	private DivaDbToCoraConverterFactory converterFactory;
+	private FilterToDbConditionsConverter filterConverter = new FilterToDbConditionsConverterImp();
 
 	private DivaDbRecordStorage(RecordReaderFactory recordReaderFactory,
 			DivaDbFactory divaDbReaderFactory, DivaDbUpdaterFactory divaDbUpdaterFactory,
@@ -112,15 +113,34 @@ public class DivaDbRecordStorage implements RecordStorage {
 	@Override
 	public StorageReadResult readList(String type, DataGroup filter) {
 		if (DIVA_ORGANISATION.equals(type)) {
-			List<Map<String, Object>> rowsFromDb = readAllFromDb(type);
-			List<DataGroup> convertedGroups = new ArrayList<>();
-			for (Map<String, Object> map : rowsFromDb) {
-				convertOrganisation(type, convertedGroups, map);
-			}
-
-			return createStorageReadResult(convertedGroups);
+			return readOrganisationList(type, filter);
 		}
 		throw NotImplementedException.withMessage("readList is not implemented for type: " + type);
+	}
+
+	private StorageReadResult readOrganisationList(String type, DataGroup filter) {
+		List<Map<String, Object>> rowsFromDb = filterExists(filter)
+				? readAllFromDbWithFIlter(type, filter)
+				: readAllFromDb(type);
+
+		List<DataGroup> convertedGroups = new ArrayList<>();
+		for (Map<String, Object> map : rowsFromDb) {
+			convertOrganisation(type, convertedGroups, map);
+		}
+
+		return createStorageReadResult(convertedGroups);
+	}
+
+	private boolean filterExists(DataGroup filter) {
+		return !filter.getChildren().isEmpty();
+	}
+
+	private List<Map<String, Object>> readAllFromDbWithFIlter(String type, DataGroup filter) {
+		List<Map<String, Object>> rowsFromDb;
+		RecordReader recordReader = recordReaderFactory.factor();
+		Map<String, Object> conditions = getFilterConverter().convert(filter);
+		rowsFromDb = recordReader.readFromTableUsingConditions(type, conditions);
+		return rowsFromDb;
 	}
 
 	private void convertOrganisation(String type, List<DataGroup> convertedGroups,
@@ -231,6 +251,14 @@ public class DivaDbRecordStorage implements RecordStorage {
 	public DivaDbToCoraConverterFactory getConverterFactory() {
 		// needed for test
 		return converterFactory;
+	}
+
+	public FilterToDbConditionsConverter getFilterConverter() {
+		return filterConverter;
+	}
+
+	void setFilterConverter(FilterToDbConditionsConverter filterConverter) {
+		this.filterConverter = filterConverter;
 	}
 
 }

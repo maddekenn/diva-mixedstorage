@@ -31,6 +31,8 @@ public class RecordReaderForListSpy implements RecordReader {
 	public List<Map<String, Object>> returnedList = new ArrayList<>();
 	public List<List<Map<String, Object>>> returnedListCollection = new ArrayList<>();
 	public List<Map<String, Object>> usedConditionsForOne = new ArrayList<>();
+	public List<Map<String, Object>> usedConditions = new ArrayList<>();
+	public boolean readFromTableUsingConditionsCalled = false;
 
 	@Override
 	public List<Map<String, Object>> readAllFromTable(String tableName) {
@@ -46,14 +48,22 @@ public class RecordReaderForListSpy implements RecordReader {
 	@Override
 	public List<Map<String, Object>> readFromTableUsingConditions(String tableName,
 			Map<String, Object> conditions) {
-		// TODO Auto-generated method stub
-		return null;
+		usedConditions.add(conditions);
+		readFromTableUsingConditionsCalled = true;
+		for (int i = 0; i < noOfRecordsToReturn; i++) {
+			Map<String, Object> map = new HashMap<>();
+			map.put("id", String.valueOf(i));
+			returnedList.add(map);
+		}
+		returnedListCollection.add(returnedList);
+		return returnedList;
 	}
 
 	@Override
 	public Map<String, Object> readOneRowFromDbUsingTableAndConditions(String tableName,
 			Map<String, Object> conditions) {
 		usedConditionsForOne.add(conditions);
+
 		return null;
 	}
 
