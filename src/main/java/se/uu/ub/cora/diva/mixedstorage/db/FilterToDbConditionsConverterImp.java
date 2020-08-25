@@ -29,11 +29,15 @@ public class FilterToDbConditionsConverterImp implements FilterToDbConditionsCon
 	public Map<String, Object> convert(DataGroup filter) {
 		Map<String, Object> conditions = new HashMap<>();
 		for (DataGroup part : filter.getAllGroupsWithNameInData("part")) {
-			String key = part.getFirstAtomicValueWithNameInData("key");
-			String value = part.getFirstAtomicValueWithNameInData("value");
-			conditions.put(key, value);
+			convertFilterPart(conditions, part);
 		}
 		return conditions;
+	}
+
+	private void convertFilterPart(Map<String, Object> conditions, DataGroup part) {
+		String key = part.getFirstAtomicValueWithNameInData("key");
+		String value = part.getFirstAtomicValueWithNameInData("value");
+		conditions.put(key, value);
 	}
 
 }

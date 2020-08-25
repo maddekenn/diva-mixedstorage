@@ -120,7 +120,7 @@ public class DivaDbRecordStorage implements RecordStorage {
 
 	private StorageReadResult readOrganisationList(String type, DataGroup filter) {
 		List<Map<String, Object>> rowsFromDb = filterExists(filter)
-				? readAllFromDbWithFIlter(type, filter)
+				? readAllFromDbWithFilter(type, filter)
 				: readAllFromDb(type);
 
 		List<DataGroup> convertedGroups = new ArrayList<>();
@@ -135,7 +135,7 @@ public class DivaDbRecordStorage implements RecordStorage {
 		return !filter.getChildren().isEmpty();
 	}
 
-	private List<Map<String, Object>> readAllFromDbWithFIlter(String type, DataGroup filter) {
+	private List<Map<String, Object>> readAllFromDbWithFilter(String type, DataGroup filter) {
 		List<Map<String, Object>> rowsFromDb;
 		RecordReader recordReader = recordReaderFactory.factor();
 		Map<String, Object> conditions = getFilterConverter().convert(filter);
