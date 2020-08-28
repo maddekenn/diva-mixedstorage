@@ -31,12 +31,18 @@ import se.uu.ub.cora.sqldatabase.RecordReader;
 
 public class DivaMixedUserStorage implements UserStorage {
 
+	public static DivaMixedUserStorage usingGuestUserStorageRecordReaderAndUserConverter(
+			UserStorage guestUserStorage, RecordReader recordReader,
+			DivaDbToCoraConverter userConverter) {
+		return new DivaMixedUserStorage(guestUserStorage, recordReader, userConverter);
+	}
+
 	private UserStorage guestUserStorage;
 	private RecordReader recordReader;
 	private Logger log = LoggerProvider.getLoggerForClass(DivaMixedUserStorage.class);
 	private DivaDbToCoraConverter userConverter;
 
-	public DivaMixedUserStorage(UserStorage guestUserStorage, RecordReader recordReader,
+	private DivaMixedUserStorage(UserStorage guestUserStorage, RecordReader recordReader,
 			DivaDbToCoraConverter userConverter) {
 		this.guestUserStorage = guestUserStorage;
 		this.recordReader = recordReader;
@@ -59,9 +65,7 @@ public class DivaMixedUserStorage implements UserStorage {
 
 		Map<String, Object> readRow = recordReader.readOneRowFromDbUsingTableAndConditions("user",
 				conditions);
-		userConverter.fromMap(readRow);
-		// readOneRowFromDbUsingTableAndConditions
-		return null;
+		return userConverter.fromMap(readRow);
 	}
 
 	private void logAndThrowExceptionIfUnexpectedFormatOf(String idFromLogin) {

@@ -50,7 +50,8 @@ public class DivaMixedUserStorageTest {
 		recordReader = new RecordReaderSpy();
 		guestUserStorage = new UserStorageSpy();
 		userConverter = new DivaDbToCoraConverterSpy();
-		userStorage = new DivaMixedUserStorage(guestUserStorage, recordReader, userConverter);
+		userStorage = DivaMixedUserStorage.usingGuestUserStorageRecordReaderAndUserConverter(guestUserStorage, recordReader,
+				userConverter);
 	}
 
 	@Test
@@ -86,9 +87,7 @@ public class DivaMixedUserStorageTest {
 		DataGroup user = userStorage.getUserByIdFromLogin(userId);
 
 		assertEquals(userConverter.mapToConvert, recordReader.oneRowRead);
-		// TODO: du är här
-		// assertEquals(user.getNameInData(), "user");
-
+		assertSame(user, userConverter.convertedDbDataGroup);
 	}
 
 	@Test(expectedExceptions = DbException.class, expectedExceptionsMessageRegExp = ""
