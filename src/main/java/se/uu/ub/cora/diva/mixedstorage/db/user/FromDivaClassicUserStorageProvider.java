@@ -28,6 +28,7 @@ public class FromDivaClassicUserStorageProvider implements UserStorageProvider {
 
 	private DivaMixedUserStorage userStorage;
 	private Map<String, String> initInfo;
+	// private ServiceLoader<GuestUserStorageProvider> guestUserStorageProviderImplementations;
 
 	@Override
 	public int getOrderToSelectImplementionsBy() {
@@ -43,11 +44,54 @@ public class FromDivaClassicUserStorageProvider implements UserStorageProvider {
 	public void startUsingInitInfo(Map<String, String> initInfo) {
 		this.initInfo = initInfo;
 
+		// GuestUserStorageProvider guestUserStorageProvider =
+		// getImplementationBasedOnPreferenceLevelThrowErrorIfNone(
+		// guestUserStorageProviders, "GuestUserStorageProvider");
+
 		// leta efter en guestUserProvider
 		UserStorage userStorageForGuest = new UserStorageImp(initInfo);
 		userStorage = DivaMixedUserStorage
 				.usingGuestUserStorageRecordReaderAndUserConverter(userStorageForGuest, null, null);
 
 	}
+
+	// private void collectUserStorageImplementations() {
+	// guestUserStorageProviderImplementations = ServiceLoader.load(GuestUserStorageProvider.class);
+	// }
+
+	// private <T extends SelectOrder> T getImplementationBasedOnPreferenceLevelThrowErrorIfNone(
+	// Iterable<T> implementations, String interfaceClassName) {
+	// T implementation = findAndLogPreferedImplementation(implementations, interfaceClassName);
+	// throwErrorIfNoImplementationFound(interfaceClassName, implementation);
+	// log.logInfoUsingMessage("Using " + implementation.getClass().getName() + " as "
+	// + interfaceClassName + " implementation.");
+	// return implementation;
+	// }
+	//
+	// private <T extends SelectOrder> T findAndLogPreferedImplementation(Iterable<T>
+	// implementations,
+	// String interfaceClassName) {
+	// T implementation = null;
+	// int preferenceLevel = -99999;
+	// for (T currentImplementation : implementations) {
+	// if (preferenceLevel < currentImplementation.getOrderToSelectImplementionsBy()) {
+	// preferenceLevel = currentImplementation.getOrderToSelectImplementionsBy();
+	// implementation = currentImplementation;
+	// }
+	// log.logInfoUsingMessage(FOUND + currentImplementation.getClass().getName() + " as "
+	// + interfaceClassName + " implementation with select order "
+	// + currentImplementation.getOrderToSelectImplementionsBy() + ".");
+	// }
+	// return implementation;
+	// }
+	//
+	// private <T extends SelectOrder> void throwErrorIfNoImplementationFound(
+	// String interfaceClassName, T implementation) {
+	// if (null == implementation) {
+	// String errorMessage = "No implementations found for " + interfaceClassName;
+	// log.logFatalUsingMessage(errorMessage);
+	// throw new GatekeeperInitializationException(errorMessage);
+	// }
+	// }
 
 }
