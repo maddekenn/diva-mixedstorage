@@ -55,6 +55,12 @@ public class FromDivaClassicUserStorageProvider implements UserStorageProvider {
 
 	}
 
+	private void getGuestUserStorageUsingModuleStarter() {
+		// Iterable<GuestUserStorageProvider> guestUserStorageImplementations = ServiceLoader
+		// .load(GuestUserStorageProvider.class);
+		// guestUserStorageMuduleStarter.start
+	}
+
 	// private void collectUserStorageImplementations() {
 	// guestUserStorageProviderImplementations = ServiceLoader.load(GuestUserStorageProvider.class);
 	// }
