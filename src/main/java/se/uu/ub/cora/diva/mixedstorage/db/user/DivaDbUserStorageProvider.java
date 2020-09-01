@@ -19,15 +19,18 @@
 package se.uu.ub.cora.diva.mixedstorage.db.user;
 
 import java.util.Map;
+import java.util.ServiceLoader;
 
-import se.uu.ub.cora.basicstorage.UserStorageImp;
+import se.uu.ub.cora.gatekeeper.user.GuestUserStorageProvider;
 import se.uu.ub.cora.gatekeeper.user.UserStorage;
 import se.uu.ub.cora.gatekeeper.user.UserStorageProvider;
 
-public class FromDivaClassicUserStorageProvider implements UserStorageProvider {
+public class DivaDbUserStorageProvider implements UserStorageProvider {
 
 	private DivaMixedUserStorage userStorage;
 	private Map<String, String> initInfo;
+	private Iterable<GuestUserStorageProvider> guestUserStorageProviders;
+	GuestUserStorageStarter guestUserStorageStarter = new GuestUserStorageStarterImp();
 	// private ServiceLoader<GuestUserStorageProvider> guestUserStorageProviderImplementations;
 
 	@Override
@@ -43,23 +46,31 @@ public class FromDivaClassicUserStorageProvider implements UserStorageProvider {
 	@Override
 	public void startUsingInitInfo(Map<String, String> initInfo) {
 		this.initInfo = initInfo;
-
-		// GuestUserStorageProvider guestUserStorageProvider =
-		// getImplementationBasedOnPreferenceLevelThrowErrorIfNone(
-		// guestUserStorageProviders, "GuestUserStorageProvider");
+		guestUserStorageProviders = ServiceLoader.load(GuestUserStorageProvider.class);
+		guestUserStorageStarter.startUsingInitInfoAndGuestUserStorageProviders(initInfo,
+				guestUserStorageProviders);
 
 		// leta efter en guestUserProvider
-		UserStorage userStorageForGuest = new UserStorageImp(initInfo);
-		userStorage = DivaMixedUserStorage
-				.usingGuestUserStorageRecordReaderAndUserConverter(userStorageForGuest, null, null);
+		// UserStorage userStorageForGuest = new UserStorageImp(initInfo);
+		userStorage = DivaMixedUserStorage.usingGuestUserStorageRecordReaderAndUserConverter(null,
+				null, null);
 
 	}
 
-	private void getGuestUserStorageUsingModuleStarter() {
-		// Iterable<GuestUserStorageProvider> guestUserStorageImplementations = ServiceLoader
-		// .load(GuestUserStorageProvider.class);
-		// guestUserStorageMuduleStarter.start
+	public GuestUserStorageStarter getUserStorageStarter() {
+		return guestUserStorageStarter;
 	}
+
+	public void setGuestUserStorageStarter(GuestUserStorageStarter guestUserStorageStarter) {
+		this.guestUserStorageStarter = guestUserStorageStarter;
+
+	}
+
+	// private void getGuestUserStorageUsingModuleStarter() {
+	// Iterable<GuestUserStorageProvider> guestUserStorageImplementations = ServiceLoader
+	// .load(GuestUserStorageProvider.class);
+	// guestUserStorageMuduleStarter.start
+	// }
 
 	// private void collectUserStorageImplementations() {
 	// guestUserStorageProviderImplementations = ServiceLoader.load(GuestUserStorageProvider.class);
@@ -69,11 +80,11 @@ public class FromDivaClassicUserStorageProvider implements UserStorageProvider {
 	// Iterable<T> implementations, String interfaceClassName) {
 	// T implementation = findAndLogPreferedImplementation(implementations, interfaceClassName);
 	// throwErrorIfNoImplementationFound(interfaceClassName, implementation);
-	// log.logInfoUsingMessage("Using " + implementation.getClass().getName() + " as "
-	// + interfaceClassName + " implementation.");
+	// // log.logInfoUsingMessage("Using " + implementation.getClass().getName() + " as "
+	// // + interfaceClassName + " implementation.");
 	// return implementation;
 	// }
-	//
+
 	// private <T extends SelectOrder> T findAndLogPreferedImplementation(Iterable<T>
 	// implementations,
 	// String interfaceClassName) {
@@ -90,13 +101,13 @@ public class FromDivaClassicUserStorageProvider implements UserStorageProvider {
 	// }
 	// return implementation;
 	// }
-	//
+
 	// private <T extends SelectOrder> void throwErrorIfNoImplementationFound(
 	// String interfaceClassName, T implementation) {
 	// if (null == implementation) {
 	// String errorMessage = "No implementations found for " + interfaceClassName;
-	// log.logFatalUsingMessage(errorMessage);
-	// throw new GatekeeperInitializationException(errorMessage);
+	// // log.logFatalUsingMessage(errorMessage);
+	// throw DbException.withMessage(errorMessage);
 	// }
 	// }
 
