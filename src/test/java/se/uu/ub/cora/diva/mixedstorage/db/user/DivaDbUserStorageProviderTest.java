@@ -37,6 +37,7 @@ import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.diva.mixedstorage.DataGroupFactorySpy;
 import se.uu.ub.cora.diva.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.gatekeeper.user.GuestUserStorageProvider;
+import se.uu.ub.cora.gatekeeper.user.UserStorage;
 import se.uu.ub.cora.logger.LoggerProvider;
 
 public class DivaDbUserStorageProviderTest {
@@ -80,33 +81,38 @@ public class DivaDbUserStorageProviderTest {
 	}
 
 	@Test
-	public void testInit() throws Exception {
+	public void testDefaultStarter() {
 		divaUserStorageProvider = new DivaDbUserStorageProvider();
+		assertTrue(divaUserStorageProvider
+				.getUserStorageStarter() instanceof GuestUserStorageStarterImp);
+	}
+
+	@Test
+	public void testInit() throws Exception {
 		divaUserStorageProvider.startUsingInitInfo(initInfo);
 		DivaMixedUserStorage userStorage = (DivaMixedUserStorage) divaUserStorageProvider
 				.getUserStorage();
-		assertTrue(userStorage instanceof DivaMixedUserStorage);
-		assertTrue(divaUserStorageProvider
-				.getUserStorageStarter() instanceof GuestUserStorageStarterImp);
+		GuestUserStorageStarter userStorageStarter = divaUserStorageProvider
+				.getUserStorageStarter();
+
+		UserStorage guestUserStorageInUserStorage = userStorage.getUserStorageForGuest();
+		UserStorage guestUserStorageFromStarter = userStorageStarter.getGuestUserStorage();
+
+		assertSame(guestUserStorageInUserStorage, guestUserStorageFromStarter);
+
+		// kolla RecordReader
+		// kolla userConverter
 
 	}
 
 	@Test
 	public void testGuestUserStorageStarter() throws Exception {
-		GuestUserStorageStarterSpy starter = new GuestUserStorageStarterSpy();
-		divaUserStorageProvider.setGuestUserStorageStarter(starter);
 		divaUserStorageProvider.startUsingInitInfo(initInfo);
 
 		assertTrue(starter.starterWasCalled);
 		assertSame(starter.initInfo, initInfo);
 		Iterable<GuestUserStorageProvider> iterable = starter.guestUserStorageProviderImplementations;
 		assertTrue(iterable instanceof ServiceLoader);
-
-		// DivaMixedUserStorage userStorage = (DivaMixedUserStorage) divaUserStorageProvider
-		// .getUserStorage();
-		// assertTrue(userStorage instanceof DivaMixedUserStorage);
-		// assertTrue(divaUserStorageProvider
-		// .getUserStorageStarter() instanceof GuestUserStorageStarterImp);
 
 	}
 

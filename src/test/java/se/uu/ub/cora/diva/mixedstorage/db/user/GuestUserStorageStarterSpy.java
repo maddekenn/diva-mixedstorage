@@ -28,6 +28,7 @@ public class GuestUserStorageStarterSpy implements GuestUserStorageStarter {
 	public boolean starterWasCalled = false;
 	public Map<String, String> initInfo;
 	public Iterable<GuestUserStorageProvider> guestUserStorageProviderImplementations;
+	public UserStorage guestUserStorage = new UserStorageSpy();;
 
 	@Override
 	public void startUsingInitInfoAndGuestUserStorageProviders(Map<String, String> initInfo,
@@ -39,8 +40,7 @@ public class GuestUserStorageStarterSpy implements GuestUserStorageStarter {
 
 	@Override
 	public UserStorage getGuestUserStorage() {
-		// TODO Auto-generated method stub
-		return null;
+		return guestUserStorage;
 	}
 
 }

@@ -50,10 +50,8 @@ public class DivaDbUserStorageProvider implements UserStorageProvider {
 		guestUserStorageStarter.startUsingInitInfoAndGuestUserStorageProviders(initInfo,
 				guestUserStorageProviders);
 
-		// leta efter en guestUserProvider
-		// UserStorage userStorageForGuest = new UserStorageImp(initInfo);
-		userStorage = DivaMixedUserStorage.usingGuestUserStorageRecordReaderAndUserConverter(null,
-				null, null);
+		userStorage = DivaMixedUserStorage.usingGuestUserStorageRecordReaderAndUserConverter(
+				guestUserStorageStarter.getGuestUserStorage(), null, null);
 
 	}
 
