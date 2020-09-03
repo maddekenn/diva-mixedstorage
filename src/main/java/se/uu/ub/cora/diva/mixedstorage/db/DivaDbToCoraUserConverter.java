@@ -27,6 +27,7 @@ import se.uu.ub.cora.data.DataGroupProvider;
 
 public class DivaDbToCoraUserConverter implements DivaDbToCoraConverter {
 
+	private static final String CORA_USER = "coraUser";
 	private Map<String, Object> dbRow;
 
 	@Override
@@ -54,7 +55,7 @@ public class DivaDbToCoraUserConverter implements DivaDbToCoraConverter {
 
 	private DataGroup createBasicDataGroupWithRecordInfo(Map<String, Object> dbRow) {
 		DataGroup user = DataGroupProvider.getDataGroupUsingNameInData("user");
-		user.addAttributeByIdWithValue("type", "coraUser");
+		user.addAttributeByIdWithValue("type", CORA_USER);
 		DataGroup recordInfo = createRecordInfo(dbRow);
 		user.addChild(recordInfo);
 		return user;
@@ -89,7 +90,7 @@ public class DivaDbToCoraUserConverter implements DivaDbToCoraConverter {
 
 	private void createAndAddType(DataGroup recordInfo) {
 		DataGroup type = DataGroupProvider.getDataGroupAsLinkUsingNameInDataTypeAndId("type",
-				"recordType", "coraUser");
+				"recordType", CORA_USER);
 		recordInfo.addChild(type);
 	}
 
@@ -100,7 +101,7 @@ public class DivaDbToCoraUserConverter implements DivaDbToCoraConverter {
 
 	private void createAndAddCreatedInfo(DataGroup recordInfo) {
 		DataGroup createdBy = createLinkUsingNameInDataRecordTypeAndRecordId("createdBy",
-				"coraUser", "coraUser:4412982402853626");
+				CORA_USER, "coraUser:4412982402853626");
 		recordInfo.addChild(createdBy);
 		addPredefinedTimestampToDataGroupUsingNameInData(recordInfo, "tsCreated");
 	}
@@ -114,7 +115,7 @@ public class DivaDbToCoraUserConverter implements DivaDbToCoraConverter {
 	private void createAndAddUpdatedInfo(DataGroup recordInfo) {
 		DataGroup updated = DataGroupProvider.getDataGroupUsingNameInData("updated");
 		DataGroup updatedBy = createLinkUsingNameInDataRecordTypeAndRecordId("updatedBy",
-				"coraUser", "coraUser:4412982402853626");
+				CORA_USER, "coraUser:4412982402853626");
 		updated.addChild(updatedBy);
 		addPredefinedTimestampToDataGroupUsingNameInData(updated, "tsUpdated");
 		updated.setRepeatId("0");

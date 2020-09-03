@@ -57,11 +57,8 @@ public class DivaMixedUserStorage implements UserStorage {
 	@Override
 	public DataGroup getUserByIdFromLogin(String idFromLogin) {
 		logAndThrowExceptionIfUnexpectedFormatOf(idFromLogin);
-		Map<String, Object> conditions = new HashMap<>();
-		String userId = getUserIdFromIdFromLogin(idFromLogin);
-		conditions.put("user_id", userId);
-		String userDomain = getDomainFromLogin(idFromLogin);
-		conditions.put("domain", userDomain);
+
+		Map<String, Object> conditions = createConditions(idFromLogin);
 
 		Map<String, Object> readRow = recordReader.readOneRowFromDbUsingTableAndConditions("user",
 				conditions);
@@ -69,11 +66,24 @@ public class DivaMixedUserStorage implements UserStorage {
 	}
 
 	private void logAndThrowExceptionIfUnexpectedFormatOf(String idFromLogin) {
-		if (!idFromLogin.matches("^\\w+@(\\w+\\.){1,}\\w+$")) {
+		if (wrongFormatForIdFromLogin(idFromLogin)) {
 			String errorMessage = "Unrecognized format of userIdFromLogin: " + idFromLogin;
 			log.logErrorUsingMessage(errorMessage);
 			throw DbException.withMessage(errorMessage);
 		}
+	}
+
+	private boolean wrongFormatForIdFromLogin(String idFromLogin) {
+		return !idFromLogin.matches("^\\w+@(\\w+\\.){1,}\\w+$");
+	}
+
+	private Map<String, Object> createConditions(String idFromLogin) {
+		Map<String, Object> conditions = new HashMap<>();
+		String userId = getUserIdFromIdFromLogin(idFromLogin);
+		conditions.put("user_id", userId);
+		String userDomain = getDomainFromLogin(idFromLogin);
+		conditions.put("domain", userDomain);
+		return conditions;
 	}
 
 	private String getUserIdFromIdFromLogin(String idFromLogin) {

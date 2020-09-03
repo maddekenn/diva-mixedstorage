@@ -29,26 +29,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 
+import javax.naming.InitialContext;
+
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.connection.ContextConnectionProviderImp;
 import se.uu.ub.cora.data.DataGroupFactory;
 import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.diva.mixedstorage.DataGroupFactorySpy;
+import se.uu.ub.cora.diva.mixedstorage.db.DivaDbToCoraUserConverter;
 import se.uu.ub.cora.diva.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.gatekeeper.user.GuestUserStorageProvider;
 import se.uu.ub.cora.gatekeeper.user.UserStorage;
 import se.uu.ub.cora.logger.LoggerProvider;
+import se.uu.ub.cora.sqldatabase.DataReaderImp;
+import se.uu.ub.cora.sqldatabase.RecordReaderImp;
 
-public class DivaDbUserStorageProviderTest {
+public class DivaMixedUserStorageProviderTest {
 	private String basePath = "/tmp/recordStorageOnDiskTemp/";
 	private LoggerFactorySpy loggerFactorySpy;
 	private DataGroupFactory dataGroupFactory;
-	private DivaDbUserStorageProvider divaUserStorageProvider;
+	private DivaMixedUserStorageProvider divaUserStorageProvider;
 	private List<GuestUserStorageProvider> guestUserStorageProviders;
 
 	private Map<String, String> initInfo;
 	private GuestUserStorageStarterSpy starter;
+	private String testedClassName = "DivaMixedUserStorageProvider";
 
 	@BeforeMethod
 	public void setUp() throws IOException {
@@ -56,7 +63,7 @@ public class DivaDbUserStorageProviderTest {
 		setUpInitInfo();
 		guestUserStorageProviders = new ArrayList<>();
 		guestUserStorageProviders.add(new GuestUserStorageProviderSpy());
-		divaUserStorageProvider = new DivaDbUserStorageProvider();
+		divaUserStorageProvider = new DivaMixedUserStorageProvider();
 		starter = new GuestUserStorageStarterSpy();
 		divaUserStorageProvider.setGuestUserStorageStarter(starter);
 	}
@@ -76,13 +83,13 @@ public class DivaDbUserStorageProviderTest {
 
 	@Test
 	public void testPreferenceLevel() {
-		divaUserStorageProvider.startUsingInitInfo(null);
+		divaUserStorageProvider.startUsingInitInfo(initInfo);
 		assertEquals(divaUserStorageProvider.getOrderToSelectImplementionsBy(), 10);
 	}
 
 	@Test
 	public void testDefaultStarter() {
-		divaUserStorageProvider = new DivaDbUserStorageProvider();
+		divaUserStorageProvider = new DivaMixedUserStorageProvider();
 		assertTrue(divaUserStorageProvider
 				.getUserStorageStarter() instanceof GuestUserStorageStarterImp);
 	}
@@ -90,6 +97,7 @@ public class DivaDbUserStorageProviderTest {
 	@Test
 	public void testInit() throws Exception {
 		divaUserStorageProvider.startUsingInitInfo(initInfo);
+
 		DivaMixedUserStorage userStorage = (DivaMixedUserStorage) divaUserStorageProvider
 				.getUserStorage();
 		GuestUserStorageStarter userStorageStarter = divaUserStorageProvider
@@ -99,10 +107,46 @@ public class DivaDbUserStorageProviderTest {
 		UserStorage guestUserStorageFromStarter = userStorageStarter.getGuestUserStorage();
 
 		assertSame(guestUserStorageInUserStorage, guestUserStorageFromStarter);
+		assertTrue(userStorage.getDbToCoraUserConverter() instanceof DivaDbToCoraUserConverter);
 
-		// kolla RecordReader
-		// kolla userConverter
+		RecordReaderImp recordReader = (RecordReaderImp) userStorage.getRecordReader();
+		DataReaderImp dataReader = (DataReaderImp) recordReader.getDataReader();
 
+		ContextConnectionProviderImp sqlConnectionProvider = (ContextConnectionProviderImp) dataReader
+				.getSqlConnectionProvider();
+		assertEquals(sqlConnectionProvider.getName(), initInfo.get("databaseLookupName"));
+		assertTrue(sqlConnectionProvider.getContext() instanceof InitialContext);
+
+	}
+
+	@Test
+	public void testLogMessageForInitParameter() throws Exception {
+		divaUserStorageProvider.startUsingInitInfo(initInfo);
+
+		String firstInfoMessage = loggerFactorySpy
+				.getInfoLogMessageUsingClassNameAndNo(testedClassName, 0);
+		assertEquals(firstInfoMessage, "Found java:/comp/env/jdbc/postgres as databaseLookupName");
+
+	}
+
+	@Test(expectedExceptions = RuntimeException.class, expectedExceptionsMessageRegExp = ""
+			+ "Error starting ContextConnectionProviderImp InitInfo must contain databaseLookupName")
+	public void testErrorWhenDbLookupNameIsMissing() {
+		initInfo.remove("databaseLookupName");
+		divaUserStorageProvider.startUsingInitInfo(initInfo);
+
+	}
+
+	@Test
+	public void testLogErrorMessageWhenDbLookupNameIsMissing() {
+		initInfo.remove("databaseLookupName");
+		try {
+			divaUserStorageProvider.startUsingInitInfo(initInfo);
+		} catch (Exception e) {
+		}
+		String firstFatalMessage = loggerFactorySpy
+				.getFatalLogMessageUsingClassNameAndNo(testedClassName, 0);
+		assertEquals(firstFatalMessage, "InitInfo must contain databaseLookupName");
 	}
 
 	@Test
@@ -115,13 +159,4 @@ public class DivaDbUserStorageProviderTest {
 		assertTrue(iterable instanceof ServiceLoader);
 
 	}
-
-	// @Test(expectedExceptions = DbException.class, expectedExceptionsMessageRegExp = ""
-	// + "No implementations found for GuestUserStorageProvider")
-	// public void testStartGuestUserStorageThrowsErrorIfNoUserStorageImplementations()
-	// throws Exception {
-	// guestUserStorageProviders.clear();
-	// divaUserStorageProvider.startUsingInitInfo(initInfo);
-	//
-	// }
 }
